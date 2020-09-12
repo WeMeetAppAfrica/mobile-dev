@@ -1,5 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/login.dart';
+import 'package:wemeet/src/views/auth/picture.dart';
+import 'package:wemeet/src/views/dashboard/home.dart';
 import 'package:wemeet/src/views/onboarding/screen1.dart';
 import 'package:wemeet/src/views/onboarding/screen2.dart';
 import 'package:wemeet/src/views/onboarding/screen3.dart';
@@ -56,6 +62,23 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final pageControl = PageController(initialPage: 0);
+  String token;
+  bool passWalkthrough = false;
+  @override
+  void initState() {
+    super.initState();
+    _getUser();
+  }
+
+  _getUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      token = prefs.getString('accessToken');
+      passWalkthrough = prefs.getBool('passWalkthrough') == null ? false : prefs.getBool('passWalkthrough');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -65,14 +88,18 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      body: PageView(
-        controller: pageControl,
-        children: [
-          OnBoarding1(),
-          OnBoarding2(),
-          OnBoarding3(),
-        ],
-      ),
+      body: token != null
+          ? Home()
+          : passWalkthrough
+              ? Login()
+              : PageView(
+                  controller: pageControl,
+                  children: [
+                    OnBoarding1(),
+                    OnBoarding2(),
+                    OnBoarding3(),
+                  ],
+                ),
     );
   }
 }

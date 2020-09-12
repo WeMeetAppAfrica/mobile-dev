@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/values/values.dart';
 
@@ -10,6 +11,11 @@ class OnBoarding1 extends StatefulWidget {
 }
 
 class _OnBoarding1State extends State<OnBoarding1> {
+  _passWalkthrough() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('passWalkthrough', true);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -80,6 +86,7 @@ class _OnBoarding1State extends State<OnBoarding1> {
                 ),
                 InkWell(
                   onTap: () => {
+                    _passWalkthrough(),
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
