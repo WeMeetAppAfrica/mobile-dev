@@ -2,6 +2,7 @@ import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/views/auth/login.dart';
+import 'package:wemeet/src/views/dashboard/matchcard.dart';
 import 'package:wemeet/values/values.dart';
 
 class Home extends StatefulWidget {
@@ -12,188 +13,242 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  List<Widget> cardList;
+
   _setUser(token) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('accessToken', token);
   }
 
+  List<Widget> _getMatchCard() {
+    List<Widget> cardList = new List();
+
+    for (int x = 0; x < 3; x++) {
+      cardList.add(Positioned(
+          top: 41,
+          child: Draggable(
+            onDragEnd: (drag) {
+              _removeCard(x);
+            },
+            childWhenDragging: Container(),
+            feedback: MatchCard(
+              age: x,
+              name: "Jane Doe",
+              dist: "2km",
+              location: "Ikeja, Lagos",
+              image:
+                  "https://images.pexels.com/photos/5262348/pexels-photo-5262348.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
+            ),
+            child: MatchCard(
+              age: x,
+              name: "Jane Doe",
+              dist: "2km",
+              location: "Ikeja, Lagos",
+              image:
+                  "https://images.pexels.com/photos/5262348/pexels-photo-5262348.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
+            ),
+          )));
+    }
+    return cardList;
+  }
+
+  void _removeCard(index) {
+    setState(() {
+      cardList.removeAt(index);
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    cardList = _getMatchCard();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Drawer(
-        // Add a ListView to the drawer. This ensures the user can scroll
-        // through the options in the drawer if there isn't enough vertical
-        // space to fit everything.
-        child: Container(
-          color: Colors.white,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              DrawerHeader(
-                decoration: BoxDecoration(color: Colors.white),
-                child: Container(
-                  width: 133,
-                  height: 133,
-                  margin: EdgeInsets.only(left: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 64,
-                        height: 64,
-                        decoration: new BoxDecoration(
-                            borderRadius: BorderRadius.all(Radius.circular(16)),
-                            image: new DecorationImage(
-                                fit: BoxFit.cover,
-                                image: NetworkImage(
-                                    "https://images.pexels.com/photos/5207248/pexels-photo-5207248.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"))),
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(left: 1, top: 14, right: 6),
-                        child: Text(
-                          "Buchi Alfred",
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                            fontFamily: 'Berkshire Swash',
-                            color: AppColors.primaryText,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 18,
+      drawer: ClipRRect(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(16.0),
+          bottom: Radius.circular(16.0),
+        ),
+        child: Drawer(
+          // Add a ListView to the drawer. This ensures the user can scroll
+          // through the options in the drawer if there isn't enough vertical
+          // space to fit everything.
+          child: Container(
+            color: Colors.white,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                DrawerHeader(
+                  decoration: BoxDecoration(color: Colors.white),
+                  child: Container(
+                    width: 133,
+                    height: 133,
+                    margin: EdgeInsets.only(left: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: new BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(16)),
+                              image: new DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: NetworkImage(
+                                      "https://images.pexels.com/photos/5207248/pexels-photo-5207248.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"))),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(left: 1, top: 14, right: 6),
+                          child: Text(
+                            "Buchi Alfred",
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              fontFamily: 'Berkshire Swash',
+                              color: AppColors.primaryText,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 18,
+                            ),
                           ),
                         ),
-                      ),
-                      Opacity(
-                        opacity: 0.56,
-                        child: Text(
-                          "Entrepreneur",
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                            color: AppColors.primaryText,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 14,
+                        Opacity(
+                          opacity: 0.56,
+                          child: Text(
+                            "Entrepreneur",
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              color: AppColors.primaryText,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              ListTile(
-                title: Row(
-                  children: [
-                    Icon(FeatherIcons.home),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text('Home'),
-                  ],
+                ListTile(
+                  title: Row(
+                    children: [
+                      Icon(FeatherIcons.home),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text('Home'),
+                    ],
+                  ),
+                  onTap: () {
+                    // Update the state of the app.
+                    // ...
+                  },
                 ),
-                onTap: () {
-                  // Update the state of the app.
-                  // ...
-                },
-              ),
-              ListTile(
-                title: Row(
-                  children: [
-                    Icon(FeatherIcons.user),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text('Profile'),
-                  ],
+                ListTile(
+                  title: Row(
+                    children: [
+                      Icon(FeatherIcons.user),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text('Profile'),
+                    ],
+                  ),
+                  onTap: () {
+                    // Update the state of the app.
+                    // ...
+                  },
                 ),
-                onTap: () {
-                  // Update the state of the app.
-                  // ...
-                },
-              ),
-              ListTile(
-                title: Row(
-                  children: [
-                    Icon(FeatherIcons.music),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text('Playlist'),
-                  ],
+                ListTile(
+                  title: Row(
+                    children: [
+                      Icon(FeatherIcons.music),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text('Playlist'),
+                    ],
+                  ),
+                  onTap: () {
+                    // Update the state of the app.
+                    // ...
+                  },
                 ),
-                onTap: () {
-                  // Update the state of the app.
-                  // ...
-                },
-              ),
-              ListTile(
-                title: Row(
-                  children: [
-                    Icon(FeatherIcons.creditCard),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text('Subscription'),
-                  ],
+                ListTile(
+                  title: Row(
+                    children: [
+                      Icon(FeatherIcons.creditCard),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text('Subscription'),
+                    ],
+                  ),
+                  onTap: () {
+                    // Update the state of the app.
+                    // ...
+                  },
                 ),
-                onTap: () {
-                  // Update the state of the app.
-                  // ...
-                },
-              ),
-              Spacer(),
-              ListTile(
-                title: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(FeatherIcons.file),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text('Privacy Policy'),
-                  ],
+                Spacer(),
+                ListTile(
+                  title: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(FeatherIcons.file),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text('Privacy Policy'),
+                    ],
+                  ),
+                  onTap: () {
+                    // Update the state of the app.
+                    // ...
+                  },
                 ),
-                onTap: () {
-                  // Update the state of the app.
-                  // ...
-                },
-              ),
-              ListTile(
-                title: Row(
-                  children: [
-                    Icon(FeatherIcons.file),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text('Term of Use'),
-                  ],
+                ListTile(
+                  title: Row(
+                    children: [
+                      Icon(FeatherIcons.file),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text('Term of Use'),
+                    ],
+                  ),
+                  onTap: () {
+                    // Update the state of the app.
+                    // ...
+                  },
                 ),
-                onTap: () {
-                  // Update the state of the app.
-                  // ...
-                },
-              ),
-              Spacer(),
-              ListTile(
-                title: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(FeatherIcons.logOut),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Text('Logout'),
-                  ],
+                Spacer(),
+                ListTile(
+                  title: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(FeatherIcons.logOut),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text('Logout'),
+                    ],
+                  ),
+                  onTap: () {
+                    _setUser(null);
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Login(),
+                        ));
+                    // Update the state of the app.
+                    // ...
+                  },
                 ),
-                onTap: () {
-                  _setUser(null);
-                  Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Login(),
-                      ));
-                  // Update the state of the app.
-                  // ...
-                },
-              ),
-              Spacer(),
-            ],
+                Spacer(),
+              ],
+            ),
           ),
         ),
       ),
@@ -234,155 +289,50 @@ class _HomeState extends State<Home> {
                 width: 327,
                 height: 404,
                 margin: EdgeInsets.only(top: 45),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Positioned(
-                      top: 0,
-                      child: Container(
-                        width: 265,
-                        height: 365,
-                        decoration: BoxDecoration(
-                          color: Color.fromARGB(255, 231, 208, 206),
-                          borderRadius: BorderRadius.all(Radius.circular(16)),
-                        ),
-                        child: Container(),
-                      ),
-                    ),
-                    Positioned(
-                      top: 16,
-                      child: Container(
-                        width: 297,
-                        height: 365,
-                        decoration: BoxDecoration(
-                          color: Color.fromARGB(255, 230, 234, 224),
-                          borderRadius: BorderRadius.all(Radius.circular(16)),
-                        ),
-                        child: Container(),
-                      ),
-                    ),
-                    Positioned(
-                        top: 41,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Container(
-                              height: 363,
-                              width: 329,
-                              decoration: new BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(16)),
-                                  image: new DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: NetworkImage(
-                                          "https://images.pexels.com/photos/5207248/pexels-photo-5207248.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"))),
-                            ),
-                            Container(
-                              height: 363,
-                              width: 329,
+                child: cardList.isEmpty
+                    ? Center(child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(backgroundColor: AppColors.secondaryElement,),
+                        SizedBox(height: 10,),
+                        Text('Finding new matches...')
+                      ],
+                    ))
+                    : Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Positioned(
+                            top: 0,
+                            child: Container(
+                              width: 265,
+                              height: 365,
                               decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(16)),
-                                  gradient: LinearGradient(
-                                      begin: FractionalOffset.topCenter,
-                                      end: FractionalOffset.bottomCenter,
-                                      colors: [
-                                        Colors.black.withOpacity(0),
-                                        AppColors.primaryElement
-                                            .withOpacity(0.8),
-                                      ],
-                                      stops: [
-                                        0.6,
-                                        1.0
-                                      ])),
-                            ),
-                            Positioned(
-                              top: 15,
-                              right: 15,
-                              child: Align(
-                                alignment: Alignment.topCenter,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Color.fromARGB(61, 0, 0, 0),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(16)),
-                                  ),
-                                  child: Container(
-                                    margin: EdgeInsets.all(7),
-                                    child: Text(
-                                      "2km Away",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: AppColors.secondaryText,
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                color: Color.fromARGB(255, 231, 208, 206),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(16)),
                               ),
+                              child: Container(),
                             ),
-                            Positioned(
-                              bottom: 31,
-                              child: Column(
-                                children: [
-                                  Align(
-                                    alignment: Alignment.topCenter,
-                                    child: Container(
-                                      width: 263,
-                                      margin: EdgeInsets.only(bottom: 6),
-                                      child: Text(
-                                        "Ashley Roberts, 24",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontFamily: 'Berkshire Swash',
-                                          color: AppColors.secondaryText,
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 24,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    height: 40,
-                                    padding:
-                                        EdgeInsets.only(left: 10, right: 10),
-                                    decoration: BoxDecoration(
-                                      color: Color.fromARGB(61, 255, 255, 255),
-                                      borderRadius: Radii.k8pxRadius,
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          FeatherIcons.mapPin,
-                                          color: AppColors.secondaryText,
-                                        ),
-                                        SizedBox(
-                                          width: 5,
-                                        ),
-                                        Container(
-                                          child: Text(
-                                            "Ikeja, Lagos",
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              color: AppColors.secondaryText,
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                          ),
+                          Positioned(
+                            top: 16,
+                            child: Container(
+                              width: 297,
+                              height: 365,
+                              decoration: BoxDecoration(
+                                color: Color.fromARGB(255, 230, 234, 224),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(16)),
                               ),
+                              child: Container(),
                             ),
-                          ],
-                        )),
-                  ],
-                ),
+                          ),
+                          Stack(
+                            alignment: Alignment.center,
+                            children: cardList,
+                          )
+                        ],
+                      ),
               ),
             ),
             Spacer(),
