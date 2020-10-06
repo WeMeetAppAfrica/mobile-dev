@@ -1,15 +1,15 @@
 // To parse this JSON data, do
 //
-//     final loginModel = loginModelFromJson(jsonString);
+//     final swipe = swipeFromJson(jsonString);
 
 import 'dart:convert';
 
-LoginModel loginModelFromJson(String str) => LoginModel.fromJson(json.decode(str));
+Swipe swipeFromJson(String str) => Swipe.fromJson(json.decode(str));
 
-String loginModelToJson(LoginModel data) => json.encode(data.toJson());
+String swipeToJson(Swipe data) => json.encode(data.toJson());
 
-class LoginModel {
-    LoginModel({
+class Swipe {
+    Swipe({
         this.message,
         this.data,
         this.responseCode,
@@ -23,7 +23,7 @@ class LoginModel {
     dynamic errors;
     dynamic logId;
 
-    factory LoginModel.fromJson(Map<String, dynamic> json) => LoginModel(
+    factory Swipe.fromJson(Map<String, dynamic> json) => Swipe(
         message: json["message"] == null ? null : json["message"],
         data: json["data"] == null ? null : Data.fromJson(json["data"]),
         responseCode: json["responseCode"] == null ? null : json["responseCode"],
@@ -42,54 +42,57 @@ class LoginModel {
 
 class Data {
     Data({
-        this.tokenInfo,
-        this.user,
-        this.token,
+        this.match,
+        this.swipe,
     });
 
-    TokenInfo tokenInfo;
-    User user;
-    String token;
+    bool match;
+    SwipeClass swipe;
 
     factory Data.fromJson(Map<String, dynamic> json) => Data(
-        tokenInfo: json["tokenInfo"] == null ? null : TokenInfo.fromJson(json["tokenInfo"]),
-        user: json["user"] == null ? null : User.fromJson(json["user"]),
-        token: json["token"] == null ? null : json["token"],
+        match: json["match"] == null ? null : json["match"],
+        swipe: json["swipe"] == null ? null : SwipeClass.fromJson(json["swipe"]),
     );
 
     Map<String, dynamic> toJson() => {
-        "tokenInfo": tokenInfo == null ? null : tokenInfo.toJson(),
-        "user": user == null ? null : user.toJson(),
-        "token": token == null ? null : token,
+        "match": match == null ? null : match,
+        "swipe": swipe == null ? null : swipe.toJson(),
     };
 }
 
-class TokenInfo {
-    TokenInfo({
-        this.accessToken,
-        this.tokenType,
+class SwipeClass {
+    SwipeClass({
+        this.id,
+        this.swiper,
+        this.swipee,
+        this.type,
     });
 
-    String accessToken;
-    String tokenType;
+    int id;
+    SwipeeClass swiper;
+    SwipeeClass swipee;
+    String type;
 
-    factory TokenInfo.fromJson(Map<String, dynamic> json) => TokenInfo(
-        accessToken: json["accessToken"] == null ? null : json["accessToken"],
-        tokenType: json["tokenType"] == null ? null : json["tokenType"],
+    factory SwipeClass.fromJson(Map<String, dynamic> json) => SwipeClass(
+        id: json["id"] == null ? null : json["id"],
+        swiper: json["swiper"] == null ? null : SwipeeClass.fromJson(json["swiper"]),
+        swipee: json["swipee"] == null ? null : SwipeeClass.fromJson(json["swipee"]),
+        type: json["type"] == null ? null : json["type"],
     );
 
     Map<String, dynamic> toJson() => {
-        "accessToken": accessToken == null ? null : accessToken,
-        "tokenType": tokenType == null ? null : tokenType,
+        "id": id == null ? null : id,
+        "swiper": swiper == null ? null : swiper.toJson(),
+        "swipee": swipee == null ? null : swipee.toJson(),
+        "type": type == null ? null : type,
     };
 }
 
-class User {
-    User({
+class SwipeeClass {
+    SwipeeClass({
         this.id,
         this.firstName,
         this.lastName,
-        this.userName,
         this.profileImage,
         this.email,
         this.emailVerified,
@@ -100,58 +103,51 @@ class User {
         this.active,
         this.suspended,
         this.type,
-        this.name,
     });
 
     int id;
     String firstName;
     String lastName;
-    dynamic userName;
-    dynamic profileImage;
+    String profileImage;
     String email;
     bool emailVerified;
     String phone;
     bool phoneVerified;
-    dynamic gender;
+    String gender;
     int dateOfBirth;
     bool active;
     bool suspended;
     String type;
-    String name;
 
-    factory User.fromJson(Map<String, dynamic> json) => User(
+    factory SwipeeClass.fromJson(Map<String, dynamic> json) => SwipeeClass(
         id: json["id"] == null ? null : json["id"],
         firstName: json["firstName"] == null ? null : json["firstName"],
         lastName: json["lastName"] == null ? null : json["lastName"],
-        userName: json["userName"],
-        profileImage: json["profileImage"],
+        profileImage: json["profileImage"] == null ? null : json["profileImage"],
         email: json["email"] == null ? null : json["email"],
         emailVerified: json["emailVerified"] == null ? null : json["emailVerified"],
         phone: json["phone"] == null ? null : json["phone"],
         phoneVerified: json["phoneVerified"] == null ? null : json["phoneVerified"],
-        gender: json["gender"],
+        gender: json["gender"] == null ? null : json["gender"],
         dateOfBirth: json["dateOfBirth"] == null ? null : json["dateOfBirth"],
         active: json["active"] == null ? null : json["active"],
         suspended: json["suspended"] == null ? null : json["suspended"],
         type: json["type"] == null ? null : json["type"],
-        name: json["name"] == null ? null : json["name"],
     );
 
     Map<String, dynamic> toJson() => {
         "id": id == null ? null : id,
         "firstName": firstName == null ? null : firstName,
         "lastName": lastName == null ? null : lastName,
-        "userName": userName,
-        "profileImage": profileImage,
+        "profileImage": profileImage == null ? null : profileImage,
         "email": email == null ? null : email,
         "emailVerified": emailVerified == null ? null : emailVerified,
         "phone": phone == null ? null : phone,
         "phoneVerified": phoneVerified == null ? null : phoneVerified,
-        "gender": gender,
+        "gender": gender == null ? null : gender,
         "dateOfBirth": dateOfBirth == null ? null : dateOfBirth,
         "active": active == null ? null : active,
         "suspended": suspended == null ? null : suspended,
         "type": type == null ? null : type,
-        "name": name == null ? null : name,
     };
 }

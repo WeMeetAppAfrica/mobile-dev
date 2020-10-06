@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
@@ -63,19 +64,50 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final pageControl = PageController(initialPage: 0);
   String token;
+  Object user;
   bool passWalkthrough = false;
+  bool passKYC = false;
+  bool _initialized = false;
+  bool _error = false;
+
+  // Define an async function to initialize FlutterFire
+  void initializeFlutterFire() async {
+    try {
+      // Wait for Firebase to initialize and set `_initialized` state to true
+      await Firebase.initializeApp();
+      setState(() {
+        _initialized = true;
+      });
+    } catch (e) {
+      // Set `_error` state to true if Firebase initialization fails
+      setState(() {
+        _error = true;
+      });
+    }
+  }
+
   @override
   void initState() {
+        initializeFlutterFire();
+
     super.initState();
     _getUser();
   }
 
   _getUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
+    print(prefs.getString('accessToken'));
     setState(() {
+      prefs.setString('user', jsonEncode(user));
       token = prefs.getString('accessToken');
-      passWalkthrough = prefs.getBool('passWalkthrough') == null ? false : prefs.getBool('passWalkthrough');
+      user = jsonDecode(prefs.getString('user'));
+      print(prefs.getBool('passKYC'));
+      print(prefs.getBool('passKYC'));
+      passKYC =
+          prefs.getBool('passKYC') == null ? false : prefs.getBool('passKYC');
+      passWalkthrough = prefs.getBool('passWalkthrough') == null
+          ? false
+          : prefs.getBool('passWalkthrough');
     });
   }
 
@@ -87,9 +119,22 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+      if(_error) {
+        print('something went wrong');
+      // return SomethingWentWrong();
+    }
+
+    // Show a loader until FlutterFire is initialized
+    if (!_initialized) {
+      return Center(child: CircularProgressIndicator());
+    }
     return Scaffold(
       body: token != null
-          ? Home()
+          ? passKYC
+              ? Home(
+                  token: token,
+                )
+              : KYC()
           : passWalkthrough
               ? Login()
               : PageView(

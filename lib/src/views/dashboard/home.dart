@@ -1,23 +1,48 @@
+import 'dart:convert';
+
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wemeet/src/SwipeAnimation/activeCard.dart';
+import 'package:wemeet/src/SwipeAnimation/data.dart';
+import 'package:wemeet/src/SwipeAnimation/dummyCard.dart';
+import 'package:wemeet/src/blocs/swipe_bloc.dart';
+import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/src/views/dashboard/matchcard.dart';
+import 'package:wemeet/src/views/dashboard/messages.dart';
 import 'package:wemeet/values/values.dart';
+import 'package:flutter/scheduler.dart' show timeDilation;
 
 class Home extends StatefulWidget {
-  Home({Key key}) : super(key: key);
+  final token;
+  Home({Key key, this.token}) : super(key: key);
 
   @override
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with TickerProviderStateMixin {
+  AnimationController _buttonController;
+  Animation<double> rotate;
+  Animation<double> right;
+  SharedPreferences prefs;
+  Animation<double> bottom;
+  Animation<double> width;
+  int flag = 0;
+  List data = imageData;
+  String id;
+  String firstName;
+  String lastName;
+  String profileImage;
+  dynamic currentData;
+  List selectedData = [];
   List<Widget> cardList;
 
-  _setUser(token) async {
+  bool isSuccessful = false;
+  _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('accessToken', token);
+    prefs.remove('accessToken');
   }
 
   List<Widget> _getMatchCard() {
@@ -27,7 +52,7 @@ class _HomeState extends State<Home> {
       cardList.add(Positioned(
           top: 41,
           child: Draggable(
-            onDragEnd: (drag) {
+            onDragCompleted: () {
               _removeCard(x);
             },
             childWhenDragging: Container(),
@@ -61,12 +86,131 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     // TODO: implement initState
+    _getUser();
     super.initState();
+    swipeBloc.getSwipeSuggestions(widget.token);
     cardList = _getMatchCard();
+    _buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 1000), vsync: this);
+
+    rotate = new Tween<double>(
+      begin: -0.0,
+      end: -40.0,
+    ).animate(
+      new CurvedAnimation(
+        parent: _buttonController,
+        curve: Curves.ease,
+      ),
+    );
+    rotate.addListener(() {
+      setState(() {
+        if (rotate.isCompleted) {
+          var i = data.removeLast();
+          data.insert(0, i);
+
+          _buttonController.reset();
+        }
+      });
+    });
+
+    right = new Tween<double>(
+      begin: 0.0,
+      end: 400.0,
+    ).animate(
+      new CurvedAnimation(
+        parent: _buttonController,
+        curve: Curves.ease,
+      ),
+    );
+    bottom = new Tween<double>(
+      begin: 15.0,
+      end: 100.0,
+    ).animate(
+      new CurvedAnimation(
+        parent: _buttonController,
+        curve: Curves.ease,
+      ),
+    );
+    width = new Tween<double>(
+      begin: 20.0,
+      end: 25.0,
+    ).animate(
+      new CurvedAnimation(
+        parent: _buttonController,
+        curve: Curves.bounceOut,
+      ),
+    );
+  }
+
+  _getUser() async {
+    prefs = await SharedPreferences.getInstance();
+    setState(() {
+      id = prefs.getString('id') ?? '';
+      firstName = prefs.getString('firstName') ?? '';
+      lastName = prefs.getString('lastName') ?? '';
+      profileImage = prefs.getString('profileImage') ?? '';
+    });
+    print('object' + firstName);
+  }
+
+  @override
+  void dispose() {
+    _buttonController.dispose();
+    super.dispose();
+  }
+
+  Future<Null> _swipeAnimation() async {
+    try {
+      await _buttonController.forward();
+    } on TickerCanceled {}
+  }
+
+  dismissImg(img) {
+    print('UNLIKE');
+    var req = {"swipeeId": img.id, "type": "UNLIKE"};
+    print(req);
+    setState(() {
+      data.remove(img);
+    });
+    print(selectedData);
+  }
+
+  addImg(img) {
+    print('LIKE');
+    print(img.id);
+    var req = {"swipeeId": img.id, "type": "LIKE"};
+    print(req);
+    swipeBloc.swipe(req, widget.token);
+    setState(() {
+      data.remove(img);
+      selectedData.add(img);
+    });
+    print(selectedData);
+  }
+
+  swipeRight() {
+    if (flag == 0)
+      setState(() {
+        flag = 1;
+      });
+    _swipeAnimation();
+  }
+
+  swipeLeft() {
+    if (flag == 1)
+      setState(() {
+        flag = 0;
+      });
+    _swipeAnimation();
   }
 
   @override
   Widget build(BuildContext context) {
+    timeDilation = 0.4;
+    double initialBottom = 15.0;
+    var dataLength = data.length;
+    double backCardPosition = initialBottom + (dataLength - 1) * 10 + 10;
+    double backCardWidth = -10.0;
     return Scaffold(
       drawer: ClipRRect(
         borderRadius: BorderRadius.vertical(
@@ -88,47 +232,49 @@ class _HomeState extends State<Home> {
                     width: 133,
                     height: 133,
                     margin: EdgeInsets.only(left: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: new BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(16)),
-                              image: new DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: NetworkImage(
-                                      "https://images.pexels.com/photos/5207248/pexels-photo-5207248.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"))),
-                        ),
-                        Container(
-                          margin: EdgeInsets.only(left: 1, top: 14, right: 6),
-                          child: Text(
-                            "Buchi Alfred",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontFamily: 'Berkshire Swash',
-                              color: AppColors.primaryText,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ),
-                        Opacity(
-                          opacity: 0.56,
-                          child: Text(
-                            "Entrepreneur",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              color: AppColors.primaryText,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: firstName != null
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: new BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(16)),
+                                    image: new DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: NetworkImage(profileImage != null ? profileImage : 'https://via.placeholder.com/1080?text=No+Photo'))),
+                              ),
+                              Container(
+                                margin:
+                                    EdgeInsets.only(left: 1, top: 14, right: 6),
+                                child: Text(
+                                  '$firstName $lastName',
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(
+                                    fontFamily: 'Berkshire Swash',
+                                    color: AppColors.primaryText,
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                              Opacity(
+                                opacity: 0.56,
+                                child: Text(
+                                  "Entrepreneur",
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(
+                                    color: AppColors.primaryText,
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Container(),
                   ),
                 ),
                 ListTile(
@@ -236,12 +382,13 @@ class _HomeState extends State<Home> {
                     ],
                   ),
                   onTap: () {
-                    _setUser(null);
-                    Navigator.pushReplacement(
+                    _logout();
+                    Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
                           builder: (context) => Login(),
-                        ));
+                        ),
+                        (Route<dynamic> route) => false);
                     // Update the state of the app.
                     // ...
                   },
@@ -274,7 +421,15 @@ class _HomeState extends State<Home> {
                 FeatherIcons.messageSquare,
                 color: AppColors.primaryText,
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Messages(
+                        token: widget.token,
+                      ),
+                    ));
+              },
             ),
           ),
         ],
@@ -282,88 +437,233 @@ class _HomeState extends State<Home> {
       body: Container(
         color: Colors.white,
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                width: 327,
-                height: 404,
-                margin: EdgeInsets.only(top: 45),
-                child: cardList.isEmpty
-                    ? Center(child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(backgroundColor: AppColors.secondaryElement,),
-                        SizedBox(height: 10,),
-                        Text('Finding new matches...')
-                      ],
-                    ))
-                    : Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Positioned(
-                            top: 0,
-                            child: Container(
-                              width: 265,
-                              height: 365,
-                              decoration: BoxDecoration(
-                                color: Color.fromARGB(255, 231, 208, 206),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(16)),
-                              ),
-                              child: Container(),
-                            ),
-                          ),
-                          Positioned(
-                            top: 16,
-                            child: Container(
-                              width: 297,
-                              height: 365,
-                              decoration: BoxDecoration(
-                                color: Color.fromARGB(255, 230, 234, 224),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(16)),
-                              ),
-                              child: Container(),
-                            ),
-                          ),
-                          Stack(
-                            alignment: Alignment.center,
-                            children: cardList,
-                          )
-                        ],
-                      ),
-              ),
+            Container(
+              height: MediaQuery.of(context).size.height - 205,
+              child: StreamBuilder(
+                  stream: swipeBloc.swipeSugStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      switch (snapshot.data.status) {
+                        case Status.LOADING:
+                          return Container(
+                            height: 410,
+                            child: Center(
+                                child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(
+                                  backgroundColor: AppColors.secondaryElement,
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text('Finding new matches...')
+                              ],
+                            )),
+                          );
+                          break;
+                        case Status.ERROR:
+                          swipeBloc.swipeSink.add(ApiResponse.idle('message '));
+                          try {
+                            if (json.decode(
+                                    snapshot.data.message)['responseCode'] ==
+                                'INVALID_TOKEN') {
+                              _logout();
+                              myCallback(() {
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Login(),
+                                    ));
+                              });
+                            }
+                          } on FormatException catch (e) {
+                            print(snapshot.data);
+                          }
+
+                          return Container(
+                            height: 410,
+                            child: Center(
+                                child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('Error finding new matches...'),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                FlatButton(
+                                  color: AppColors.secondaryElement,
+                                  child: Text(
+                                    'Try Again',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  onPressed: () => {
+                                    swipeBloc.getSwipeSuggestions(widget.token)
+                                  },
+                                )
+                              ],
+                            )),
+                          );
+                          break;
+                        case Status.DONE:
+                          print(snapshot.data.data.data);
+                          data = snapshot.data.data.data;
+                          return snapshot.data.data.data.length > 0
+                              ? Column(
+                                  children: [
+                                    Spacer(),
+                                    Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Positioned(
+                                          top: 0,
+                                          child: Container(
+                                            width: 265,
+                                            height: 365,
+                                            decoration: BoxDecoration(
+                                              color: Color.fromARGB(
+                                                  255, 231, 208, 206),
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(16)),
+                                            ),
+                                            child: Container(),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          top: 16,
+                                          child: Container(
+                                            width: 297,
+                                            height: 365,
+                                            decoration: BoxDecoration(
+                                              color: Color.fromARGB(
+                                                  255, 230, 234, 224),
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(16)),
+                                            ),
+                                            child: Container(),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: 327,
+                                          height: 404,
+                                          margin: EdgeInsets.only(top: 15),
+                                          alignment: Alignment.center,
+                                          child: Stack(
+                                              alignment:
+                                                  AlignmentDirectional.center,
+                                              children: data.map((item) {
+                                                if (data.indexOf(item) ==
+                                                    data.length - 1) {
+                                                  currentData = item;
+                                                  return cardDemo(
+                                                      item,
+                                                      bottom.value,
+                                                      right.value,
+                                                      0.0,
+                                                      backCardWidth + 10,
+                                                      rotate.value,
+                                                      rotate.value < -10
+                                                          ? 0.1
+                                                          : 0.0,
+                                                      context,
+                                                      dismissImg,
+                                                      flag,
+                                                      addImg,
+                                                      swipeRight,
+                                                      swipeLeft);
+                                                } else {
+                                                  backCardPosition =
+                                                      backCardPosition - 10;
+                                                  backCardWidth =
+                                                      backCardWidth + 10;
+
+                                                  return cardDemoDummy(
+                                                      item,
+                                                      backCardPosition,
+                                                      0.0,
+                                                      0.0,
+                                                      backCardWidth,
+                                                      0.0,
+                                                      0.0,
+                                                      context);
+                                                }
+                                              }).toList()),
+                                        ),
+                                      ],
+                                    ),
+                                    Spacer(),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        RawMaterialButton(
+                                          onPressed: () {
+                                            dismissImg(currentData);
+                                          },
+                                          elevation: 2.0,
+                                          fillColor:
+                                              Color.fromARGB(255, 142, 198, 63),
+                                          child: Icon(
+                                            FeatherIcons.x,
+                                            color: AppColors.secondaryText,
+                                          ),
+                                          padding: EdgeInsets.all(15.0),
+                                          shape: CircleBorder(),
+                                        ),
+                                        RawMaterialButton(
+                                          onPressed: () {
+                                            addImg(currentData);
+                                          },
+                                          elevation: 2.0,
+                                          fillColor: AppColors.secondaryElement,
+                                          child: Icon(
+                                            Icons.favorite,
+                                            color: AppColors.secondaryText,
+                                          ),
+                                          padding: EdgeInsets.all(23.0),
+                                          shape: CircleBorder(),
+                                        ),
+                                      ],
+                                    ),
+                                    Spacer(),
+                                  ],
+                                )
+                              : Container(
+                                  height: 410,
+                                  child: Center(
+                                      child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                          'Oops, we currently have no new matches for you.'),
+                                      SizedBox(
+                                        height: 10,
+                                      ),
+                                      FlatButton(
+                                        color: AppColors.secondaryElement,
+                                        child: Text(
+                                          'Try Again',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        onPressed: () => {
+                                          swipeBloc
+                                              .getSwipeSuggestions(widget.token)
+                                        },
+                                      )
+                                    ],
+                                  )),
+                                );
+
+                          break;
+                        default:
+                      }
+                    }
+                    return Container();
+                  }),
             ),
-            Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                RawMaterialButton(
-                  onPressed: () {},
-                  elevation: 2.0,
-                  fillColor: Color.fromARGB(255, 142, 198, 63),
-                  child: Icon(
-                    FeatherIcons.x,
-                    color: AppColors.secondaryText,
-                  ),
-                  padding: EdgeInsets.all(15.0),
-                  shape: CircleBorder(),
-                ),
-                RawMaterialButton(
-                  onPressed: () {},
-                  elevation: 2.0,
-                  fillColor: AppColors.secondaryElement,
-                  child: Icon(
-                    Icons.favorite,
-                    color: AppColors.secondaryText,
-                  ),
-                  padding: EdgeInsets.all(23.0),
-                  shape: CircleBorder(),
-                ),
-              ],
-            ),
-            Spacer(),
             Container(
               padding: EdgeInsets.only(left: 20, right: 20),
               margin: EdgeInsets.only(bottom: 25),
@@ -415,4 +715,10 @@ class _HomeState extends State<Home> {
       ),
     );
   }
+}
+
+void myCallback(Function callback) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    callback();
+  });
 }

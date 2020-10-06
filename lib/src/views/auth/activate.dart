@@ -1,37 +1,36 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info/device_info.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
-import 'package:wemeet/src/views/auth/activate.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/register.dart';
 import 'package:wemeet/src/views/dashboard/home.dart';
 
 import 'package:wemeet/values/values.dart';
 
-class Login extends StatefulWidget {
-  Login({Key key}) : super(key: key);
+class Activate extends StatefulWidget {
+  final email;
+  final token;
+  final code;
+  Activate({Key key, this.email, this.token, this.code}) : super(key: key);
 
   @override
-  _LoginState createState() => _LoginState();
+  _ActivateState createState() => _ActivateState();
 }
 
-class _LoginState extends State<Login> {
+class _ActivateState extends State<Activate> {
   Position _currentPosition;
   String deviceId;
   bool _obscureText = true;
-  String token;
   final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final codeController = TextEditingController();
   String error = '';
   final _formKey = GlobalKey<FormState>();
-  
   @override
   void initState() {
     super.initState();
@@ -71,18 +70,16 @@ class _LoginState extends State<Login> {
     }
   }
 
-  _setUser(user, token) async {
+  _setUser(token) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('accessToken', token);
-    prefs.setString('id', user.id.toString());
-    prefs.setString('profileImage', user.profileImage);
-    prefs.setString('firstName', user.firstName);
-    prefs.setString('lastName', user.lastName);
-    prefs.setBool('passKYC', user.profileImage == null ? false : true);
+    prefs.setBool('passKYC', false);
   }
 
   @override
   Widget build(BuildContext context) {
+    emailController.text = widget.email;
+    codeController.text = widget.code;
     _getId().then((id) {
       deviceId = id;
       print(deviceId);
@@ -103,24 +100,19 @@ class _LoginState extends State<Login> {
                   break;
                 case Status.DONE:
                   bloc.loginSink.add(ApiResponse.idle('message'));
-                  token = snapshot.data.data.data.tokenInfo.accessToken;
-                  if (snapshot.data.data.data.user.active) {
-                    _setUser(snapshot.data.data.data.user,
-                        snapshot.data.data.data.tokenInfo.accessToken);
-                    myCallback(() {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              snapshot.data.data.data.user.profileImage == null
-                                  ? KYC()
-                                  : Home(token: token),
-                        ),
-                      );
-                    });
-                  } else {
-                    bloc.getEmailToken(token);
-                  }
+                  print(widget.token);
+                  _setUser(widget.token);
+                  myCallback(() {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            snapshot.data.data.data.user.profileImage == null
+                                ? KYC()
+                                : Home(token: widget.token),
+                      ),
+                    );
+                  });
                   break;
                 case Status.ERROR:
                   try {
@@ -129,20 +121,6 @@ class _LoginState extends State<Login> {
                     print(snapshot.data.message);
                   }
                   // error = json.decode(snapshot.data.message)['message'];
-                  break;
-                case Status.GETEMAILTOKEN:
-                  print('getemailtoken');
-                  myCallback(() {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Activate(
-                            token: token,
-                            email: emailController.text,
-                            code: snapshot.data.data.data.token),
-                      ),
-                    );
-                  });
                   break;
               }
             }
@@ -169,7 +147,7 @@ class _LoginState extends State<Login> {
                             left: 27,
                             top: 90,
                             child: Text(
-                              "Login",
+                              "Activate",
                               textAlign: TextAlign.left,
                               style: TextStyle(
                                 fontFamily: 'Berkshire Swash',
@@ -207,6 +185,7 @@ class _LoginState extends State<Login> {
                                     }
                                     return null;
                                   },
+                                  enabled: false,
                                   controller: emailController,
                                   decoration: InputDecoration(
                                     prefixIcon: Icon(Icons.mail_outline),
@@ -221,12 +200,12 @@ class _LoginState extends State<Login> {
                               child: TextFormField(
                                 validator: (value) {
                                   if (value.isEmpty) {
-                                    return 'Please enter password';
+                                    return 'Please enter validation code';
                                   }
                                   return null;
                                 },
                                 obscureText: _obscureText,
-                                controller: passwordController,
+                                controller: codeController,
                                 decoration: InputDecoration(
                                   prefixIcon: Icon(Icons.lock_outline),
                                   suffixIcon: IconButton(
@@ -239,22 +218,7 @@ class _LoginState extends State<Login> {
                                   ),
                                   contentPadding: EdgeInsets.fromLTRB(
                                       20.0, 15.0, 20.0, 15.0),
-                                  hintText: "Password",
-                                ),
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.topRight,
-                              child: Container(
-                                margin: EdgeInsets.only(top: 17, right: 38),
-                                child: Text(
-                                  "Forgot Password",
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                    color: AppColors.accentText,
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 12,
-                                  ),
+                                  hintText: "Code",
                                 ),
                               ),
                             ),
@@ -263,14 +227,8 @@ class _LoginState extends State<Login> {
                               child: InkWell(
                                 onTap: () {
                                   if (_formKey.currentState.validate()) {
-                                    final data = {
-                                      "deviceId": deviceId,
-                                      "email": emailController.text,
-                                      "latitude": _currentPosition.latitude,
-                                      "longitude": _currentPosition.longitude,
-                                      "password": passwordController.text,
-                                    };
-                                    bloc.login(data);
+                                    bloc.emailVerification(
+                                        codeController.text, widget.token);
                                   }
                                 },
                                 child: Container(
@@ -307,47 +265,6 @@ class _LoginState extends State<Login> {
                                         ),
                                       ),
                                     ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                FlatButton(
-                                  onPressed: () => {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => Register(),
-                                      ),
-                                    )
-                                  },
-                                  color: Color.fromARGB(255, 245, 253, 237),
-                                  textColor: Color.fromARGB(255, 141, 198, 63),
-                                  child: Text(
-                                    "Don’t have an account? Click Here",
-                                    textAlign: TextAlign.right,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Align(
-                              alignment: Alignment.topCenter,
-                              child: Container(
-                                width: 265,
-                                margin: EdgeInsets.only(bottom: 58),
-                                child: Text(
-                                  "By using the We Meet platform, you agree to our Terms of Use & Privacy Policy",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: AppColors.accentText,
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 12,
                                   ),
                                 ),
                               ),

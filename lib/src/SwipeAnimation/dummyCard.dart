@@ -2,31 +2,38 @@ import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:wemeet/values/values.dart';
 
-class MatchCard extends StatelessWidget {
-  final image;
-  final dist;
-  final age;
-  final name;
-  final location;
-  const MatchCard(
-      {Key key, this.image, this.dist, this.age, this.name, this.location})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
+Positioned cardDemoDummy(
+    dynamic match,
+    double bottom,
+    double right,
+    double left,
+    double cardWidth,
+    double rotation,
+    double skew,
+    BuildContext context) {
+  Size screenSize = MediaQuery.of(context).size;
+  // Size screenSize=(500.0,200.0);
+  // print("dummyCard");
+  return new Positioned(
+    // bottom: 100.0 + bottom,
+    // right: flag == 0 ? right != 0.0 ? right : null : null,
+    //left: flag == 1 ? right != 0.0 ? right : null : null,
+    child: new Stack(
       alignment: Alignment.center,
       children: [
         Container(
           height: 363,
           width: 329,
           decoration: new BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(16)),
-              image: new DecorationImage(
-                  fit: BoxFit.cover,
-                  image: NetworkImage(
-                    this.image,
-                  ))),
+            color: AppColors.ternaryBackground,
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+            image: DecorationImage(
+              image: NetworkImage(match.profileImage != null
+                  ? match.profileImage
+                  : 'https://via.placeholder.com/1080?text=No+Photo'),
+              fit: BoxFit.cover,
+            ),
+          ),
         ),
         Container(
           height: 363,
@@ -58,7 +65,7 @@ class MatchCard extends StatelessWidget {
               child: Container(
                 margin: EdgeInsets.all(7),
                 child: Text(
-                  "${this.dist} Away",
+                  "${match.distanceInKm}km away",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.secondaryText,
@@ -80,7 +87,7 @@ class MatchCard extends StatelessWidget {
                   width: 263,
                   margin: EdgeInsets.only(bottom: 6),
                   child: Text(
-                    "${this.name}, ${this.age}",
+                    '${match.firstName} ${match.lastName}, ${match.age}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Berkshire Swash',
@@ -110,7 +117,7 @@ class MatchCard extends StatelessWidget {
                     ),
                     Container(
                       child: Text(
-                        this.location,
+                        '${match.workStatus}',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: AppColors.secondaryText,
@@ -126,6 +133,6 @@ class MatchCard extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
 }

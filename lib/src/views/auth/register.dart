@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
+import 'package:wemeet/src/views/auth/activate.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
+import 'package:intl/intl.dart';
 import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/values/values.dart';
 import 'package:device_info/device_info.dart';
@@ -22,17 +25,31 @@ class _RegisterState extends State<Register> {
   Map<String, dynamic> _deviceData = <String, dynamic>{};
   bool _isChecked = true;
   final nameController = TextEditingController();
+  String token;
   final phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   String deviceId;
+  String parseDate;
+  final dob = TextEditingController();
   Position _currentPosition;
+  DateTime date = DateTime.now();
+  DateTime selectedDate = DateTime(
+      DateTime.now().year - 18, DateTime.now().month, DateTime.now().day);
+
+  bool _obscureText = true;
   final passwordController = TextEditingController();
   @override
   void initState() {
     super.initState();
     // initPlatformState();
     _getCurrentLocation();
+  }
+
+  void _toggle() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
   }
 
   _getCurrentLocation() {
@@ -49,6 +66,21 @@ class _RegisterState extends State<Register> {
     });
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate,
+        firstDate: DateTime(1910),
+        lastDate: DateTime(date.year - 18, date.month, date.day));
+    if (picked != null && picked != selectedDate)
+      setState(() {
+        selectedDate = picked;
+        parseDate = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+            .format(selectedDate.toLocal());
+        dob.text = DateFormat('dd-MMM-yyyy').format(selectedDate.toLocal());
+      });
+  }
+
   Future<String> _getId() async {
     var deviceInfo = DeviceInfoPlugin();
     if (Platform.isIOS) {
@@ -63,6 +95,8 @@ class _RegisterState extends State<Register> {
 
   @override
   Widget build(BuildContext context) {
+    CollectionReference users = FirebaseFirestore.instance.collection('users');
+
     _getId().then((id) {
       deviceId = id;
       print(deviceId);
@@ -74,7 +108,7 @@ class _RegisterState extends State<Register> {
           color: Color.fromARGB(255, 255, 255, 255),
         ),
         child: StreamBuilder(
-          stream: bloc.userStream,
+          stream: bloc.loginStream,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               switch (snapshot.data.status) {
@@ -82,11 +116,25 @@ class _RegisterState extends State<Register> {
                   return showCircularProgress();
                   break;
                 case Status.DONE:
+                  token = snapshot.data.data.data.tokenInfo.accessToken;
+                  bloc.loginSink.add(ApiResponse.idle('message'));
+                  users
+                      .doc(snapshot.data.data.data.user.id)
+                      .set({'chattingWith': null})
+                      .then((value) => print("User Added"))
+                      .catchError(
+                          (error) => print("Failed to add user: $error"));
+                  bloc.getEmailToken(token);
+                  break;
+                case Status.GETEMAILTOKEN:
                   myCallback(() {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => KYC(),
+                        builder: (context) => Activate(
+                            token: token,
+                            email: emailController.text,
+                            code: snapshot.data.data.data.token),
                       ),
                     );
                   });
@@ -119,6 +167,7 @@ class _RegisterState extends State<Register> {
                               "Create Account",
                               textAlign: TextAlign.left,
                               style: TextStyle(
+                                fontFamily: 'Berkshire Swash',
                                 color: AppColors.secondaryText,
                                 fontWeight: FontWeight.w400,
                                 fontSize: 24,
@@ -172,6 +221,29 @@ class _RegisterState extends State<Register> {
                             ),
                             Padding(
                               padding: const EdgeInsets.all(16.0),
+                              child: GestureDetector(
+                                onTap: () => _selectDate(context),
+                                child: AbsorbPointer(
+                                  child: TextFormField(
+                                      validator: (value) {
+                                        if (value.isEmpty) {
+                                          return 'Please select Date of Birth';
+                                        }
+                                        return null;
+                                      },
+                                      obscureText: false,
+                                      controller: dob,
+                                      decoration: InputDecoration(
+                                        prefixIcon: Icon(Icons.calendar_today),
+                                        contentPadding: EdgeInsets.fromLTRB(
+                                            20.0, 15.0, 20.0, 15.0),
+                                        hintText: "Date of Birth",
+                                      )),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
                               child: TextFormField(
                                   validator: (value) {
                                     if (value.isEmpty) {
@@ -198,10 +270,14 @@ class _RegisterState extends State<Register> {
                                   return null;
                                 },
                                 controller: passwordController,
-                                obscureText: true,
+                                obscureText: _obscureText,
                                 decoration: InputDecoration(
                                   prefixIcon: Icon(Icons.lock_outline),
-                                  suffixIcon: Icon(Icons.visibility_off),
+                                  suffixIcon: IconButton(
+                                      icon: Icon(_obscureText
+                                          ? Icons.visibility
+                                          : Icons.visibility_off),
+                                      onPressed: () => _toggle()),
                                   contentPadding: EdgeInsets.fromLTRB(
                                       20.0, 15.0, 20.0, 15.0),
                                   hintText: "Password",
@@ -227,9 +303,10 @@ class _RegisterState extends State<Register> {
                                   if (_formKey.currentState.validate() &&
                                       _isChecked) {
                                     final data = {
-                                      "dateOfBirth": "2000-09-08T17:43:25.164Z",
                                       "deviceId": deviceId,
+                                      "dateOfBirth": parseDate,
                                       "email": emailController.text,
+                                      "userName": emailController.text,
                                       "firstName": nameController.text,
                                       "lastName": nameController.text,
                                       "latitude": _currentPosition.latitude,
@@ -237,6 +314,7 @@ class _RegisterState extends State<Register> {
                                       "password": passwordController.text,
                                       "phone": phoneController.text
                                     };
+                                    // print(parseDate);
                                     bloc.signup(data);
                                   }
                                   print(_isChecked);
@@ -283,28 +361,27 @@ class _RegisterState extends State<Register> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 FlatButton(
-                              onPressed: () => {
-                                Navigator.pop(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => Login(),
+                                  onPressed: () => {
+                                    Navigator.pop(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Login(),
+                                      ),
+                                    )
+                                  },
+                                  color: Color.fromARGB(255, 245, 253, 237),
+                                  textColor: Color.fromARGB(255, 141, 198, 63),
+                                  child: Text(
+                                    "I have an account",
+                                    textAlign: TextAlign.right,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                )
-                              },
-                              color: Color.fromARGB(255, 245, 253, 237),
-                              textColor: Color.fromARGB(255, 141, 198, 63),
-                              child: Text(
-                                "I have an account",
-                                textAlign: TextAlign.right,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 12,
                                 ),
-                              ),
-                            ),
                               ],
                             ),
-                            
                           ],
                         ),
                       ),

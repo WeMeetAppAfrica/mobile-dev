@@ -2,19 +2,23 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/app_exceptions.dart';
 
 class ApiBaseHelper {
   final String _baseUrl = "https://wemeetng.herokuapp.com/api/v1/";
 
-  Future<dynamic> get(String url) async {
+  Future<dynamic> get(String url, token) async {
     var responseJson;
+    print(token);
     try {
       final response = await http.get(
         _baseUrl + url,
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
+          "Authorization": 'Bearer ' + token
         },
       );
       responseJson = _returnResponse(response);
@@ -24,9 +28,7 @@ class ApiBaseHelper {
     return responseJson;
   }
 
-
-
-  Future<dynamic> post(String url, Object request) async {
+  Future<dynamic> post(String url, Object request, [String token]) async {
     print(request);
     var responseJson;
     try {
@@ -34,9 +36,11 @@ class ApiBaseHelper {
           headers: {
             "Content-Type": "application/json",
             "Accept": "application/json",
+            "Authorization": 'Bearer ' + token
           },
           body: jsonEncode(request));
       responseJson = _returnResponse(response);
+      print('eeeee');
     } on SocketException {
       print('error');
       throw FetchDataException('No Internet connection');
@@ -44,7 +48,33 @@ class ApiBaseHelper {
     return responseJson;
   }
 
- 
+  Future<dynamic> upload(String url, imageFile, String imageType, token) async {
+    var uri = Uri.parse(_baseUrl + url);
+    var responseJson;
+
+    try {
+      var request = new http.MultipartRequest("POST", uri);
+      //contentType: new MediaType('image', 'png'));
+      request.headers.addAll({
+        "Authorization": 'Bearer ' + token,
+        "Content-Type": 'multipart/form-data'
+      });
+      request.files.add(await http.MultipartFile.fromPath('file', imageFile));
+
+      request.fields['imageType'] = imageType;
+      print(request.fields);
+      var response = await request.send();
+      print(response.statusCode);
+      final res = await http.Response.fromStream(response);
+      print(res.body);
+      responseJson = _returnResponse(res);
+    } on SocketException {
+      print('error');
+      throw FetchDataException('No Internet connection');
+    }
+    return responseJson;
+  }
+
   Future<dynamic> put(String url, request) async {
     var responseJson;
     try {
@@ -126,9 +156,8 @@ class ApiBaseHelper {
       case 403:
         throw UnauthorisedException(response.body.toString());
       case 404:
-      print(json.decode(response.body));
-        throw FetchDataException(
-           json.decode(response.body)['message']);
+        print(json.decode(response.body));
+        throw FetchDataException(json.decode(response.body)['message']);
       case 500:
       default:
         throw FetchDataException(
