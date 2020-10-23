@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
+import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
@@ -57,12 +58,14 @@ class ApiBaseHelper {
       //contentType: new MediaType('image', 'png'));
       request.headers.addAll({
         "Authorization": 'Bearer ' + token,
+        "accept": "application/json",
         "Content-Type": 'multipart/form-data'
       });
-      request.files.add(await http.MultipartFile.fromPath('file', imageFile));
+      request.files.add(await http.MultipartFile.fromPath('file', imageFile,
+          contentType: MediaType('image', 'png')));
 
       request.fields['imageType'] = imageType;
-      print(request.fields);
+      print(request);
       var response = await request.send();
       print(response.statusCode);
       final res = await http.Response.fromStream(response);

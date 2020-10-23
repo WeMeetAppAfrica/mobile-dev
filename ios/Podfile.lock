@@ -1,4 +1,6 @@
 PODS:
+  - audioplayers (0.0.1):
+    - Flutter
   - cloud_firestore (0.14.1-2):
     - Firebase/CoreOnly (~> 6.26.0)
     - Firebase/Firestore (~> 6.26.0)
@@ -77,6 +79,7 @@ PODS:
   - Toast (4.0.0)
 
 DEPENDENCIES:
+  - audioplayers (from `.symlinks/plugins/audioplayers/ios`)
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
   - device_info (from `.symlinks/plugins/device_info/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
@@ -109,6 +112,8 @@ SPEC REPOS:
     - Toast
 
 EXTERNAL SOURCES:
+  audioplayers:
+    :path: ".symlinks/plugins/audioplayers/ios"
   cloud_firestore:
     :path: ".symlinks/plugins/cloud_firestore/ios"
   device_info:
@@ -145,6 +150,7 @@ CHECKOUT OPTIONS:
     :tag: 6.26.0
 
 SPEC CHECKSUMS:
+  audioplayers: 53f0f30789b10ab2009771c6c79def00980945e4
   cloud_firestore: d800bcc818ca2307beaeb697a94aa76341bc661d
   device_info: d7d233b645a32c40dfdc212de5cf646ca482f175
   Firebase: 7cf5f9c67f03cb3b606d1d6535286e1080e57eb6

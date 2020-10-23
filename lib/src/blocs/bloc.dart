@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:wemeet/src/models/apimodel.dart';
 import 'package:wemeet/src/models/imageupload.dart';
@@ -15,6 +16,7 @@ class Bloc {
   StreamController _apiController;
   StreamController _uploadController;
   StreamController _loginController;
+  StreamController _registerController;
   StreamController _profileController;
 
   StreamSink<ApiResponse<ApiModel>> get userSink => _apiController.sink;
@@ -23,6 +25,10 @@ class Bloc {
   Stream<ApiResponse<ImageUpload>> get uploadStream => _uploadController.stream;
   StreamSink<ApiResponse<LoginModel>> get loginSink => _loginController.sink;
   Stream<ApiResponse<LoginModel>> get loginStream => _loginController.stream;
+  StreamSink<ApiResponse<LoginModel>> get registerSink =>
+      _registerController.sink;
+  Stream<ApiResponse<LoginModel>> get registerStream =>
+      _registerController.stream;
   StreamSink<ApiResponse<ProfileModel>> get profileSink =>
       _profileController.sink;
   Stream<ApiResponse<ProfileModel>> get profileStream =>
@@ -31,18 +37,19 @@ class Bloc {
     _apiController = BehaviorSubject<ApiResponse<ApiModel>>();
     _uploadController = BehaviorSubject<ApiResponse<ImageUpload>>();
     _loginController = BehaviorSubject<ApiResponse<LoginModel>>();
+    _registerController = BehaviorSubject<ApiResponse<LoginModel>>();
     _profileController = BehaviorSubject<ApiResponse<ProfileModel>>();
     _userRepository = Repository();
   }
   // Stream<User> get user => _userFetcher.stream;
 
   signup(request) async {
-    loginSink.add(ApiResponse.loading('Loading...'));
+    registerSink.add(ApiResponse.loading('Loading...'));
     try {
       LoginModel user = await _userRepository.signup(request);
-      loginSink.add(ApiResponse.done(user));
+      registerSink.add(ApiResponse.done(user));
     } catch (e) {
-      loginSink.add(ApiResponse.error(e.toString()));
+      registerSink.add(ApiResponse.error(e.toString()));
       print(e);
     }
   }
@@ -57,11 +64,12 @@ class Bloc {
       print(e);
     }
   }
+
   emailVerification(request, token) async {
     loginSink.add(ApiResponse.loading('Loading...'));
     try {
       LoginModel user = await _userRepository.emailVerification(request, token);
-      loginSink.add(ApiResponse.done(user));
+      loginSink.add(ApiResponse.activated(user));
     } catch (e) {
       loginSink.add(ApiResponse.error(e.toString()));
       print(e);
@@ -79,17 +87,20 @@ class Bloc {
       print(e);
     }
   }
+
   updateProfileImage(request, token) async {
     print('request');
     profileSink.add(ApiResponse.loading('Loading...'));
     try {
-      ProfileModel user = await _userRepository.updateProfileImage(request, token);
+      ProfileModel user =
+          await _userRepository.updateProfileImage(request, token);
       profileSink.add(ApiResponse.done(user));
     } catch (e) {
       profileSink.add(ApiResponse.error(e.toString()));
       print(e);
     }
   }
+
   getProfile(token) async {
     print('request');
     profileSink.add(ApiResponse.loading('Loading...'));
@@ -98,10 +109,31 @@ class Bloc {
       profileSink.add(ApiResponse.getProfile(user));
     } catch (e) {
       profileSink.add(ApiResponse.error(e.toString()));
+      try {
+        if (json.decode(e.toString())['responseCode'] == 'INVALID_TOKEN') {
+          profileSink.add(ApiResponse.logout(e.toString()));
+        } else {
+          profileSink.add(ApiResponse.error(e.toString()));
+        }
+      } catch (w) {
+        print(e);
+      }
+    }
+  }
+
+  getEmailToken(token) async {
+    print('request');
+    registerSink.add(ApiResponse.loading('Loading...'));
+    try {
+      LoginModel user = await _userRepository.getEmailToken(token);
+      registerSink.add(ApiResponse.getEmailToken(user));
+    } catch (e) {
+      registerSink.add(ApiResponse.error(e.toString()));
       print(e);
     }
   }
-  getEmailToken(token) async {
+
+  getLoginEmailToken(token) async {
     print('request');
     loginSink.add(ApiResponse.loading('Loading...'));
     try {
@@ -137,27 +169,10 @@ class Bloc {
         imageTypes = 'PROFILE_IMAGE';
         uploadSink.add(ApiResponse.proImageLoading('Loading...'));
         break;
-      case 'ADDITIONAL_IMAGE1':
+      case 'ADDITIONAL_IMAGE':
         imageTypes = 'ADDITIONAL_IMAGE';
         uploadSink.add(ApiResponse.addImage1Loading('Loading...'));
         break;
-      case 'ADDITIONAL_IMAGE2':
-        imageTypes = 'ADDITIONAL_IMAGE';
-        uploadSink.add(ApiResponse.addImage2Loading('Loading...'));
-        break;
-      case 'ADDITIONAL_IMAGE3':
-        imageTypes = 'ADDITIONAL_IMAGE';
-        uploadSink.add(ApiResponse.addImage3Loading('Loading...'));
-        break;
-      case 'ADDITIONAL_IMAGE4':
-        imageTypes = 'ADDITIONAL_IMAGE';
-        uploadSink.add(ApiResponse.addImage4Loading('Loading...'));
-        break;
-      case 'ADDITIONAL_IMAGE5':
-        imageTypes = 'ADDITIONAL_IMAGE';
-        uploadSink.add(ApiResponse.addImage5Loading('Loading...'));
-        break;
-      default:
     }
     try {
       ImageUpload image =
@@ -166,28 +181,25 @@ class Bloc {
         case 'PROFILE_IMAGE':
           uploadSink.add(ApiResponse.proImageDone(image));
           break;
-        case 'ADDITIONAL_IMAGE1':
+        case 'ADDITIONAL_IMAGE':
           imageType = 'ADDITIONAL_IMAGE';
           uploadSink.add(ApiResponse.addImage1Done(image));
           break;
-        case 'ADDITIONAL_IMAGE2':
-          imageType = 'ADDITIONAL_IMAGE';
-          uploadSink.add(ApiResponse.addImage2Done(image));
-          break;
-        case 'ADDITIONAL_IMAGE3':
-          imageType = 'ADDITIONAL_IMAGE';
-          uploadSink.add(ApiResponse.addImage3Done(image));
-          break;
-        case 'ADDITIONAL_IMAGE4':
-          imageType = 'ADDITIONAL_IMAGE';
-          uploadSink.add(ApiResponse.addImage4Done(image));
-          break;
-        case 'ADDITIONAL_IMAGE5':
-          imageType = 'ADDITIONAL_IMAGE';
-          uploadSink.add(ApiResponse.addImage5Done(image));
-          break;
-        default:
       }
+    } catch (e) {
+      uploadSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
+  uploadAddPhoto(request, imageType, token, index) async {
+    
+    uploadSink.add(ApiResponse.addImageLoading(index));
+    try {
+      ImageUpload user = await _userRepository.uploadPhoto(request, imageType, token);
+      print(index);
+      print(user);
+      uploadSink.add(ApiResponse.addImageDone(index,user));
     } catch (e) {
       uploadSink.add(ApiResponse.error(e.toString()));
       print(e);
@@ -198,6 +210,7 @@ class Bloc {
     _apiController?.close();
     _uploadController?.close();
     _loginController?.close();
+    _registerController?.close();
     _profileController?.close();
   }
 }

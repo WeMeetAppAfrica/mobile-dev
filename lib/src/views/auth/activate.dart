@@ -98,19 +98,14 @@ class _ActivateState extends State<Activate> {
                 case Status.LOADING:
                   return showCircularProgress();
                   break;
-                case Status.DONE:
+                case Status.ACTIVATED:
                   bloc.loginSink.add(ApiResponse.idle('message'));
                   print(widget.token);
                   _setUser(widget.token);
                   myCallback(() {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            snapshot.data.data.data.user.profileImage == null
-                                ? KYC()
-                                : Home(token: widget.token),
-                      ),
+                      MaterialPageRoute(builder: (context) => KYC()),
                     );
                   });
                   break;
@@ -124,158 +119,155 @@ class _ActivateState extends State<Activate> {
                   break;
               }
             }
-            return Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                Column(
-                  children: [
-                    Container(
-                      height: 165,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Positioned(
-                            left: 0,
-                            top: 0,
-                            right: 0,
-                            child: Image.asset(
-                              "assets/images/redbg-top-2.png",
-                              fit: BoxFit.cover,
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    height: 165,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Positioned(
+                          left: 0,
+                          top: 0,
+                          right: 0,
+                          child: Image.asset(
+                            "assets/images/redbg-top-2.png",
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned(
+                          left: 27,
+                          top: 90,
+                          child: Text(
+                            "Activate",
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              fontFamily: 'Berkshire Swash',
+                              color: AppColors.secondaryText,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 24,
                             ),
                           ),
-                          Positioned(
-                            left: 27,
-                            top: 90,
-                            child: Text(
-                              "Activate",
-                              textAlign: TextAlign.left,
-                              style: TextStyle(
-                                fontFamily: 'Berkshire Swash',
-                                color: AppColors.secondaryText,
-                                fontWeight: FontWeight.w400,
-                                fontSize: 24,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height - 165,
+                    child: Form(
+                      key: _formKey,
+                      child: ListView(
+                        children: [
+                          error != null
+                              ? Text(
+                                  error,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      fontSize: 16.0, color: Colors.red),
+                                )
+                              : Container(
+                                  height: 0.0,
+                                ),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: TextFormField(
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'Please enter email';
+                                  }
+                                  return null;
+                                },
+                                enabled: false,
+                                controller: emailController,
+                                decoration: InputDecoration(
+                                  prefixIcon: Icon(Icons.mail_outline),
+                                  contentPadding: EdgeInsets.fromLTRB(
+                                      20.0, 15.0, 20.0, 15.0),
+                                  hintText: "Email",
+                                )),
+                          ),
+                          SizedBox(height: 25.0),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: TextFormField(
+                              validator: (value) {
+                                if (value.isEmpty) {
+                                  return 'Please enter validation code';
+                                }
+                                return null;
+                              },
+                              obscureText: _obscureText,
+                              controller: codeController,
+                              decoration: InputDecoration(
+                                prefixIcon: Icon(Icons.lock_outline),
+                                suffixIcon: IconButton(
+                                  icon: Icon(_obscureText
+                                      ? Icons.visibility
+                                      : Icons.visibility_off),
+                                  onPressed: () {
+                                    _toggle();
+                                  },
+                                ),
+                                contentPadding:
+                                    EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                                hintText: "Code",
+                              ),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.topCenter,
+                            child: InkWell(
+                              onTap: () {
+                                if (_formKey.currentState.validate()) {
+                                  bloc.emailVerification(
+                                      codeController.text, widget.token);
+                                }
+                              },
+                              child: Container(
+                                width: 72,
+                                height: 72,
+                                margin: EdgeInsets.only(top: 72),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryBackground,
+                                  border: Border.fromBorderSide(
+                                      Borders.primaryBorder),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(36)),
+                                ),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Positioned(
+                                      left: 16,
+                                      right: 16,
+                                      child: Container(
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.secondaryElement,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(20)),
+                                        ),
+                                        child: Container(),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      child: Image.asset(
+                                        "assets/images/arrow-right.png",
+                                        fit: BoxFit.none,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height - 165,
-                      child: Form(
-                        key: _formKey,
-                        child: ListView(
-                          children: [
-                            error != null
-                                ? Text(
-                                    error,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        fontSize: 16.0, color: Colors.red),
-                                  )
-                                : Container(
-                                    height: 0.0,
-                                  ),
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: TextFormField(
-                                  validator: (value) {
-                                    if (value.isEmpty) {
-                                      return 'Please enter email';
-                                    }
-                                    return null;
-                                  },
-                                  enabled: false,
-                                  controller: emailController,
-                                  decoration: InputDecoration(
-                                    prefixIcon: Icon(Icons.mail_outline),
-                                    contentPadding: EdgeInsets.fromLTRB(
-                                        20.0, 15.0, 20.0, 15.0),
-                                    hintText: "Email",
-                                  )),
-                            ),
-                            SizedBox(height: 25.0),
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: TextFormField(
-                                validator: (value) {
-                                  if (value.isEmpty) {
-                                    return 'Please enter validation code';
-                                  }
-                                  return null;
-                                },
-                                obscureText: _obscureText,
-                                controller: codeController,
-                                decoration: InputDecoration(
-                                  prefixIcon: Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(_obscureText
-                                        ? Icons.visibility
-                                        : Icons.visibility_off),
-                                    onPressed: () {
-                                      _toggle();
-                                    },
-                                  ),
-                                  contentPadding: EdgeInsets.fromLTRB(
-                                      20.0, 15.0, 20.0, 15.0),
-                                  hintText: "Code",
-                                ),
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.topCenter,
-                              child: InkWell(
-                                onTap: () {
-                                  if (_formKey.currentState.validate()) {
-                                    bloc.emailVerification(
-                                        codeController.text, widget.token);
-                                  }
-                                },
-                                child: Container(
-                                  width: 72,
-                                  height: 72,
-                                  margin: EdgeInsets.only(top: 72),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryBackground,
-                                    border: Border.fromBorderSide(
-                                        Borders.primaryBorder),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(36)),
-                                  ),
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Positioned(
-                                        left: 16,
-                                        right: 16,
-                                        child: Container(
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.secondaryElement,
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(20)),
-                                          ),
-                                          child: Container(),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        child: Image.asset(
-                                          "assets/images/arrow-right.png",
-                                          fit: BoxFit.none,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ],
+                  )
+                ],
+              ),
             );
           }),
     ));

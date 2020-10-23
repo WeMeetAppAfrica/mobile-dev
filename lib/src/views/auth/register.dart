@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/auth/activate.dart';
@@ -25,7 +26,9 @@ class _RegisterState extends State<Register> {
   Map<String, dynamic> _deviceData = <String, dynamic>{};
   bool _isChecked = true;
   final nameController = TextEditingController();
+  String pushToken;
   String token;
+  dynamic userData;
   final phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
@@ -44,6 +47,14 @@ class _RegisterState extends State<Register> {
     super.initState();
     // initPlatformState();
     _getCurrentLocation();
+    _getDevice();
+  }
+
+  _getDevice() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      pushToken = prefs.getString('pushToken');
+    });
   }
 
   void _toggle() {
@@ -108,32 +119,44 @@ class _RegisterState extends State<Register> {
           color: Color.fromARGB(255, 255, 255, 255),
         ),
         child: StreamBuilder(
-          stream: bloc.loginStream,
+          stream: bloc.registerStream,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               switch (snapshot.data.status) {
                 case Status.LOADING:
                   return showCircularProgress();
                   break;
-                case Status.DONE:
-                  token = snapshot.data.data.data.tokenInfo.accessToken;
-                  bloc.loginSink.add(ApiResponse.idle('message'));
+                case Status.ADDFB:
                   users
-                      .doc(snapshot.data.data.data.user.id)
-                      .set({'chattingWith': null})
-                      .then((value) => print("User Added"))
+                      .doc(userData.user.id.toString())
+                      .set({
+                        "pushToken": pushToken,
+                        "chattingWith": null,
+                        "firstName": userData.user.firstName,
+                        "lastName": userData.user.lastName,
+                        "profileImage": userData.user.profileImage,
+                      })
+                      .then((value) => bloc.getEmailToken(token))
                       .catchError(
                           (error) => print("Failed to add user: $error"));
-                  bloc.getEmailToken(token);
+                  return showCircularProgress();
+                  break;
+                case Status.DONE:
+                  token = snapshot.data.data.data.tokenInfo.accessToken;
+                  userData = snapshot.data.data.data;
+                  bloc.registerSink.add(ApiResponse.addFB('snap'));
+
                   break;
                 case Status.GETEMAILTOKEN:
+                  print('object');
+                  print('userData - ${userData.user}');
                   myCallback(() {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
                         builder: (context) => Activate(
                             token: token,
-                            email: emailController.text,
+                            email: userData.user.email,
                             code: snapshot.data.data.data.token),
                       ),
                     );
@@ -141,254 +164,251 @@ class _RegisterState extends State<Register> {
                   break;
               }
             }
-            return Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                Column(
-                  children: [
-                    Container(
-                      height: 165,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Positioned(
-                            left: 0,
-                            top: 0,
-                            right: 0,
-                            child: Image.asset(
-                              "assets/images/redbg-top-2.png",
-                              fit: BoxFit.cover,
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    height: 165,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Positioned(
+                          left: 0,
+                          top: 0,
+                          right: 0,
+                          child: Image.asset(
+                            "assets/images/redbg-top-2.png",
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned(
+                          left: 27,
+                          top: 90,
+                          child: Text(
+                            "Create Account",
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              fontFamily: 'Berkshire Swash',
+                              color: AppColors.secondaryText,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 24,
                             ),
                           ),
-                          Positioned(
-                            left: 27,
-                            top: 90,
-                            child: Text(
-                              "Create Account",
-                              textAlign: TextAlign.left,
-                              style: TextStyle(
-                                fontFamily: 'Berkshire Swash',
-                                color: AppColors.secondaryText,
-                                fontWeight: FontWeight.w400,
-                                fontSize: 24,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height - 165,
+                    child: Form(
+                      key: _formKey,
+                      child: ListView(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: TextFormField(
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'Please enter full name';
+                                  }
+                                  return null;
+                                },
+                                controller: nameController,
+                                obscureText: false,
+                                decoration: InputDecoration(
+                                  prefixIcon: Icon(Icons.person_outline),
+                                  contentPadding: EdgeInsets.fromLTRB(
+                                      20.0, 15.0, 20.0, 15.0),
+                                  hintText: "Your Name",
+                                )),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: TextFormField(
+                              validator: (value) {
+                                if (value.isEmpty) {
+                                  return 'Please enter phone number';
+                                }
+                                return null;
+                              },
+                              controller: phoneController,
+                              decoration: InputDecoration(
+                                prefixIcon: Icon(Icons.phone),
+                                contentPadding:
+                                    EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                                hintText: "Phone Number",
                               ),
                             ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: GestureDetector(
+                              onTap: () => _selectDate(context),
+                              child: AbsorbPointer(
+                                child: TextFormField(
+                                    validator: (value) {
+                                      if (value.isEmpty) {
+                                        return 'Please select Date of Birth';
+                                      }
+                                      return null;
+                                    },
+                                    obscureText: false,
+                                    controller: dob,
+                                    decoration: InputDecoration(
+                                      prefixIcon: Icon(Icons.calendar_today),
+                                      contentPadding: EdgeInsets.fromLTRB(
+                                          20.0, 15.0, 20.0, 15.0),
+                                      hintText: "Date of Birth",
+                                    )),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: TextFormField(
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'Please enter email';
+                                  }
+                                  return null;
+                                },
+                                controller: emailController,
+                                obscureText: false,
+                                decoration: InputDecoration(
+                                  prefixIcon: Icon(Icons.mail_outline),
+                                  contentPadding: EdgeInsets.fromLTRB(
+                                      20.0, 15.0, 20.0, 15.0),
+                                  hintText: "Email",
+                                )),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: TextFormField(
+                              validator: (value) {
+                                if (value.isEmpty) {
+                                  return 'Please enter password';
+                                }
+                                return null;
+                              },
+                              controller: passwordController,
+                              obscureText: _obscureText,
+                              decoration: InputDecoration(
+                                prefixIcon: Icon(Icons.lock_outline),
+                                suffixIcon: IconButton(
+                                    icon: Icon(_obscureText
+                                        ? Icons.visibility
+                                        : Icons.visibility_off),
+                                    onPressed: () => _toggle()),
+                                contentPadding:
+                                    EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                                hintText: "Password",
+                              ),
+                            ),
+                          ),
+                          CheckboxListTile(
+                            controlAffinity: ListTileControlAffinity.leading,
+                            title: Text(
+                              "I agree to the terms & privacy policy",
+                            ),
+                            value: _isChecked,
+                            onChanged: (val) {
+                              setState(() {
+                                _isChecked = val;
+                              });
+                            },
+                          ),
+                          Align(
+                            alignment: Alignment.topCenter,
+                            child: InkWell(
+                              onTap: () {
+                                if (_formKey.currentState.validate() &&
+                                    _isChecked) {
+                                  final data = {
+                                    "deviceId": pushToken,
+                                    "dateOfBirth": parseDate,
+                                    "email": emailController.text,
+                                    "userName": emailController.text,
+                                    "firstName": nameController.text,
+                                    "lastName": nameController.text,
+                                    "latitude": _currentPosition.latitude,
+                                    "longitude": _currentPosition.longitude,
+                                    "password": passwordController.text,
+                                    "phone": phoneController.text
+                                  };
+                                  // print(parseDate);
+                                  bloc.signup(data);
+                                }
+                                print(_isChecked);
+                              },
+                              child: Container(
+                                width: 72,
+                                height: 72,
+                                margin: EdgeInsets.only(bottom: 32),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryBackground,
+                                  border: Border.fromBorderSide(
+                                      Borders.primaryBorder),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(36)),
+                                ),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Positioned(
+                                      left: 16,
+                                      right: 16,
+                                      child: Container(
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.secondaryElement,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(20)),
+                                        ),
+                                        child: Container(),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      child: Image.asset(
+                                        "assets/images/arrow-right.png",
+                                        fit: BoxFit.none,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FlatButton(
+                                onPressed: () => {
+                                  Navigator.pop(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Login(),
+                                    ),
+                                  )
+                                },
+                                color: Color.fromARGB(255, 245, 253, 237),
+                                textColor: Color.fromARGB(255, 141, 198, 63),
+                                child: Text(
+                                  "I have an account",
+                                  textAlign: TextAlign.right,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height - 165,
-                      child: Form(
-                        key: _formKey,
-                        child: ListView(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: TextFormField(
-                                  validator: (value) {
-                                    if (value.isEmpty) {
-                                      return 'Please enter full name';
-                                    }
-                                    return null;
-                                  },
-                                  controller: nameController,
-                                  obscureText: false,
-                                  decoration: InputDecoration(
-                                    prefixIcon: Icon(Icons.person_outline),
-                                    contentPadding: EdgeInsets.fromLTRB(
-                                        20.0, 15.0, 20.0, 15.0),
-                                    hintText: "Your Name",
-                                  )),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: TextFormField(
-                                validator: (value) {
-                                  if (value.isEmpty) {
-                                    return 'Please enter phone number';
-                                  }
-                                  return null;
-                                },
-                                controller: phoneController,
-                                decoration: InputDecoration(
-                                  prefixIcon: Icon(Icons.phone),
-                                  contentPadding: EdgeInsets.fromLTRB(
-                                      20.0, 15.0, 20.0, 15.0),
-                                  hintText: "Phone Number",
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: GestureDetector(
-                                onTap: () => _selectDate(context),
-                                child: AbsorbPointer(
-                                  child: TextFormField(
-                                      validator: (value) {
-                                        if (value.isEmpty) {
-                                          return 'Please select Date of Birth';
-                                        }
-                                        return null;
-                                      },
-                                      obscureText: false,
-                                      controller: dob,
-                                      decoration: InputDecoration(
-                                        prefixIcon: Icon(Icons.calendar_today),
-                                        contentPadding: EdgeInsets.fromLTRB(
-                                            20.0, 15.0, 20.0, 15.0),
-                                        hintText: "Date of Birth",
-                                      )),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: TextFormField(
-                                  validator: (value) {
-                                    if (value.isEmpty) {
-                                      return 'Please enter email';
-                                    }
-                                    return null;
-                                  },
-                                  controller: emailController,
-                                  obscureText: false,
-                                  decoration: InputDecoration(
-                                    prefixIcon: Icon(Icons.mail_outline),
-                                    contentPadding: EdgeInsets.fromLTRB(
-                                        20.0, 15.0, 20.0, 15.0),
-                                    hintText: "Email",
-                                  )),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: TextFormField(
-                                validator: (value) {
-                                  if (value.isEmpty) {
-                                    return 'Please enter password';
-                                  }
-                                  return null;
-                                },
-                                controller: passwordController,
-                                obscureText: _obscureText,
-                                decoration: InputDecoration(
-                                  prefixIcon: Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                      icon: Icon(_obscureText
-                                          ? Icons.visibility
-                                          : Icons.visibility_off),
-                                      onPressed: () => _toggle()),
-                                  contentPadding: EdgeInsets.fromLTRB(
-                                      20.0, 15.0, 20.0, 15.0),
-                                  hintText: "Password",
-                                ),
-                              ),
-                            ),
-                            CheckboxListTile(
-                              controlAffinity: ListTileControlAffinity.leading,
-                              title: Text(
-                                "I agree to the terms & privacy policy",
-                              ),
-                              value: _isChecked,
-                              onChanged: (val) {
-                                setState(() {
-                                  _isChecked = val;
-                                });
-                              },
-                            ),
-                            Align(
-                              alignment: Alignment.topCenter,
-                              child: InkWell(
-                                onTap: () {
-                                  if (_formKey.currentState.validate() &&
-                                      _isChecked) {
-                                    final data = {
-                                      "deviceId": deviceId,
-                                      "dateOfBirth": parseDate,
-                                      "email": emailController.text,
-                                      "userName": emailController.text,
-                                      "firstName": nameController.text,
-                                      "lastName": nameController.text,
-                                      "latitude": _currentPosition.latitude,
-                                      "longitude": _currentPosition.longitude,
-                                      "password": passwordController.text,
-                                      "phone": phoneController.text
-                                    };
-                                    // print(parseDate);
-                                    bloc.signup(data);
-                                  }
-                                  print(_isChecked);
-                                },
-                                child: Container(
-                                  width: 72,
-                                  height: 72,
-                                  margin: EdgeInsets.only(bottom: 32),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryBackground,
-                                    border: Border.fromBorderSide(
-                                        Borders.primaryBorder),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(36)),
-                                  ),
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Positioned(
-                                        left: 16,
-                                        right: 16,
-                                        child: Container(
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.secondaryElement,
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(20)),
-                                          ),
-                                          child: Container(),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        child: Image.asset(
-                                          "assets/images/arrow-right.png",
-                                          fit: BoxFit.none,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                FlatButton(
-                                  onPressed: () => {
-                                    Navigator.pop(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => Login(),
-                                      ),
-                                    )
-                                  },
-                                  color: Color.fromARGB(255, 245, 253, 237),
-                                  textColor: Color.fromARGB(255, 141, 198, 63),
-                                  child: Text(
-                                    "I have an account",
-                                    textAlign: TextAlign.right,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ],
+                  )
+                ],
+              ),
             );
           },
         ),

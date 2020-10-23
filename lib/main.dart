@@ -1,11 +1,15 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/src/views/auth/picture.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:wemeet/src/views/dashboard/home.dart';
 import 'package:wemeet/src/views/onboarding/screen1.dart';
 import 'package:wemeet/src/views/onboarding/screen2.dart';
@@ -63,12 +67,73 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final pageControl = PageController(initialPage: 0);
+  final firebaseMessaging = FirebaseMessaging();
+  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   String token;
   Object user;
   bool passWalkthrough = false;
   bool passKYC = false;
   bool _initialized = false;
   bool _error = false;
+
+  _setDevice(token) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('pushToken', token);
+  }
+
+  void registerNotification() {
+    firebaseMessaging.requestNotificationPermissions();
+
+    firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
+      print('onMessage: $message');
+      Platform.isAndroid
+          ? showNotification(message['notification'])
+          : showNotification(message['aps']['alert']);
+      return;
+    }, onResume: (Map<String, dynamic> message) {
+      print('onResume: $message');
+      return;
+    }, onLaunch: (Map<String, dynamic> message) {
+      print('onLaunch: $message');
+      return;
+    });
+
+    firebaseMessaging.getToken().then((token) {
+      print('tokemn: $token');
+
+      _setDevice(token);
+    }).catchError((err) {
+      print('err: $err');
+    });
+  }
+
+  void showNotification(message) async {
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+      Platform.isAndroid ? 'com.wemeetng.wemeet' : 'com.wemeetng.wemeet',
+      'Flutter chat demo',
+      'your channel description',
+      playSound: true,
+      enableVibration: true,
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+        android: androidPlatformChannelSpecifics,
+        iOS: iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(0, message['title'].toString(),
+        message['body'].toString(), platformChannelSpecifics,
+        payload: json.encode(message));
+  }
+
+  void configLocalNotification() {
+    var initializationSettingsAndroid =
+        new AndroidInitializationSettings('app_icon');
+    var initializationSettingsIOS = new IOSInitializationSettings();
+    var initializationSettings = new InitializationSettings(
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
 
   // Define an async function to initialize FlutterFire
   void initializeFlutterFire() async {
@@ -88,8 +153,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-        initializeFlutterFire();
-
+    initializeFlutterFire();
+    registerNotification();
+    configLocalNotification();
     super.initState();
     _getUser();
   }
@@ -119,8 +185,8 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-      if(_error) {
-        print('something went wrong');
+    if (_error) {
+      print('something went wrong');
       // return SomethingWentWrong();
     }
 

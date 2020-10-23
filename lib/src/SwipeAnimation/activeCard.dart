@@ -28,6 +28,18 @@ Positioned cardDemo(
     child: new Dismissible(
       key: new Key(new Random().toString()),
       crossAxisEndOffset: -0.3,
+      background: Container(
+        decoration: BoxDecoration(
+        color: Colors.green,
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+      ),
+      secondaryBackground: Container(
+        decoration: BoxDecoration(
+        color: Colors.red,
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+      ),
       onResize: () {
         //print("here");
         // setState(() {
