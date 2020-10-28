@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:device_info/device_info.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
@@ -45,10 +46,7 @@ class _ActivateState extends State<Activate> {
   }
 
   _getCurrentLocation() {
-    final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
-
-    geolocator
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
+    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
         .then((Position position) {
       setState(() {
         _currentPosition = position;
@@ -102,6 +100,8 @@ class _ActivateState extends State<Activate> {
                   bloc.loginSink.add(ApiResponse.idle('message'));
                   print(widget.token);
                   _setUser(widget.token);
+                  Fluttertoast.showToast(msg: 'Please complete your profile');
+
                   myCallback(() {
                     Navigator.pushReplacement(
                       context,
@@ -111,11 +111,11 @@ class _ActivateState extends State<Activate> {
                   break;
                 case Status.ERROR:
                   try {
-                    error = json.decode(snapshot.data.message)['message'];
+                    Fluttertoast.showToast(
+                        msg: json.decode(snapshot.data.message)['message']);
                   } on FormatException {
-                    print(snapshot.data.message);
+                    Fluttertoast.showToast(msg: snapshot.data.message);
                   }
-                  // error = json.decode(snapshot.data.message)['message'];
                   break;
               }
             }

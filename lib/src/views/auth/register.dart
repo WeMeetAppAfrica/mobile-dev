@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
@@ -64,10 +66,7 @@ class _RegisterState extends State<Register> {
   }
 
   _getCurrentLocation() {
-    final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
-
-    geolocator
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
+    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
         .then((Position position) {
       setState(() {
         _currentPosition = position;
@@ -126,6 +125,14 @@ class _RegisterState extends State<Register> {
                 case Status.LOADING:
                   return showCircularProgress();
                   break;
+                case Status.ERROR:
+                  try {
+                    Fluttertoast.showToast(
+                        msg: json.decode(snapshot.data.message)['message']);
+                  } on FormatException {
+                    Fluttertoast.showToast(msg: snapshot.data.message);
+                  }
+                  break;
                 case Status.ADDFB:
                   users
                       .doc(userData.user.id.toString())
@@ -145,7 +152,8 @@ class _RegisterState extends State<Register> {
                   token = snapshot.data.data.data.tokenInfo.accessToken;
                   userData = snapshot.data.data.data;
                   bloc.registerSink.add(ApiResponse.addFB('snap'));
-
+                  Fluttertoast.showToast(
+                      msg: 'Account created, continue to activate.');
                   break;
                 case Status.GETEMAILTOKEN:
                   print('object');
@@ -328,8 +336,16 @@ class _RegisterState extends State<Register> {
                                     "dateOfBirth": parseDate,
                                     "email": emailController.text,
                                     "userName": emailController.text,
-                                    "firstName": nameController.text,
-                                    "lastName": nameController.text,
+                                    "firstName":
+                                        nameController.text.split(' ').length >
+                                                0
+                                            ? nameController.text.split(' ')[0]
+                                            : null,
+                                    "lastName":
+                                        nameController.text.split(' ').length >
+                                                1
+                                            ? nameController.text.split(' ')[1]
+                                            : null,
                                     "latitude": _currentPosition.latitude,
                                     "longitude": _currentPosition.longitude,
                                     "password": passwordController.text,
@@ -338,7 +354,6 @@ class _RegisterState extends State<Register> {
                                   // print(parseDate);
                                   bloc.signup(data);
                                 }
-                                print(_isChecked);
                               },
                               child: Container(
                                 width: 72,

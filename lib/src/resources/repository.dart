@@ -29,24 +29,29 @@ class Repository {
     final response = await _helper.post('auth/login', request, '');
     return LoginModel.fromJson(response);
   }
+
   Future<LoginModel> emailVerification(request, token) async {
-    final response = await _helper.post('auth/verify/email?token='+request, {}, token);
+    final response =
+        await _helper.post('auth/verify/email?token=' + request, {}, token);
     return LoginModel.fromJson(response);
   }
+
   Future<ProfileModel> updateProfile(request, token) async {
-  
     final response = await _helper.post('user/profile', request, token);
     return ProfileModel.fromJson(response);
   }
+
   Future<ProfileModel> updateProfileImage(request, token) async {
-  print('upimg');
+    print('upimg');
     final response = await _helper.post('user/profile/image', request, token);
     return ProfileModel.fromJson(response);
   }
+
   Future<ProfileModel> getProfile(token) async {
     final response = await _helper.get('user/profile', token);
     return ProfileModel.fromJson(response);
   }
+
   Future<LoginModel> getEmailToken(token) async {
     final response = await _helper.get('auth/emailverification', token);
     return LoginModel.fromJson(response);
@@ -68,9 +73,24 @@ class Repository {
         'swipe/suggest?locationFilter=' + locationFilter, token);
     return SwipeSuggestions.fromJson(response);
   }
+
   Future<Swipe> swipe(request, token) async {
-    final response = await _helper.post(
-        'swipe', request, token);
+    final response = await _helper.post('swipe', request, token);
     return Swipe.fromJson(response);
+  }
+
+  Future<ApiModel> songRequest(request, token) async {
+    final response = await _helper.post('user/song-request', request, token);
+    return ApiModel.fromJson(response);
+  }
+
+  Future<ApiModel> changePassword(request, token) async {
+    final response = await _helper.post('auth/change-password', request, token);
+    return ApiModel.fromJson(response);
+  }
+
+  Future<ApiModel> sendMessage(request, token) async {
+    final response = await _helper.post('message', request, token);
+    return ApiModel.fromJson(response);
   }
 }

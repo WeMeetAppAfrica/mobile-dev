@@ -6,10 +6,12 @@ import 'package:device_info/device_info.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wemeet/src/views/auth/activate.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/register.dart';
@@ -34,11 +36,13 @@ class _LoginState extends State<Login> {
   final passwordController = TextEditingController();
   String error = '';
   final _formKey = GlobalKey<FormState>();
-
+  LatLng _center;
+  Position currentLocation;
   @override
   void initState() {
     super.initState();
     // initPlatformState();
+    print('asd');
     _getCurrentLocation();
     _getDevice();
   }
@@ -49,18 +53,22 @@ class _LoginState extends State<Login> {
     });
   }
 
-  _getCurrentLocation() {
-    final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
+  _isLoc() async {
+    print(await Geolocator.getLastKnownPosition());
+  }
 
-    geolocator
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
-        .then((Position position) {
-      setState(() {
-        _currentPosition = position;
-      });
-    }).catchError((e) {
-      print(e);
+  Future<Position> _getCurrentLocation() async {
+    print('saa');
+    print('saa');
+
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    print('saa');
+    setState(() {
+      _currentPosition = position;
     });
+    print(position);
+    return position;
   }
 
   Future<String> _getId() async {
@@ -129,6 +137,9 @@ class _LoginState extends State<Login> {
                     // .catchError((error) => print("Failed to add user: $error"));
                     _setUser(snapshot.data.data.data.user,
                         snapshot.data.data.data.tokenInfo.accessToken);
+                    if (snapshot.data.data.data.user.profileImage == null) {
+                      Fluttertoast.showToast(msg: 'Please complete your profile');
+                    }
                     myCallback(() {
                       Navigator.pushReplacement(
                         context,
@@ -146,14 +157,17 @@ class _LoginState extends State<Login> {
                   break;
                 case Status.ERROR:
                   try {
-                    error = json.decode(snapshot.data.message)['message'];
+                    Fluttertoast.showToast(
+                        msg: json.decode(snapshot.data.message)['message']);
                   } on FormatException {
-                    print(snapshot.data.message);
+                    Fluttertoast.showToast(msg: snapshot.data.message);
                   }
-                  // error = json.decode(snapshot.data.message)['message'];
                   break;
                 case Status.GETEMAILTOKEN:
                   print('getemailtoken');
+
+                  Fluttertoast.showToast(
+                      msg: "Your account has not been activated.");
                   myCallback(() {
                     Navigator.pushReplacement(
                       context,

@@ -18,6 +18,7 @@ import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/src/views/dashboard/matchcard.dart';
 import 'package:wemeet/src/views/dashboard/messages.dart';
 import 'package:wemeet/src/views/dashboard/music.dart';
+import 'package:wemeet/src/views/dashboard/payment.dart';
 import 'package:wemeet/src/views/dashboard/playlist.dart';
 import 'package:wemeet/src/views/dashboard/privacypolicy.dart';
 import 'package:wemeet/src/views/dashboard/profile.dart';
@@ -65,38 +66,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   PageController _controller = PageController(
     initialPage: 0,
   );
-  List<Widget> _getMatchCard() {
-    List<Widget> cardList = new List();
-
-    for (int x = 0; x < 3; x++) {
-      cardList.add(Positioned(
-          top: 41,
-          child: Draggable(
-            onDragCompleted: () {
-              _removeCard(x);
-            },
-            childWhenDragging: Container(),
-            feedback: MatchCard(
-              age: x,
-              name: "Jane Doe",
-              dist: "2km",
-              location: "Ikeja, Lagos",
-              image:
-                  "https://images.pexels.com/photos/5262348/pexels-photo-5262348.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
-            ),
-            child: MatchCard(
-              age: x,
-              name: "Jane Doe",
-              dist: "2km",
-              location: "Ikeja, Lagos",
-              image:
-                  "https://images.pexels.com/photos/5262348/pexels-photo-5262348.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
-            ),
-          )));
-    }
-    return cardList;
-  }
-
   void _removeCard(index) {
     setState(() {
       cardList.removeAt(index);
@@ -130,7 +99,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       ),
     ];
     swipeBloc.getSwipeSuggestions(widget.token);
-    cardList = _getMatchCard();
     _buttonController = new AnimationController(
         duration: new Duration(milliseconds: 1000), vsync: this);
 
@@ -373,7 +341,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Playlist(),
+                          builder: (context) => Playlist(token: widget.token,),
                         ));
                     // Update the state of the app.
                     // ...
@@ -390,6 +358,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     ],
                   ),
                   onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Payment(),
+                        ));
                     // Update the state of the app.
                     // ...
                   },
@@ -615,7 +588,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                   return snapshot.data.data.data.length > 0
                                       ? Column(
                                           children: [
-                                            Spacer(),
                                             Stack(
                                               alignment: Alignment.center,
                                               children: [
@@ -623,7 +595,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                                   top: 0,
                                                   child: Container(
                                                     width: 265,
-                                                    height: 365,
+                                                    height:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .height *
+                                                            0.4,
                                                     decoration: BoxDecoration(
                                                       color: Color.fromARGB(
                                                           255, 231, 208, 206),
@@ -636,10 +612,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                                   ),
                                                 ),
                                                 Positioned(
-                                                  top: 16,
+                                                  top: 8,
                                                   child: Container(
                                                     width: 297,
-                                                    height: 365,
+                                                    height:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .height *
+                                                            0.4,
                                                     decoration: BoxDecoration(
                                                       color: Color.fromARGB(
                                                           255, 230, 234, 224),
@@ -652,8 +632,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                                   ),
                                                 ),
                                                 Container(
-                                                  width: 327,
-                                                  height: 404,
+                                                  width: MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      0.8,
+                                                  height: MediaQuery.of(context)
+                                                          .size
+                                                          .height *
+                                                      0.4,
                                                   margin:
                                                       EdgeInsets.only(top: 15),
                                                   alignment: Alignment.center,

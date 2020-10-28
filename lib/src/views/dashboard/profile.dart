@@ -6,9 +6,12 @@ import 'package:wemeet/src/blocs/swipe_bloc.dart';
 import 'package:wemeet/src/models/swipesuggestions.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
+import 'package:wemeet/src/views/dashboard/blocked.dart';
 import 'package:wemeet/src/views/dashboard/chat-screen.dart';
 import 'package:wemeet/src/views/dashboard/updateProfile.dart';
+import 'package:wemeet/src/views/dashboard/updatelocation.dart';
 import 'package:wemeet/src/views/dashboard/updatepassword.dart';
+import 'package:wemeet/src/views/dashboard/updatepicture.dart';
 import 'package:wemeet/values/values.dart';
 
 class Profile extends StatefulWidget {
@@ -172,8 +175,9 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                       ),
                                       child: TabBarView(
                                         children: [
-                                          ListView(
+                                          Column(
                                             children: [
+                                              SizedBox(height: 18),
                                               Text(
                                                 '${details.firstName} ${details.lastName}, ${details.age}',
                                                 textAlign: TextAlign.center,
@@ -182,23 +186,6 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                                   color: AppColors.primaryText,
                                                   fontWeight: FontWeight.w400,
                                                   fontSize: 24,
-                                                ),
-                                              ),
-                                              Center(
-                                                child: FlatButton(
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            18.0),
-                                                  ),
-                                                  onPressed: () => {},
-                                                  color: Color.fromARGB(
-                                                      255, 198, 156, 63),
-                                                  child: Text(
-                                                    'Unverified Account',
-                                                    style: TextStyle(
-                                                        color: Colors.white),
-                                                  ),
                                                 ),
                                               ),
                                               SizedBox(height: 20),
@@ -216,8 +203,15 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                                     FeatherIcons.chevronRight),
                                               ),
                                               ListTile(
-                                                title:
-                                                    Text('Update Preferences'),
+                                                onTap: () => {
+                                                  Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            UpdatePhotos(),
+                                                      ))
+                                                },
+                                                title: Text('Update Photos'),
                                                 trailing: Icon(
                                                     FeatherIcons.chevronRight),
                                               ),
@@ -249,7 +243,8 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                                 }
                                                 return Column(
                                                   children: [
-                                                    Padding(
+                                                    items.length > 0
+                                                        ? Padding(
                                                       padding:
                                                           const EdgeInsets.only(
                                                               left: 12.0,
@@ -272,125 +267,142 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                                           SizedBox(
                                                             width: 10,
                                                           ),
-                                                          Text(
-                                                            'people',
-                                                            style: TextStyle(
-                                                              color: AppColors
-                                                                  .accentText,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              fontSize: 14,
-                                                            ),
-                                                          ),
+                                                          // Text(
+                                                          //   'people',
+                                                          //   style: TextStyle(
+                                                          //     color: AppColors
+                                                          //         .accentText,
+                                                          //     fontWeight:
+                                                          //         FontWeight
+                                                          //             .w400,
+                                                          //     fontSize: 14,
+                                                          //   ),
+                                                          // ),
                                                         ],
                                                       ),
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              top: 16.0,
-                                                              left: 12),
-                                                      child: TextFormField(
-                                                        onChanged: (value) {
-                                                          // print(items);
-                                                          filterSearchResults(
-                                                              value);
-                                                        },
-                                                        decoration: new InputDecoration(
-                                                            prefixIcon: Icon(
-                                                                FeatherIcons
-                                                                    .search),
-                                                            fillColor: AppColors
-                                                                .secondaryBackground,
-                                                            filled: true,
-                                                            hintText: 'Search',
-                                                            border: InputBorder
-                                                                .none),
-                                                      ),
-                                                    ),
-                                                    Container(
-                                                      height:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .height -
-                                                              320,
-                                                      child: ListView.builder(
-                                                        itemCount: items.length,
-                                                        itemBuilder:
-                                                            (context, index) {
-                                                          return ListTile(
-                                                            onTap: () {
-                                                              Navigator.push(
-                                                                  context,
-                                                                  MaterialPageRoute(
-                                                                    builder:
-                                                                        (context) =>
-                                                                            DetailPage(
-                                                                      type: Datum
-                                                                          .fromJson(
-                                                                              items[index]),
-                                                                    ),
-                                                                  ));
-                                                            },
-                                                            leading: Image(
-                                                              height: 48,
-                                                              image: NetworkImage(
-                                                                  '${items[index]['profileImage']}'),
-                                                            ),
-                                                            title: Text(
-                                                                '${items[index]['firstName']} ${items[index]['lastName']}'),
-                                                            trailing: Wrap(
-                                                              spacing:
-                                                                  12, // space between two icons
-                                                              children: <
-                                                                  Widget>[
-                                                                IconButton(
-                                                                  icon: Icon(
+                                                    ) : Container(),
+                                                    items.length > 0
+                                                        ? Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .only(
+                                                                    top: 16.0,
+                                                                    left: 12),
+                                                            child:
+                                                                TextFormField(
+                                                              onChanged:
+                                                                  (value) {
+                                                                // print(items);
+                                                                filterSearchResults(
+                                                                    value);
+                                                              },
+                                                              decoration: new InputDecoration(
+                                                                  prefixIcon: Icon(
                                                                       FeatherIcons
-                                                                          .messageSquare),
-                                                                  onPressed:
-                                                                      () => {
+                                                                          .search),
+                                                                  fillColor:
+                                                                      AppColors
+                                                                          .secondaryBackground,
+                                                                  filled: true,
+                                                                  hintText:
+                                                                      'Search',
+                                                                  border:
+                                                                      InputBorder
+                                                                          .none),
+                                                            ),
+                                                          )
+                                                        : Container(),
+                                                    items.length > 0
+                                                        ? Container(
+                                                            height: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .height -
+                                                                320,
+                                                            child: ListView
+                                                                .builder(
+                                                              itemCount:
+                                                                  items.length,
+                                                              itemBuilder:
+                                                                  (context,
+                                                                      index) {
+                                                                return ListTile(
+                                                                  onTap: () {
                                                                     Navigator.push(
                                                                         context,
                                                                         MaterialPageRoute(
                                                                           builder: (context) =>
-                                                                              Chat(
-                                                                            peerAvatar:
-                                                                                items[index]['profileImage'],
-                                                                            peerId:
-                                                                                items[index]['id'].toString(),
-                                                                            peerName:
-                                                                                items[index]['firstName'],
+                                                                              DetailPage(
+                                                                            type:
+                                                                                Datum.fromJson(items[index]),
                                                                           ),
-                                                                        ))
+                                                                        ));
                                                                   },
-                                                                ), // icon-1
-                                                                IconButton(
-                                                                  icon: Icon(
-                                                                      FeatherIcons
-                                                                          .trash),
-                                                                  onPressed:
-                                                                      () => {
-                                                                    setState(
-                                                                        () {
-                                                                      ki =
-                                                                          false;
-                                                                    }),
-                                                                    print(ki)
-                                                                  },
-                                                                ), // icon-2
-                                                              ],
+                                                                  leading:
+                                                                      Image(
+                                                                    height: 48,
+                                                                    image: NetworkImage(
+                                                                        '${items[index]['profileImage']}'),
+                                                                  ),
+                                                                  title: Text(
+                                                                      '${items[index]['firstName']} ${items[index]['lastName']}'),
+                                                                  trailing:
+                                                                      Wrap(
+                                                                    spacing:
+                                                                        12, // space between two icons
+                                                                    children: <
+                                                                        Widget>[
+                                                                      IconButton(
+                                                                        icon: Icon(
+                                                                            FeatherIcons.messageSquare),
+                                                                        onPressed:
+                                                                            () =>
+                                                                                {
+                                                                          Navigator.push(
+                                                                              context,
+                                                                              MaterialPageRoute(
+                                                                                builder: (context) => Chat(
+                                                                                  peerAvatar: items[index]['profileImage'],
+                                                                                  peerId: items[index]['id'].toString(),
+                                                                                  peerName: items[index]['firstName'],
+                                                                                ),
+                                                                              ))
+                                                                        },
+                                                                      ), // icon-1
+                                                                      IconButton(
+                                                                        icon: Icon(
+                                                                            FeatherIcons.trash),
+                                                                        onPressed:
+                                                                            () =>
+                                                                                {
+                                                                          setState(
+                                                                              () {
+                                                                            ki =
+                                                                                false;
+                                                                          }),
+                                                                          print(
+                                                                              ki)
+                                                                        },
+                                                                      ), // icon-2
+                                                                    ],
+                                                                  ),
+                                                                );
+                                                              },
                                                             ),
-                                                          );
-                                                        },
-                                                      ),
-                                                    ),
+                                                          )
+                                                        : Container(
+                                                            height: 200,
+                                                            child: Center(
+                                                                child: Text(
+                                                                    'You have no matches'))),
                                                   ],
                                                 );
                                               }),
-                                          ListView(
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.stretch,
                                             children: [
+                                              SizedBox(height: 18),
+
                                               Padding(
                                                 padding: const EdgeInsets.only(
                                                     left: 12.0),
@@ -406,6 +418,16 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                                 ),
                                               ),
                                               ListTile(
+                                                onTap: () {
+                                                  Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            UpdateLocation(
+                                                          token: widget.token,
+                                                        ),
+                                                      ));
+                                                },
                                                 title: Text('Change Location'),
                                                 subtitle:
                                                     Text('Lagos, Nigeria'),
@@ -438,6 +460,16 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                                 ),
                                               ),
                                               ListTile(
+                                                onTap: () {
+                                                  Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Blocked(
+                                                          token: widget.token,
+                                                        ),
+                                                      ));
+                                                },
                                                 title: Text('Blocked Users'),
                                                 subtitle: Text(
                                                     'See all users that have been blocked'),
@@ -471,8 +503,10 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                               )
                                             ],
                                           ),
-                                          ListView(
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.stretch,
                                             children: [
+                                              SizedBox(height: 18,),
                                               Padding(
                                                 padding: const EdgeInsets.only(
                                                     left: 12.0),
@@ -493,7 +527,9 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                                       context,
                                                       MaterialPageRoute(
                                                         builder: (context) =>
-                                                            UpdatePassword(),
+                                                            UpdatePassword(
+                                                          token: widget.token,
+                                                        ),
                                                       ));
                                                 },
                                                 title: Text('Change Password'),

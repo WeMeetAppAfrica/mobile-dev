@@ -9,8 +9,7 @@ class ApiResponse<T> {
   ApiResponse.loading(this.message) : status = Status.LOADING;
   ApiResponse.proImageLoading(this.message) : status = Status.PROIMAGELOADING;
   ApiResponse.proImageDone(this.data) : status = Status.PROIMAGEDONE;
-  ApiResponse.addImageLoading(this.message)
-      : status = Status.ADDIMAGELOADING;
+  ApiResponse.addImageLoading(this.message) : status = Status.ADDIMAGELOADING;
   ApiResponse.addImageDone(this.message, this.data)
       : status = Status.ADDIMAGEDONE;
   ApiResponse.addImage1Loading(this.message) : status = Status.ADDIMAGE1LOADING;
@@ -49,9 +48,13 @@ class ApiResponse<T> {
       : status = Status.ADDIMAGEUPDATE5DONE;
   ApiResponse.getProfile(this.data) : status = Status.GETPROFILE;
   ApiResponse.getEmailToken(this.data) : status = Status.GETEMAILTOKEN;
+  ApiResponse.sendMessage(this.data) : status = Status.SENDMESSAGE;
+  ApiResponse.songRequest(this.data) : status = Status.SONGREQUEST;
   ApiResponse.done(this.data) : status = Status.DONE;
   ApiResponse.activated(this.data) : status = Status.ACTIVATED;
   ApiResponse.error(this.message) : status = Status.ERROR;
+  ApiResponse.addImgError(this.message) : status = Status.ADDIMGERROR;
+  ApiResponse.proImgError(this.message) : status = Status.PROIMGERROR;
   ApiResponse.logout(this.message) : status = Status.LOGOUT;
 
   @override
@@ -64,10 +67,12 @@ enum Status {
   IDLE,
   ADDFB,
   LOADING,
+  SONGREQUEST,
   PROIMAGELOADING,
   PROIMAGEDONE,
   ADDIMAGEDONE,
   ADDIMAGELOADING,
+  SENDMESSAGE,
   ADDIMAGE1LOADING,
   ADDIMAGE1DONE,
   ADDIMAGE2LOADING,
@@ -91,6 +96,8 @@ enum Status {
   ADDIMAGEUPDATE4DONE,
   ADDIMAGEUPDATE5LOADING,
   ADDIMAGEUPDATE5DONE,
+  ADDIMGERROR,
+  PROIMGERROR,
   GETPROFILE,
   DONE,
   ACTIVATED,

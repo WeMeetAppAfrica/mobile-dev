@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,21 +36,15 @@ class _PictureState extends State<Picture> {
   String proImage;
   String addImage1;
   String addImage2;
+  bool allowRemove = true;
   String error;
   String addImage3;
   String addImage4;
   String addImage5;
   PickedFile _picture0;
-  PickedFile _picture1;
   List _tray = [];
-  List _addImages = [];
-  PickedFile _picture2;
-  PickedFile _picture3;
-  PickedFile _picture4;
-  PickedFile _picture5;
   final ImagePicker _picker = ImagePicker();
   dynamic _pickImageError;
-  Repository _userRepository;
 
   File _image;
   final picker = ImagePicker();
@@ -68,40 +63,6 @@ class _PictureState extends State<Picture> {
     super.initState();
   }
 
-  void upload(file, imageType, token) async {
-    final upload = await _userRepository.uploadPhoto(file, imageType, token);
-    print(upload);
-  }
-
-  Future<http.Response> uploadPhoto(file, imageType) async {
-    var uri = Uri.parse('https://wemeetng.herokuapp.com/api/v1/image/upload');
-    var responseJson;
-    print('object $imageType');
-    try {
-      var request = new http.MultipartRequest("POST", uri);
-      //contentType: new MediaType('image', 'png'));
-      request.headers.addAll({
-        "Authorization": 'Bearer ' + widget.token,
-        "accept": "application/json",
-        "Content-Type": 'multipart/form-data'
-      });
-      request.files.add(await http.MultipartFile.fromPath('file', file,
-          contentType: MediaType('image', 'png')));
-
-      request.fields['imageType'] = imageType;
-      print(request);
-      var response = await request.send();
-      print(response.statusCode);
-      final res = await http.Response.fromStream(response);
-      print(res.body);
-      responseJson = res;
-    } on SocketException {
-      print('error');
-      throw FetchDataException('No Internet connection');
-    }
-    return responseJson;
-  }
-
   void _onImageButtonPressed(ImageSource source, picture) async {
     try {
       final pickedFile = await _picker.getImage(
@@ -109,21 +70,24 @@ class _PictureState extends State<Picture> {
       );
       switch (picture) {
         case 'picture0':
-          setState(() {
-            _picture0 = pickedFile;
-          });
-          bloc.uploadPhoto(_picture0.path, 'PROFILE_IMAGE', widget.token);
+          if (pickedFile.path != null) {
+            setState(() {
+              _picture0 = pickedFile;
+            });
+            bloc.uploadProPhoto(_picture0.path, widget.token);
+          }
           break;
         case 'picture1':
-          setState(() {
-            _tray.add({
-              'file': pickedFile,
-              'status': 'pending',
+          if (pickedFile.path != null) {
+            setState(() {
+              _tray.add({
+                'file': pickedFile,
+                'status': 'pending',
+              });
             });
-          });
-
-          bloc.uploadAddPhoto(pickedFile.path, 'ADDITIONAL_IMAGE', widget.token,
-              (_tray.length - 1).toString());
+            bloc.uploadAddPhoto(
+                pickedFile.path, widget.token, (_tray.length - 1).toString());
+          }
           break;
       }
     } catch (e) {
@@ -133,9 +97,10 @@ class _PictureState extends State<Picture> {
     }
   }
 
-  _setPassKYC() async {
+  _setPassKYC(profileImage) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('passKYC', true);
+    prefs.setString('profileImage', profileImage);
   }
 
   @override
@@ -254,7 +219,7 @@ class _PictureState extends State<Picture> {
                             case Status.DONE:
                               print('eessseee');
                               bloc.profileSink.add(ApiResponse.idle('message'));
-                              _setPassKYC();
+                              _setPassKYC(proImage);
                               myCallback(() {
                                 Navigator.pushReplacement(
                                   context,
@@ -379,24 +344,27 @@ class _PictureState extends State<Picture> {
                                                   ],
                                                 );
                                                 break;
-                                              case Status.ERROR:
-                                                try {
-                                                  error = json.decode(snapshot
-                                                      .data.message)['message'];
-                                                } on FormatException {
-                                                  error = snapshot.data.message;
-                                                }
-                                                myCallback(() {
-                                                  _picture0 = null;
-                                                });
-                                                bloc.uploadSink.add(
-                                                    ApiResponse.idle(
-                                                        'message'));
-                                                break;
                                               case Status.PROIMAGEDONE:
                                                 proImage = snapshot
                                                     .data.data.data.imageUrl;
-                                                return Container(
+                                                break;
+                                              case Status.PROIMGERROR:
+                                                try {
+                                                  Fluttertoast.showToast(
+                                                      msg: json.decode(snapshot
+                                                          .data
+                                                          .message)['message']);
+                                                } on FormatException {
+                                                  Fluttertoast.showToast(
+                                                      msg: snapshot
+                                                          .data.message);
+                                                }
+                                                break;
+                                              default:
+                                            }
+                                          }
+                                          return proImage != null
+                                              ? Container(
                                                   height: 120.0,
                                                   width: 120,
                                                   child: Image(
@@ -417,25 +385,26 @@ class _PictureState extends State<Picture> {
                                                     borderRadius:
                                                         Radii.k8pxRadius,
                                                   ),
+                                                )
+                                              : Container(
+                                                  height: 120.0,
+                                                  width: 120,
+                                                  child:
+                                                      Icon(Icons.photo_camera),
+                                                  decoration: new BoxDecoration(
+                                                    color: Color.fromARGB(
+                                                        255, 247, 247, 247),
+                                                    border: new Border.all(
+                                                        width: 1.0,
+                                                        color: Color.fromARGB(
+                                                            255,
+                                                            247,
+                                                            247,
+                                                            247)),
+                                                    borderRadius:
+                                                        Radii.k8pxRadius,
+                                                  ),
                                                 );
-                                                break;
-                                              default:
-                                            }
-                                          }
-                                          return Container(
-                                            height: 120.0,
-                                            width: 120,
-                                            child: Icon(Icons.photo_camera),
-                                            decoration: new BoxDecoration(
-                                              color: Color.fromARGB(
-                                                  255, 247, 247, 247),
-                                              border: new Border.all(
-                                                  width: 1.0,
-                                                  color: Color.fromARGB(
-                                                      255, 247, 247, 247)),
-                                              borderRadius: Radii.k8pxRadius,
-                                            ),
-                                          );
                                         }),
                               ),
                             ),
@@ -470,8 +439,21 @@ class _PictureState extends State<Picture> {
                                           _tray[int.parse(
                                                   snapshot.data.message)]
                                               ['status'] = 'loading';
+                                          allowRemove = false;
+                                          break;
+                                        case Status.ADDIMGERROR:
+                                          allowRemove = true;
+                                          try {
+                                            Fluttertoast.showToast(
+                                                msg: json.decode(snapshot
+                                                    .data.message)['message']);
+                                          } on FormatException {
+                                            Fluttertoast.showToast(
+                                                msg: snapshot.data.message);
+                                          }
                                           break;
                                         case Status.ADDIMAGEDONE:
+                                          allowRemove = true;
                                           bloc.uploadSink
                                               .add(ApiResponse.idle('message'));
                                           print(
@@ -487,6 +469,7 @@ class _PictureState extends State<Picture> {
                                         default:
                                       }
                                     }
+
                                     return ListView.builder(
                                       scrollDirection: Axis.horizontal,
                                       padding: EdgeInsets.only(left: 20),
@@ -561,7 +544,8 @@ class _PictureState extends State<Picture> {
                                                         255, 255, 255, 0.6),
                                                   )
                                                 : Container(),
-                                            _tray[index]['status'] == 'done'
+                                            _tray[index]['status'] == 'done' &&
+                                                    allowRemove == true
                                                 ? Positioned(
                                                     right: -20,
                                                     top: -5,

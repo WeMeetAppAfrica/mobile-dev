@@ -1,22 +1,28 @@
 import 'dart:convert';
 
+import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_maps_place_picker/google_maps_place_picker.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/dashboard/profile.dart';
 import 'package:wemeet/values/values.dart';
 
-class UpdatePassword extends StatefulWidget {
+class UpdateLocation extends StatefulWidget {
   final token;
-  UpdatePassword({Key key, this.token}) : super(key: key);
+  UpdateLocation({Key key, this.token}) : super(key: key);
 
   @override
-  _UpdatePasswordState createState() => _UpdatePasswordState();
+  _UpdateLocationState createState() => _UpdateLocationState();
 }
 
-class _UpdatePasswordState extends State<UpdatePassword> {
+class _UpdateLocationState extends State<UpdateLocation> {
   bool _obscureText = true;
+  static final kInitialPosition = LatLng(-33.8567844, 151.213108);
+
   final passController = TextEditingController();
   final confirmPassController = TextEditingController();
   final newPassController = TextEditingController();
@@ -49,7 +55,7 @@ class _UpdatePasswordState extends State<UpdatePassword> {
         backgroundColor: Colors.white,
         elevation: 0.0,
         title: Text(
-          'Update Password',
+          'Change Location',
           textAlign: TextAlign.left,
           style: TextStyle(
             fontFamily: 'Berkshire Swash',
@@ -76,15 +82,15 @@ class _UpdatePasswordState extends State<UpdatePassword> {
                     Navigator.pop(context);
                   });
                   break;
-                  case Status.ERROR:
+                case Status.ERROR:
                   bloc.userSink.add(ApiResponse.idle('message'));
-                    try {
-                      Fluttertoast.showToast(
-                          msg: json.decode(snapshot.data.message)['message']);
-                    } on FormatException {
-                      Fluttertoast.showToast(msg: snapshot.data.message);
-                    }
-                    break;
+                  try {
+                    Fluttertoast.showToast(
+                        msg: json.decode(snapshot.data.message)['message']);
+                  } on FormatException {
+                    Fluttertoast.showToast(msg: snapshot.data.message);
+                  }
+                  break;
                 default:
               }
             }
@@ -99,82 +105,40 @@ class _UpdatePasswordState extends State<UpdatePassword> {
                       height: 8,
                     ),
                     TextFormField(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PlacePicker(
+                              apiKey:
+                                  'AIzaSyBj-o7zMuXghnp0gLzZvZy7Bh1IE-TAB9M', // Put YOUR OWN KEY here.
+                              onPlacePicked: (result) {
+                                print(result);
+                                Navigator.of(context).pop();
+                              },
+                              initialPosition: LatLng(-33.8567844, 151.213108),
+                              useCurrentLocation: true,
+                            ),
+                          ),
+                        );
+                      },
                       validator: (value) {
                         if (value.isEmpty) {
-                          return 'Please enter current password';
+                          return 'Please enter location';
                         }
                         return null;
                       },
                       controller: passController,
                       decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscureText
-                              ? Icons.visibility
-                              : Icons.visibility_off),
-                          onPressed: () {
-                            _toggle();
-                          },
-                        ),
+                        prefixIcon: Icon(FeatherIcons.mapPin),
                         contentPadding:
                             EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                        hintText: "Current Password",
+                        hintText: "Location",
                       ),
                       obscureText: _obscureText,
                     ),
                     SizedBox(
                       height: 20,
-                    ),
-                    TextFormField(
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return 'Please enter new password';
-                        }
-                        return null;
-                      },
-                      controller: newPassController,
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscureNewText
-                              ? Icons.visibility
-                              : Icons.visibility_off),
-                          onPressed: () {
-                            _toggleNew();
-                          },
-                        ),
-                        contentPadding:
-                            EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                        hintText: "New Password",
-                      ),
-                      obscureText: _obscureNewText,
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    TextFormField(
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return 'Please enter new password again';
-                        }
-                        return null;
-                      },
-                      controller: confirmPassController,
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscureConText
-                              ? Icons.visibility
-                              : Icons.visibility_off),
-                          onPressed: () {
-                            _toggleCon();
-                          },
-                        ),
-                        contentPadding:
-                            EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                        hintText: "Confirm New Password",
-                      ),
-                      obscureText: _obscureConText,
                     ),
                     Align(
                       alignment: Alignment.topCenter,

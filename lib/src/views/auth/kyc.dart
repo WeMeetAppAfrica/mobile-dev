@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
@@ -50,10 +51,16 @@ class _KYCState extends State<KYC> {
     interest.add(new RadioModel(false, 'Guys', 'MALE'));
     interest.add(new RadioModel(false, 'Ladies', 'FEMALE'));
     employStatus.add(new RadioModel(false, 'Working', 'WORKING'));
-    employStatus.add(new RadioModel(false, 'Self Employed', 'SELFEMPLOYED'));
+    employStatus.add(new RadioModel(false, 'Self Employed', 'SELF_EMPLOYED'));
     employStatus.add(new RadioModel(false, 'Unemployed', 'UNEMPLOYED'));
     employStatus.add(new RadioModel(false, 'Student', 'STUDENT'));
     _getUser();
+  }
+
+  _setUser(user, token) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('firstName', user.firstName);
+    prefs.setString('lastName', user.lastName);
   }
 
   _logout() async {
@@ -163,6 +170,7 @@ class _KYCState extends State<KYC> {
                             }
                             bioController.text = snapshot.data.data.data.bio;
                             profileImage = snapshot.data.data.data.profileImage;
+                            _setUser(snapshot.data.data.data, token);
                             additionalImages =
                                 snapshot.data.data.data.additionalImages;
                             if (snapshot.data.data.data.minAge != null &&
@@ -186,7 +194,14 @@ class _KYCState extends State<KYC> {
                             });
                             break;
                           case Status.ERROR:
-                            error = snapshot.data.message;
+                            try {
+                              Fluttertoast.showToast(
+                                  msg: json.decode(
+                                      snapshot.data.message)['message']);
+                            } on FormatException {
+                              Fluttertoast.showToast(
+                                  msg: snapshot.data.message);
+                            }
                             break;
                           case Status.LOGOUT:
                             bloc.profileSink.add(ApiResponse.idle('message'));
@@ -206,16 +221,20 @@ class _KYCState extends State<KYC> {
                         key: _formKey,
                         child: ListView(
                           children: [
-                            error != null || error != '' ? Text(
-                              error,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: AppColors.secondaryElement,
-                                fontWeight: FontWeight.w400,
-                                fontSize: 16,
-                              ),
-                            ) : Container(),
-                            SizedBox(height: 10,),
+                            error != null || error != ''
+                                ? Text(
+                                    error,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: AppColors.secondaryElement,
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 16,
+                                    ),
+                                  )
+                                : Container(),
+                            SizedBox(
+                              height: 10,
+                            ),
                             Padding(
                               padding: EdgeInsets.only(left: 20),
                               child: Text(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/src/views/auth/picture.dart';
+import 'package:wemeet/src/views/dashboard/profile.dart';
 import 'package:wemeet/src/views/dashboard/updatepicture.dart';
 import 'package:wemeet/values/values.dart';
 
@@ -49,7 +51,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
     interest.add(new RadioModel(false, 'Guys', 'MALE'));
     interest.add(new RadioModel(false, 'Ladies', 'FEMALE'));
     employStatus.add(new RadioModel(false, 'Working', 'WORKING'));
-    employStatus.add(new RadioModel(false, 'Self Employed', 'SELFEMPLOYED'));
+    employStatus.add(new RadioModel(false, 'Self Employed', 'SELF_EMPLOYED'));
     employStatus.add(new RadioModel(false, 'Unemployed', 'UNEMPLOYED'));
     employStatus.add(new RadioModel(false, 'Student', 'STUDENT'));
     _getUser();
@@ -142,18 +144,19 @@ class _UpdateProfileState extends State<UpdateProfile> {
                           snapshot.data.data.data.maxAge.toDouble());
                     }
                     break;
+                  case Status.ERROR:
+                    try {
+                      Fluttertoast.showToast(
+                          msg: json.decode(snapshot.data.message)['message']);
+                    } on FormatException {
+                      Fluttertoast.showToast(msg: snapshot.data.message);
+                    }
+                    break;
                   case Status.DONE:
                     bloc.profileSink.add(ApiResponse.idle('message'));
+                    Fluttertoast.showToast(msg: 'Profile Updated');
                     myCallback(() {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => UpdatePhotos(
-                            kyc: snapshot.data.data.data,
-                            token: token,
-                          ),
-                        ),
-                      );
+                      Navigator.pop(context);
                     });
                     break;
                   default:
