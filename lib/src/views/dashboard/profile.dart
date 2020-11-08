@@ -1,11 +1,15 @@
+import 'dart:convert';
+
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/SwipeAnimation/detail.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/blocs/swipe_bloc.dart';
 import 'package:wemeet/src/models/swipesuggestions.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
+import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/src/views/dashboard/blocked.dart';
 import 'package:wemeet/src/views/dashboard/chat-screen.dart';
 import 'package:wemeet/src/views/dashboard/updateProfile.dart';
@@ -38,6 +42,12 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
     swipeBloc.getMatches(widget.token);
   }
 
+  _logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+    prefs.setBool('passKYC', true);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Theme(
@@ -68,8 +78,28 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                           );
                           break;
                         case Status.GETPROFILE:
+                          bloc.profileSink.add(ApiResponse.idle('message'));
                           details = snapshot.data.data.data;
 
+                          break;
+                        case Status.ERROR:
+                          bloc.profileSink.add(ApiResponse.idle('message'));
+                          try {
+                            if (json.decode(
+                                    snapshot.data.message)['responseCode'] ==
+                                'INVALID_TOKEN') {
+                              _logout();
+                              myCallback(() {
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Login(),
+                                    ));
+                              });
+                            }
+                          } on FormatException catch (e) {
+                            print(snapshot.data);
+                          }
                           break;
                         default:
                       }
@@ -245,42 +275,46 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                                   children: [
                                                     items.length > 0
                                                         ? Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              left: 12.0,
-                                                              top: 18),
-                                                      child: Row(
-                                                        children: [
-                                                          Text(
-                                                            'Matches',
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  'Berkshire Swash',
-                                                              color: AppColors
-                                                                  .primaryText,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              fontSize: 24,
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .only(
+                                                                    left: 12.0,
+                                                                    top: 18),
+                                                            child: Row(
+                                                              children: [
+                                                                Text(
+                                                                  'Matches',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontFamily:
+                                                                        'Berkshire Swash',
+                                                                    color: AppColors
+                                                                        .primaryText,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w400,
+                                                                    fontSize:
+                                                                        24,
+                                                                  ),
+                                                                ),
+                                                                SizedBox(
+                                                                  width: 10,
+                                                                ),
+                                                                // Text(
+                                                                //   'people',
+                                                                //   style: TextStyle(
+                                                                //     color: AppColors
+                                                                //         .accentText,
+                                                                //     fontWeight:
+                                                                //         FontWeight
+                                                                //             .w400,
+                                                                //     fontSize: 14,
+                                                                //   ),
+                                                                // ),
+                                                              ],
                                                             ),
-                                                          ),
-                                                          SizedBox(
-                                                            width: 10,
-                                                          ),
-                                                          // Text(
-                                                          //   'people',
-                                                          //   style: TextStyle(
-                                                          //     color: AppColors
-                                                          //         .accentText,
-                                                          //     fontWeight:
-                                                          //         FontWeight
-                                                          //             .w400,
-                                                          //     fontSize: 14,
-                                                          //   ),
-                                                          // ),
-                                                        ],
-                                                      ),
-                                                    ) : Container(),
+                                                          )
+                                                        : Container(),
                                                     items.length > 0
                                                         ? Padding(
                                                             padding:
@@ -296,18 +330,26 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                                                 filterSearchResults(
                                                                     value);
                                                               },
-                                                              decoration: new InputDecoration(
-                                                                  prefixIcon: Icon(
-                                                                      FeatherIcons
-                                                                          .search),
-                                                                  fillColor:
-                                                                      AppColors
-                                                                          .secondaryBackground,
-                                                                  filled: true,
-                                                                  hintText:
-                                                                      'Search',
-                                                                  border:
-                                                                      InputBorder
+                                                              decoration:
+                                                                  new InputDecoration(
+                                                                      prefixIcon: Icon(
+                                                                          FeatherIcons
+                                                                              .search),
+                                                                      fillColor:
+                                                                          AppColors
+                                                                              .secondaryBackground,
+                                                                      filled:
+                                                                          true,
+                                                                      hintText:
+                                                                          'Search',
+                                                                      focusedBorder:
+                                                                          UnderlineInputBorder(
+                                                                        borderSide: const BorderSide(
+                                                                            color:
+                                                                                Colors.green,
+                                                                            width: 2.0),
+                                                                      ),
+                                                                      border: InputBorder
                                                                           .none),
                                                             ),
                                                           )
@@ -399,10 +441,10 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                                 );
                                               }),
                                           Column(
-                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
                                             children: [
                                               SizedBox(height: 18),
-
                                               Padding(
                                                 padding: const EdgeInsets.only(
                                                     left: 12.0),
@@ -504,9 +546,12 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                             ],
                                           ),
                                           Column(
-                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
                                             children: [
-                                              SizedBox(height: 18,),
+                                              SizedBox(
+                                                height: 18,
+                                              ),
                                               Padding(
                                                 padding: const EdgeInsets.only(
                                                     left: 12.0),
@@ -644,4 +689,10 @@ class _CirclePainter extends BoxPainter {
         offset + Offset(cfg.size.width / 2, cfg.size.height - radius - 5);
     canvas.drawCircle(circleOffset, radius, _paint);
   }
+}
+
+void myCallback(Function callback) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    callback();
+  });
 }

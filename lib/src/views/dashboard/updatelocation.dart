@@ -23,9 +23,13 @@ class _UpdateLocationState extends State<UpdateLocation> {
   bool _obscureText = true;
   static final kInitialPosition = LatLng(-33.8567844, 151.213108);
 
-  final passController = TextEditingController();
+  final addressController = TextEditingController();
   final confirmPassController = TextEditingController();
   final newPassController = TextEditingController();
+  bool loading = false;
+  dynamic lat;
+  dynamic location;
+  dynamic long;
   bool _obscureNewText = true;
   final _formKey = GlobalKey<FormState>();
   bool _obscureConText = true;
@@ -66,21 +70,22 @@ class _UpdateLocationState extends State<UpdateLocation> {
         ),
       ),
       body: StreamBuilder(
-          stream: bloc.userStream,
+          stream: bloc.profileStream,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               switch (snapshot.data.status) {
                 case Status.LOADING:
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  loading = true;
                   break;
                 case Status.DONE:
                   bloc.userSink.add(ApiResponse.idle('message'));
-                  Fluttertoast.showToast(msg: 'Password changed');
+                  Fluttertoast.showToast(msg: 'Location Changed');
                   myCallback(() {
                     Navigator.pop(context);
                   });
+                  break;
+                case Status.IDLE:
+                  loading = false;
                   break;
                 case Status.ERROR:
                   bloc.userSink.add(ApiResponse.idle('message'));
@@ -111,13 +116,21 @@ class _UpdateLocationState extends State<UpdateLocation> {
                           MaterialPageRoute(
                             builder: (context) => PlacePicker(
                               apiKey:
-                                  'AIzaSyBj-o7zMuXghnp0gLzZvZy7Bh1IE-TAB9M', // Put YOUR OWN KEY here.
+                                  'AIzaSyDr-EyWx9exuZVkbYCv_50rzRJUoVlYRe4', // Put YOUR OWN KEY here.
                               onPlacePicked: (result) {
-                                print(result);
+                                print(result.formattedAddress);
+                                addressController.text =
+                                    result.formattedAddress;
+                                lat = result.geometry.location.lat;
+                                long = result.geometry.location.lng;
                                 Navigator.of(context).pop();
                               },
-                              initialPosition: LatLng(-33.8567844, 151.213108),
-                              useCurrentLocation: true,
+                              hintText: 'Search',
+                              enableMapTypeButton: false,
+                              initialPosition: lat != null
+                                  ? LatLng(lat, long)
+                                  : LatLng(9.0174025, 4.1814097),
+                              useCurrentLocation: lat != null ? false : true,
                             ),
                           ),
                         );
@@ -128,67 +141,74 @@ class _UpdateLocationState extends State<UpdateLocation> {
                         }
                         return null;
                       },
-                      controller: passController,
+                      controller: addressController,
                       decoration: InputDecoration(
                         prefixIcon: Icon(FeatherIcons.mapPin),
                         contentPadding:
                             EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                         hintText: "Location",
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide:
+                              const BorderSide(color: Colors.green, width: 2.0),
+                        ),
                       ),
-                      obscureText: _obscureText,
                     ),
                     SizedBox(
                       height: 20,
                     ),
                     Align(
                       alignment: Alignment.topCenter,
-                      child: InkWell(
-                        onTap: () {
-                          if (_formKey.currentState.validate()) {
-                            var data = {
-                              "confirmPassword": confirmPassController.text,
-                              "newPassword": newPassController.text,
-                              "oldPassword": passController.text
-                            };
-                            bloc.changePassword(data, widget.token);
-                          }
-                        },
-                        child: Container(
-                          width: 72,
-                          height: 72,
-                          margin: EdgeInsets.only(top: 72),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryBackground,
-                            border:
-                                Border.fromBorderSide(Borders.primaryBorder),
-                            borderRadius: BorderRadius.all(Radius.circular(36)),
-                          ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Positioned(
-                                left: 16,
-                                right: 16,
-                                child: Container(
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.secondaryElement,
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(20)),
-                                  ),
-                                  child: Container(),
+                      child: loading
+                          ? CircularProgressIndicator(
+                              backgroundColor: AppColors.secondaryElement,
+                            )
+                          : InkWell(
+                              onTap: () {
+                                if (lat != null && long != null) {
+                                  var data = {
+                                    "latitude": lat,
+                                    "longitude": long
+                                  };
+                                  print(data);
+                                  bloc.updateLocation(data, widget.token);
+                                }
+                              },
+                              child: Container(
+                                width: 72,
+                                height: 72,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryBackground,
+                                  border: Border.fromBorderSide(
+                                      Borders.primaryBorder),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(36)),
+                                ),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Positioned(
+                                      left: 16,
+                                      right: 16,
+                                      child: Container(
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.secondaryElement,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(20)),
+                                        ),
+                                        child: Container(),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      child: Image.asset(
+                                        "assets/images/arrow-right.png",
+                                        fit: BoxFit.none,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              Positioned(
-                                child: Image.asset(
-                                  "assets/images/arrow-right.png",
-                                  fit: BoxFit.none,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                            ),
                     ),
                   ],
                 ),

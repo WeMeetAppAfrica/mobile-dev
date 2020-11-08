@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -73,12 +74,15 @@ class _MyHomePageState extends State<MyHomePage> {
   Object user;
   bool passWalkthrough = false;
   bool passKYC = false;
+  int _currentPage = 0;
+
   bool _initialized = false;
   bool _error = false;
 
   _setDevice(token) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('pushToken', token);
+    print(token);
   }
 
   void registerNotification() {
@@ -158,6 +162,20 @@ class _MyHomePageState extends State<MyHomePage> {
     configLocalNotification();
     super.initState();
     _getUser();
+    Timer.periodic(Duration(seconds: 3), (Timer timer) {
+      if (_currentPage < 2) {
+        _currentPage++;
+      } else {
+        _currentPage = 0;
+      }
+
+      if (pageControl.hasClients)
+        pageControl.animateToPage(
+          _currentPage,
+          duration: Duration(milliseconds: 350),
+          curve: Curves.easeIn,
+        );
+    });
   }
 
   _getUser() async {

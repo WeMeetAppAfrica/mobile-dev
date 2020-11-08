@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:wemeet/src/models/apimodel.dart';
+import 'package:wemeet/src/models/getmatchesmodel.dart';
 import 'package:wemeet/src/models/imageupload.dart';
 import 'package:wemeet/src/models/login.dart';
+import 'package:wemeet/src/models/plansmodel.dart';
 import 'package:wemeet/src/models/profilemodel.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 
@@ -14,15 +16,23 @@ class Bloc {
   Repository _userRepository;
 
   StreamController _apiController;
+  StreamController _planController;
   StreamController _uploadController;
   StreamController _messageController;
   StreamController _songController;
   StreamController _loginController;
+  StreamController _matchesController;
   StreamController _registerController;
   StreamController _profileController;
 
   StreamSink<ApiResponse<ApiModel>> get userSink => _apiController.sink;
   Stream<ApiResponse<ApiModel>> get userStream => _apiController.stream;
+  StreamSink<ApiResponse<GetMatchesModel>> get matchesSink =>
+      _matchesController.sink;
+  Stream<ApiResponse<GetMatchesModel>> get matchesStream =>
+      _matchesController.stream;
+  StreamSink<ApiResponse<PlansModel>> get planSink => _planController.sink;
+  Stream<ApiResponse<PlansModel>> get planStream => _planController.stream;
   StreamSink<ApiResponse<ImageUpload>> get uploadSink => _uploadController.sink;
   Stream<ApiResponse<ImageUpload>> get uploadStream => _uploadController.stream;
   StreamSink<ApiResponse<LoginModel>> get loginSink => _loginController.sink;
@@ -41,9 +51,11 @@ class Bloc {
       _profileController.stream;
   Bloc() {
     _apiController = BehaviorSubject<ApiResponse<ApiModel>>();
+    _planController = BehaviorSubject<ApiResponse<PlansModel>>();
     _uploadController = BehaviorSubject<ApiResponse<ImageUpload>>();
     _loginController = BehaviorSubject<ApiResponse<LoginModel>>();
     _messageController = BehaviorSubject<ApiResponse<ApiModel>>();
+    _matchesController = BehaviorSubject<ApiResponse<GetMatchesModel>>();
     _songController = BehaviorSubject<ApiResponse<ApiModel>>();
     _registerController = BehaviorSubject<ApiResponse<LoginModel>>();
     _profileController = BehaviorSubject<ApiResponse<ProfileModel>>();
@@ -89,6 +101,18 @@ class Bloc {
     profileSink.add(ApiResponse.loading('Loading...'));
     try {
       ProfileModel user = await _userRepository.updateProfile(request, token);
+      profileSink.add(ApiResponse.done(user));
+    } catch (e) {
+      profileSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
+  updateLocation(request, token) async {
+    print('request');
+    profileSink.add(ApiResponse.loading('Loading...'));
+    try {
+      ProfileModel user = await _userRepository.updateLocation(request, token);
       profileSink.add(ApiResponse.done(user));
     } catch (e) {
       profileSink.add(ApiResponse.error(e.toString()));
@@ -149,6 +173,48 @@ class Bloc {
     }
   }
 
+  getPlans(token) async {
+    print('request');
+    planSink.add(ApiResponse.loading('Loading...'));
+    try {
+      PlansModel user = await _userRepository.getPlans(token);
+      print(user);
+      planSink.add(ApiResponse.done(user));
+    } catch (e) {
+      planSink.add(ApiResponse.error(e.toString()));
+      try {
+        if (json.decode(e.toString())['responseCode'] == 'INVALID_TOKEN') {
+          planSink.add(ApiResponse.logout(e.toString()));
+        } else {
+          planSink.add(ApiResponse.error(e.toString()));
+        }
+      } catch (w) {
+        print(e);
+      }
+    }
+  }
+
+  upgradePlan(request, token) async {
+    print('request');
+    userSink.add(ApiResponse.loading('Loading...'));
+    try {
+      ApiModel user = await _userRepository.upgradePlan(request, token);
+      print(user);
+      userSink.add(ApiResponse.upgradePlan(user));
+    } catch (e) {
+      userSink.add(ApiResponse.error(e.toString()));
+      try {
+        if (json.decode(e.toString())['responseCode'] == 'INVALID_TOKEN') {
+          userSink.add(ApiResponse.logout(e.toString()));
+        } else {
+          userSink.add(ApiResponse.error(e.toString()));
+        }
+      } catch (w) {
+        print(e);
+      }
+    }
+  }
+
   getEmailToken(token) async {
     print('request');
     registerSink.add(ApiResponse.loading('Loading...'));
@@ -161,8 +227,21 @@ class Bloc {
     }
   }
 
+  resendEmailToken(token) async {
+    print('request');
+    loginSink.add(ApiResponse.loading('Loading...'));
+    try {
+      LoginModel user = await _userRepository.getEmailToken(token);
+      loginSink.add(ApiResponse.resendEmailToken(user));
+    } catch (e) {
+      loginSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
   sendMessage(request, token) async {
     print('request');
+    print(token);
     messageSink.add(ApiResponse.loading('Loading...'));
     try {
       ApiModel user = await _userRepository.sendMessage(request, token);
@@ -172,6 +251,7 @@ class Bloc {
       print(e);
     }
   }
+
   songRequest(request, token) async {
     print('request');
     songSink.add(ApiResponse.loading('Loading...'));
@@ -184,12 +264,84 @@ class Bloc {
     }
   }
 
+  block(request, token) async {
+    print('request');
+    userSink.add(ApiResponse.loading('Loading...'));
+    try {
+      ApiModel user = await _userRepository.block(request, token);
+      userSink.add(ApiResponse.blocked(user));
+    } catch (e) {
+      userSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
+  report(request, token) async {
+    print('request');
+    userSink.add(ApiResponse.loading('Loading...'));
+    try {
+      ApiModel user = await _userRepository.report(request, token);
+      userSink.add(ApiResponse.reported(user));
+    } catch (e) {
+      userSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
   getLoginEmailToken(token) async {
     print('request');
     loginSink.add(ApiResponse.loading('Loading...'));
     try {
       LoginModel user = await _userRepository.getEmailToken(token);
       loginSink.add(ApiResponse.getEmailToken(user));
+    } catch (e) {
+      loginSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
+  getForgotPass(email) async {
+    print('request');
+    loginSink.add(ApiResponse.loading('Loading...'));
+    try {
+      LoginModel user = await _userRepository.getForgotPass(email);
+      loginSink.add(ApiResponse.forgotPass(user));
+    } catch (e) {
+      loginSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
+  verifyForgotToken(email, token) async {
+    print('request');
+    loginSink.add(ApiResponse.loading('Loading...'));
+    try {
+      LoginModel user = await _userRepository.verifyForgotToken(email, token);
+      loginSink.add(ApiResponse.verifyForgotToken(user));
+    } catch (e) {
+      loginSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
+  getBlockedList(token) async {
+    print('request');
+    matchesSink.add(ApiResponse.loading('Loading...'));
+    try {
+      GetMatchesModel user = await _userRepository.getBlockedList(token);
+      matchesSink.add(ApiResponse.getBlockedList(user));
+    } catch (e) {
+      matchesSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
+  resetPassword(request) async {
+    print('request');
+    loginSink.add(ApiResponse.loading('Loading...'));
+    try {
+      LoginModel user = await _userRepository.resetPassword(request);
+      loginSink.add(ApiResponse.resetPassword(user));
     } catch (e) {
       loginSink.add(ApiResponse.error(e.toString()));
       print(e);
@@ -271,9 +423,11 @@ class Bloc {
 
   dispose() {
     _apiController?.close();
+    _planController?.close();
     _uploadController?.close();
     _loginController?.close();
     _messageController?.close();
+    _matchesController?.close();
     _songController?.close();
     _registerController?.close();
     _profileController?.close();

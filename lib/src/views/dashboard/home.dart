@@ -60,7 +60,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   bool isSuccessful = false;
   _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.remove('accessToken');
+    prefs.clear();
+    prefs.setBool('passKYC', true);
   }
 
   PageController _controller = PageController(
@@ -77,6 +78,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     // TODO: implement initState
     _getUser();
     super.initState();
+
     title = 'Meet Someone';
     leading = IconButton(
       icon: new Icon(FeatherIcons.menu),
@@ -341,7 +343,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Playlist(token: widget.token,),
+                          builder: (context) => Playlist(
+                            token: widget.token,
+                          ),
                         ));
                     // Update the state of the app.
                     // ...
@@ -361,7 +365,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Payment(),
+                          builder: (context) => Payment(
+                            token: widget.token,
+                          ),
                         ));
                     // Update the state of the app.
                     // ...
@@ -502,238 +508,85 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               }
             },
             children: [
-              Container(
-                color: Colors.white,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      height: MediaQuery.of(context).size.height - 205,
-                      child: StreamBuilder(
-                          stream: swipeBloc.swipeSugStream,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              switch (snapshot.data.status) {
-                                case Status.LOADING:
-                                  return Container(
-                                    height: 410,
-                                    child: Center(
-                                        child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        CircularProgressIndicator(
-                                          backgroundColor:
-                                              AppColors.secondaryElement,
-                                        ),
-                                        SizedBox(
-                                          height: 10,
-                                        ),
-                                        Text('Finding new matches...')
-                                      ],
-                                    )),
-                                  );
-                                  break;
-                                case Status.ERROR:
-                                  swipeBloc.swipeSink
-                                      .add(ApiResponse.idle('message '));
-                                  try {
-                                    if (json.decode(snapshot.data.message)[
-                                            'responseCode'] ==
-                                        'INVALID_TOKEN') {
-                                      _logout();
-                                      myCallback(() {
-                                        Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => Login(),
-                                            ));
-                                      });
-                                    }
-                                  } on FormatException catch (e) {
-                                    print(snapshot.data);
-                                  }
+              StreamBuilder(
+                  stream: swipeBloc.swipeStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      switch (snapshot.data.status) {
+                        case Status.ERROR:
+                          var error = '';
+                          try {
+                            error = json
+                                .decode(snapshot.data.message)['responseCode'];
+                          } on FormatException {
+                            error = snapshot.data.message;
+                          }
 
-                                  return Container(
-                                    height: 410,
-                                    child: Center(
-                                        child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text('Error finding new matches...'),
-                                        SizedBox(
-                                          height: 10,
-                                        ),
-                                        FlatButton(
-                                          color: AppColors.secondaryElement,
-                                          child: Text(
-                                            'Try Again',
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ),
-                                          onPressed: () => {
-                                            swipeBloc.getSwipeSuggestions(
-                                                widget.token)
-                                          },
-                                        )
-                                      ],
-                                    )),
-                                  );
-                                  break;
-                                case Status.DONE:
-                                  print(snapshot.data.data.data);
-                                  data = snapshot.data.data.data;
-                                  return snapshot.data.data.data.length > 0
-                                      ? Column(
-                                          children: [
-                                            Stack(
-                                              alignment: Alignment.center,
-                                              children: [
-                                                Positioned(
-                                                  top: 0,
-                                                  child: Container(
-                                                    width: 265,
-                                                    height:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .height *
-                                                            0.4,
-                                                    decoration: BoxDecoration(
-                                                      color: Color.fromARGB(
-                                                          255, 231, 208, 206),
-                                                      borderRadius:
-                                                          BorderRadius.all(
-                                                              Radius.circular(
-                                                                  16)),
-                                                    ),
-                                                    child: Container(),
-                                                  ),
-                                                ),
-                                                Positioned(
-                                                  top: 8,
-                                                  child: Container(
-                                                    width: 297,
-                                                    height:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .height *
-                                                            0.4,
-                                                    decoration: BoxDecoration(
-                                                      color: Color.fromARGB(
-                                                          255, 230, 234, 224),
-                                                      borderRadius:
-                                                          BorderRadius.all(
-                                                              Radius.circular(
-                                                                  16)),
-                                                    ),
-                                                    child: Container(),
-                                                  ),
-                                                ),
-                                                Container(
-                                                  width: MediaQuery.of(context)
-                                                          .size
-                                                          .width *
-                                                      0.8,
-                                                  height: MediaQuery.of(context)
-                                                          .size
-                                                          .height *
-                                                      0.4,
-                                                  margin:
-                                                      EdgeInsets.only(top: 15),
-                                                  alignment: Alignment.center,
-                                                  child: Stack(
-                                                      alignment:
-                                                          AlignmentDirectional
-                                                              .center,
-                                                      children:
-                                                          data.map((item) {
-                                                        if (data.indexOf(
-                                                                item) ==
-                                                            data.length - 1) {
-                                                          currentData = item;
-                                                          return cardDemo(
-                                                              item,
-                                                              bottom.value,
-                                                              right.value,
-                                                              0.0,
-                                                              backCardWidth +
-                                                                  10,
-                                                              rotate.value,
-                                                              rotate.value < -10
-                                                                  ? 0.1
-                                                                  : 0.0,
-                                                              context,
-                                                              dismissImg,
-                                                              flag,
-                                                              addImg,
-                                                              swipeRight,
-                                                              swipeLeft);
-                                                        } else {
-                                                          backCardPosition =
-                                                              backCardPosition -
-                                                                  10;
-                                                          backCardWidth =
-                                                              backCardWidth +
-                                                                  10;
+                          if (error == "USER_NOT_PREMIUM") {
+                            _showDialog();
+                          }
 
-                                                          return cardDemoDummy(
-                                                              item,
-                                                              backCardPosition,
-                                                              0.0,
-                                                              0.0,
-                                                              backCardWidth,
-                                                              0.0,
-                                                              0.0,
-                                                              context);
-                                                        }
-                                                      }).toList()),
-                                                ),
-                                              ],
-                                            ),
-                                            Spacer(),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                RawMaterialButton(
-                                                  onPressed: () {
-                                                    dismissImg(currentData);
-                                                  },
-                                                  elevation: 2.0,
-                                                  fillColor: Color.fromARGB(
-                                                      255, 142, 198, 63),
-                                                  child: Icon(
-                                                    FeatherIcons.x,
-                                                    color:
-                                                        AppColors.secondaryText,
-                                                  ),
-                                                  padding: EdgeInsets.all(15.0),
-                                                  shape: CircleBorder(),
-                                                ),
-                                                RawMaterialButton(
-                                                  onPressed: () {
-                                                    addImg(currentData);
-                                                  },
-                                                  elevation: 2.0,
-                                                  fillColor: AppColors
-                                                      .secondaryElement,
-                                                  child: Icon(
-                                                    Icons.favorite,
-                                                    color:
-                                                        AppColors.secondaryText,
-                                                  ),
-                                                  padding: EdgeInsets.all(23.0),
-                                                  shape: CircleBorder(),
-                                                ),
-                                              ],
-                                            ),
-                                            Spacer(),
-                                            Spacer()
-                                          ],
-                                        )
-                                      : Container(
+                          ;
+                          break;
+                        default:
+                      }
+                    }
+                    return Container(
+                      color: Colors.white,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            height: MediaQuery.of(context).size.height - 205,
+                            child: StreamBuilder(
+                                stream: swipeBloc.swipeSugStream,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    switch (snapshot.data.status) {
+                                      case Status.LOADING:
+                                        return Container(
+                                          height: 410,
+                                          child: Center(
+                                              child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              CircularProgressIndicator(
+                                                backgroundColor:
+                                                    AppColors.secondaryElement,
+                                              ),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Text('Finding new matches...')
+                                            ],
+                                          )),
+                                        );
+                                        break;
+                                      case Status.ERROR:
+                                        swipeBloc.swipeSugSink
+                                            .add(ApiResponse.idle('message '));
+                                        try {
+                                          if (json.decode(snapshot.data
+                                                  .message)['responseCode'] ==
+                                              'INVALID_TOKEN') {
+                                            _logout();
+                                            print('expire');
+                                            myCallback(() {
+                                              Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        Login(),
+                                                  ));
+                                            });
+                                          }
+                                        } on FormatException catch (e) {
+                                          print(snapshot.data);
+                                        }
+
+                                        return Container(
                                           height: 410,
                                           child: Center(
                                               child: Column(
@@ -741,7 +594,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                                 MainAxisAlignment.center,
                                             children: [
                                               Text(
-                                                  'Oops, we currently have no new matches for you.'),
+                                                  'Error finding new matches...'),
                                               SizedBox(
                                                 height: 10,
                                               ),
@@ -761,17 +614,227 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                             ],
                                           )),
                                         );
+                                        break;
+                                      case Status.DONE:
+                                        print(snapshot.data.data.data);
+                                        data = snapshot.data.data.data;
+                                        return snapshot.data.data.data.length >
+                                                0
+                                            ? Column(
+                                                children: [
+                                                  Stack(
+                                                    alignment: Alignment.center,
+                                                    children: [
+                                                      Positioned(
+                                                        top: 0,
+                                                        child: Container(
+                                                          width: 265,
+                                                          height: MediaQuery.of(
+                                                                      context)
+                                                                  .size
+                                                                  .height *
+                                                              0.4,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color:
+                                                                Color.fromARGB(
+                                                                    255,
+                                                                    231,
+                                                                    208,
+                                                                    206),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            16)),
+                                                          ),
+                                                          child: Container(),
+                                                        ),
+                                                      ),
+                                                      Positioned(
+                                                        top: 8,
+                                                        child: Container(
+                                                          width: 297,
+                                                          height: MediaQuery.of(
+                                                                      context)
+                                                                  .size
+                                                                  .height *
+                                                              0.4,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color:
+                                                                Color.fromARGB(
+                                                                    255,
+                                                                    230,
+                                                                    234,
+                                                                    224),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            16)),
+                                                          ),
+                                                          child: Container(),
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        width: MediaQuery.of(
+                                                                    context)
+                                                                .size
+                                                                .width *
+                                                            0.8,
+                                                        height: MediaQuery.of(
+                                                                    context)
+                                                                .size
+                                                                .height *
+                                                            0.4,
+                                                        margin: EdgeInsets.only(
+                                                            top: 15),
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: Stack(
+                                                            alignment:
+                                                                AlignmentDirectional
+                                                                    .center,
+                                                            children: data
+                                                                .map((item) {
+                                                              if (data.indexOf(
+                                                                      item) ==
+                                                                  data.length -
+                                                                      1) {
+                                                                currentData =
+                                                                    item;
+                                                                return cardDemo(
+                                                                    item,
+                                                                    bottom
+                                                                        .value,
+                                                                    right.value,
+                                                                    0.0,
+                                                                    backCardWidth +
+                                                                        10,
+                                                                    rotate
+                                                                        .value,
+                                                                    rotate.value <
+                                                                            -10
+                                                                        ? 0.1
+                                                                        : 0.0,
+                                                                    context,
+                                                                    dismissImg,
+                                                                    flag,
+                                                                    addImg,
+                                                                    swipeRight,
+                                                                    swipeLeft);
+                                                              } else {
+                                                                backCardPosition =
+                                                                    backCardPosition -
+                                                                        10;
+                                                                backCardWidth =
+                                                                    backCardWidth +
+                                                                        10;
 
-                                  break;
-                                default:
-                              }
-                            }
-                            return Container();
-                          }),
-                    ),
-                  ],
-                ),
-              ),
+                                                                return cardDemoDummy(
+                                                                    item,
+                                                                    backCardPosition,
+                                                                    0.0,
+                                                                    0.0,
+                                                                    backCardWidth,
+                                                                    0.0,
+                                                                    0.0,
+                                                                    context);
+                                                              }
+                                                            }).toList()),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Spacer(),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      RawMaterialButton(
+                                                        onPressed: () {
+                                                          dismissImg(
+                                                              currentData);
+                                                        },
+                                                        elevation: 2.0,
+                                                        fillColor:
+                                                            Color.fromARGB(255,
+                                                                142, 198, 63),
+                                                        child: Icon(
+                                                          FeatherIcons.x,
+                                                          color: AppColors
+                                                              .secondaryText,
+                                                        ),
+                                                        padding: EdgeInsets.all(
+                                                            15.0),
+                                                        shape: CircleBorder(),
+                                                      ),
+                                                      RawMaterialButton(
+                                                        onPressed: () {
+                                                          addImg(currentData);
+                                                        },
+                                                        elevation: 2.0,
+                                                        fillColor: AppColors
+                                                            .secondaryElement,
+                                                        child: Icon(
+                                                          Icons.favorite,
+                                                          color: AppColors
+                                                              .secondaryText,
+                                                        ),
+                                                        padding: EdgeInsets.all(
+                                                            23.0),
+                                                        shape: CircleBorder(),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Spacer(),
+                                                  Spacer()
+                                                ],
+                                              )
+                                            : Container(
+                                                height: 410,
+                                                child: Center(
+                                                    child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                        'Oops, we currently have no new matches for you.'),
+                                                    SizedBox(
+                                                      height: 10,
+                                                    ),
+                                                    FlatButton(
+                                                      color: AppColors
+                                                          .secondaryElement,
+                                                      child: Text(
+                                                        'Try Again',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white),
+                                                      ),
+                                                      onPressed: () => {
+                                                        swipeBloc
+                                                            .getSwipeSuggestions(
+                                                                widget.token)
+                                                        // _showDialog()
+                                                      },
+                                                    )
+                                                  ],
+                                                )),
+                                              );
+
+                                        break;
+                                      default:
+                                    }
+                                  }
+                                  return Container();
+                                }),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
               Messages(
                 token: widget.token,
               )
@@ -789,6 +852,55 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           )
         ],
       ),
+    );
+  }
+
+  _showDialog() async {
+    await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+                title: Text(
+                  'Upgrade',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Berkshire Swash',
+                    color: AppColors.secondaryElement,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 24,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.all(16.0),
+                content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'You are out of swipes for today.',
+                      textAlign: TextAlign.center,
+                    ),
+                    FlatButton(
+                      color: AppColors.secondaryElement,
+                      child: Text(
+                        'Subscribe',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () => {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Payment(
+                                token: widget.token,
+                              ),
+                            ))
+                      },
+                    )
+                  ],
+                ));
+          },
+        );
+      },
     );
   }
 }

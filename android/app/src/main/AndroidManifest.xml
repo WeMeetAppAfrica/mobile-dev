@@ -34,7 +34,7 @@
               android:name="io.flutter.embedding.android.SplashScreenDrawable"
               android:resource="@drawable/launch_background"
               />
-            <meta-data android:name="com.google.android.geo.AIzaSyBj-o7zMuXghnp0gLzZvZy7Bh1IE-TAB9M" android:value="AIzaSyBj-o7zMuXghnp0gLzZvZy7Bh1IE-TAB9M"/>
+            <meta-data android:name="com.google.android.geo.AIzaSyDr-EyWx9exuZVkbYCv_50rzRJUoVlYRe4" android:value="AIzaSyDr-EyWx9exuZVkbYCv_50rzRJUoVlYRe4"/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

@@ -23,6 +23,7 @@ environment:
 dependencies:
   flutter_svg: ^0.18.1
   http: ^0.12.2
+  flutter_paystack: ^1.0.4+1
   rxdart: ^0.24.0
   shared_preferences: ^0.5.7+2
   image_picker: ^0.6.7+7

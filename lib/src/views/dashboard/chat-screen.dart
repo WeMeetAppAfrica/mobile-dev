@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -10,19 +11,52 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wemeet/src/blocs/bloc.dart';
+import 'package:wemeet/src/resources/api_response.dart';
+import 'package:wemeet/src/views/auth/picture.dart';
 import 'package:wemeet/values/values.dart';
 
-class Chat extends StatelessWidget {
+class Chat extends StatefulWidget {
+  final token;
   final String peerId;
   final String peerName;
   final String peerAvatar;
 
   Chat(
       {Key key,
+      this.token,
       @required this.peerId,
       this.peerName,
       @required this.peerAvatar})
       : super(key: key);
+
+  @override
+  _ChatState createState() => _ChatState();
+}
+
+class _ChatState extends State<Chat> {
+  Choice _selectedChoice = choices[0];
+  String groupChatId = '';
+  String id;
+
+  SharedPreferences prefs;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getGroupChatId();
+  }
+
+  getGroupChatId() async {
+    prefs = await SharedPreferences.getInstance();
+    id = prefs.getString('id') ?? '';
+    print(id);
+    if (id.hashCode <= widget.peerId.hashCode) {
+      groupChatId = '$id-${widget.peerId}';
+    } else {
+      groupChatId = '${widget.peerId}-$id';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,15 +73,16 @@ class Chat extends StatelessWidget {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundImage:
-                  peerAvatar != null ? NetworkImage(peerAvatar) : null,
-              child: peerAvatar == null ? Text(peerAvatar) : null,
+              backgroundImage: widget.peerAvatar != null
+                  ? NetworkImage(widget.peerAvatar)
+                  : null,
+              child: widget.peerAvatar == null ? Text(widget.peerAvatar) : null,
             ),
             SizedBox(
               width: 8,
             ),
             Text(
-              peerName,
+              widget.peerName,
               style: TextStyle(
                 color: AppColors.accentText,
                 fontWeight: FontWeight.w400,
@@ -62,29 +97,93 @@ class Chat extends StatelessWidget {
             color: AppColors.accentText,
             onPressed: () {},
           ),
-          IconButton(
-            icon: Icon(FeatherIcons.flag),
-            color: AppColors.accentText,
-            onPressed: () {},
+          PopupMenuButton(
+            onSelected: _select,
+            icon: Icon(
+              FeatherIcons.flag,
+              color: AppColors.accentText,
+            ),
+            itemBuilder: (BuildContext context) {
+              return choices.map((Choice choice) {
+                return PopupMenuItem<Choice>(
+                    value: choice, child: Text(choice.title));
+              }).toList();
+            },
           ),
         ],
       ),
-      body: ChatScreen(
-        peerId: peerId,
-        peerName: peerName,
-        peerAvatar: peerAvatar,
-      ),
+      body: StreamBuilder(
+          stream: bloc.userStream,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              switch (snapshot.data.status) {
+                case Status.BLOCKED:
+                  bloc.userSink.add(ApiResponse.idle('message'));
+                  myCallback(() {
+                    Navigator.pop(context);
+                  });
+                  FirebaseFirestore.instance
+                      .collection('messages')
+                      .doc(groupChatId)
+                      .delete();
+                  Fluttertoast.showToast(msg: 'User Blocked');
+                  break;
+                case Status.ERROR:
+                  bloc.userSink.add(ApiResponse.idle('message'));
+                  try {
+                    Fluttertoast.showToast(
+                        msg: json.decode(snapshot.data.message)['message']);
+                  } on FormatException {
+                    Fluttertoast.showToast(msg: snapshot.data.message);
+                  }
+                  break;
+                default:
+              }
+            }
+            return ChatScreen(
+              token: widget.token,
+              peerId: widget.peerId,
+              peerName: widget.peerName,
+              peerAvatar: widget.peerAvatar,
+            );
+          }),
     );
+  }
+
+  void _select(Choice choice) {
+    switch (choice.id) {
+      case 1:
+        print(widget.token);
+
+        var request = {"type": "ABUSIVE", "userId": widget.peerId};
+        bloc.report(request, widget.token);
+        break;
+      case 2:
+        bloc.block(widget.peerId, widget.token);
+        break;
+      case 3:
+        var request = {"type": "ABUSIVE", "userId": widget.peerId};
+        bloc.report(request, widget.token);
+        bloc.block(widget.peerId, widget.token);
+        break;
+      default:
+    }
+    Fluttertoast.showToast(msg: 'Loading...');
+    setState(() {
+      _selectedChoice = choice;
+    });
   }
 }
 
 class ChatScreen extends StatefulWidget {
+  final String token;
   final String peerId;
   final String peerName;
   final String peerAvatar;
 
   ChatScreen(
       {Key key,
+      this.token,
       @required this.peerId,
       this.peerName,
       @required this.peerAvatar})
@@ -92,19 +191,22 @@ class ChatScreen extends StatefulWidget {
 
   @override
   State createState() => ChatScreenState(
-      peerId: peerId, peerName: peerName, peerAvatar: peerAvatar);
+      token: token, peerId: peerId, peerName: peerName, peerAvatar: peerAvatar);
 }
 
 class ChatScreenState extends State<ChatScreen> {
   ChatScreenState(
       {Key key,
+      @required this.token,
       @required this.peerId,
       @required this.peerName,
       @required this.peerAvatar});
 
+  String token;
   String peerId;
   String peerName;
   String peerAvatar;
+  dynamic unsent = null;
   String id;
   String firstName;
   String profileImage;
@@ -185,7 +287,6 @@ class ChatScreenState extends State<ChatScreen> {
         .update({'chattingWith': peerId})
         .then((value) => print("User updated"))
         .catchError((error) => print("Failed to add user: $error"));
-    
 
     setState(() {});
   }
@@ -234,42 +335,18 @@ class ChatScreenState extends State<ChatScreen> {
 
   void onSendMessage(String content, int type) {
     // type: 0 = text, 1 = image, 2 = sticker
+    var request = {
+      "content": content.trim(),
+      "receiverId": peerId,
+      "type": "TEXT"
+    };
+    setState(() {
+      unsent = {"content": content.trim(), "receiverId": peerId, "type": 0};
+    });
+    textEditingController.clear();
     if (content.trim() != '') {
-      textEditingController.clear();
-
-      var documentReference = FirebaseFirestore.instance
-          .collection('messages')
-          .doc(groupChatId)
-          .collection(groupChatId)
-          .doc(DateTime.now().millisecondsSinceEpoch.toString());
-
-      FirebaseFirestore.instance.runTransaction((transaction) async {
-        transaction.set(
-          FirebaseFirestore.instance.collection('messages').doc(groupChatId),
-          {
-            'userProfiles': [
-              {'id': id, 'name': firstName, 'profileImage': profileImage},
-              {'id': peerId, 'name': peerName, 'profileImage': peerAvatar}
-            ],
-            'users': [id, peerId],
-            'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
-            'content': content,
-            'type': type
-          },
-        );
-        transaction.set(
-          documentReference,
-          {
-            'idFrom': id,
-            'idTo': peerId,
-            'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
-            'content': content,
-            'type': type
-          },
-        );
-      });
-      listScrollController.animateTo(0.0,
-          duration: Duration(milliseconds: 300), curve: Curves.easeOut);
+      print(request);
+      bloc.sendMessage(request, widget.token);
     } else {
       print('nothing to send');
       Fluttertoast.showToast(
@@ -732,32 +809,247 @@ class ChatScreenState extends State<ChatScreen> {
                   valueColor: AlwaysStoppedAnimation<Color>(
                       AppColors.secondaryElement)))
           : StreamBuilder(
-              stream: FirebaseFirestore.instance
-                  .collection('messages')
-                  .doc(groupChatId)
-                  .collection(groupChatId)
-                  .orderBy('timestamp', descending: true)
-                  .limit(_limit)
-                  .snapshots(),
+              stream: bloc.messageStream,
               builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(
-                      child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.secondaryElement)));
-                } else {
-                  listMessage.addAll(snapshot.data.documents);
-                  return ListView.builder(
-                    padding: EdgeInsets.all(10.0),
-                    itemBuilder: (context, index) =>
-                        buildItem(index, snapshot.data.documents[index]),
-                    itemCount: snapshot.data.documents.length,
-                    reverse: true,
-                    controller: listScrollController,
-                  );
+                if (snapshot.hasData) {
+                  switch (snapshot.data.status) {
+                    case Status.LOADING:
+                      print('losssading');
+                      break;
+                    case Status.SENDMESSAGE:
+                      print('done oo');
+                      bloc.messageSink.add(ApiResponse.idle('message'));
+                      var documentReference = FirebaseFirestore.instance
+                          .collection('messages')
+                          .doc(groupChatId)
+                          .collection(groupChatId)
+                          .doc(
+                              DateTime.now().millisecondsSinceEpoch.toString());
+
+                      FirebaseFirestore.instance
+                          .runTransaction((transaction) async {
+                        transaction.set(
+                          FirebaseFirestore.instance
+                              .collection('messages')
+                              .doc(groupChatId),
+                          {
+                            'userProfiles': [
+                              {
+                                'id': id,
+                                'name': firstName,
+                                'profileImage': profileImage
+                              },
+                              {
+                                'id': peerId,
+                                'name': peerName,
+                                'profileImage': peerAvatar
+                              }
+                            ],
+                            'users': [id, peerId],
+                            'timestamp': DateTime.now()
+                                .millisecondsSinceEpoch
+                                .toString(),
+                            'content': unsent['content'].trim(),
+                            'type': unsent['type']
+                          },
+                        );
+                        transaction.set(
+                          documentReference,
+                          {
+                            'idFrom': id,
+                            'idTo': peerId,
+                            'timestamp': DateTime.now()
+                                .millisecondsSinceEpoch
+                                .toString(),
+                            'content': unsent['content'].trim(),
+                            'type': unsent['type']
+                          },
+                        );
+                      }).then((e) {
+                        unsent = null;
+                        print("Transaction successfully committed!");
+                      });
+                      listScrollController.animateTo(0.0,
+                          duration: Duration(milliseconds: 300),
+                          curve: Curves.easeOut);
+
+                      break;
+                    case Status.ERROR:
+                      print('error oo');
+                      unsent = null;
+                      var error;
+                      try {
+                        error = json.decode(snapshot.data.message)['message'];
+                      } on FormatException {
+                        error = snapshot.data.message;
+                      }
+                      Fluttertoast.showToast(msg: error);
+                      break;
+                    default:
+                  }
                 }
-              },
-            ),
+                return Container(
+                  child: StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection('messages')
+                        .doc(groupChatId)
+                        .collection(groupChatId)
+                        .orderBy('timestamp', descending: true)
+                        .limit(_limit)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Center(
+                            child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.secondaryElement)));
+                      } else {
+                        listMessage.addAll(snapshot.data.documents);
+                        return ListView.builder(
+                          padding: EdgeInsets.all(10.0),
+                          itemBuilder: (context, index) {
+                            if (index == 0) {
+                              if (unsent != null) {
+                                return Row(
+                                  children: <Widget>[
+                                    unsent['type'] == 0
+                                        ? Container(
+                                            child: Text(
+                                              unsent['content'],
+                                              style: TextStyle(
+                                                  color: AppColors.primaryText),
+                                            ),
+                                            padding: EdgeInsets.fromLTRB(
+                                                15.0, 10.0, 15.0, 10.0),
+                                            width: 200.0,
+                                            decoration: BoxDecoration(
+                                                color: Color.fromRGBO(
+                                                    255, 218, 28, 0.2),
+                                                borderRadius:
+                                                    BorderRadius.circular(8.0)),
+                                            margin:
+                                                EdgeInsets.only(right: 10.0),
+                                          )
+                                        : unsent['type'] == 1
+                                            ? Container(
+                                                child: FlatButton(
+                                                  child: Material(
+                                                    child: CachedNetworkImage(
+                                                      placeholder:
+                                                          (context, url) =>
+                                                              Container(
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                          valueColor:
+                                                              AlwaysStoppedAnimation<
+                                                                      Color>(
+                                                                  AppColors
+                                                                      .secondaryElement),
+                                                        ),
+                                                        width: 200.0,
+                                                        height: 200.0,
+                                                        padding: EdgeInsets.all(
+                                                            70.0),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: Color.fromRGBO(
+                                                              228,
+                                                              228,
+                                                              228,
+                                                              1.0),
+                                                          borderRadius:
+                                                              BorderRadius.all(
+                                                            Radius.circular(
+                                                                8.0),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      errorWidget: (context,
+                                                              url, error) =>
+                                                          Material(
+                                                        child: Image.asset(
+                                                          'images/img_not_available.jpeg',
+                                                          width: 200.0,
+                                                          height: 200.0,
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.all(
+                                                          Radius.circular(8.0),
+                                                        ),
+                                                        clipBehavior:
+                                                            Clip.hardEdge,
+                                                      ),
+                                                      imageUrl:
+                                                          unsent['content'],
+                                                      width: 200.0,
+                                                      height: 200.0,
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.all(
+                                                            Radius.circular(
+                                                                8.0)),
+                                                    clipBehavior: Clip.hardEdge,
+                                                  ),
+                                                  onPressed: () {
+                                                    // Navigator.push(
+                                                    //     context,
+                                                    //     MaterialPageRoute(
+                                                    //         builder: (context) => FullPhoto(
+                                                    //             url: document.data()['content'])));
+                                                  },
+                                                  padding: EdgeInsets.all(0),
+                                                ),
+                                                margin:
+                                                    EdgeInsets.only(left: 10.0),
+                                              )
+                                            : Container(
+                                                child: Image.asset(
+                                                  'images/${unsent['content']}.gif',
+                                                  width: 100.0,
+                                                  height: 100.0,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                                margin: EdgeInsets.only(
+                                                    bottom: isLastMessageRight(
+                                                            index)
+                                                        ? 20.0
+                                                        : 10.0,
+                                                    right: 10.0),
+                                              ),
+                                  ],
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                );
+                              }
+                              return Container();
+                            }
+
+                            return buildItem(
+                                index, snapshot.data.documents[index - 1]);
+                          },
+                          itemCount: snapshot.data.documents.length + 1,
+                          reverse: true,
+                          controller: listScrollController,
+                        );
+                      }
+                    },
+                  ),
+                );
+              }),
     );
   }
 }
+
+class Choice {
+  const Choice({this.title, this.id});
+
+  final String title;
+  final int id;
+}
+
+const List<Choice> choices = const <Choice>[
+  const Choice(title: 'Report', id: 1),
+  const Choice(title: 'Block', id: 2),
+  const Choice(title: 'Report & Block', id: 3),
+];

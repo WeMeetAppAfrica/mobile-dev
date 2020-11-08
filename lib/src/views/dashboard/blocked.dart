@@ -23,6 +23,12 @@ class _BlockedState extends State<Blocked> {
   bool _obscureNewText = true;
   final _formKey = GlobalKey<FormState>();
   bool _obscureConText = true;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    bloc.getBlockedList(widget.token);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +51,7 @@ class _BlockedState extends State<Blocked> {
       body: Container(
         color: Colors.white,
         child: StreamBuilder(
-            stream: bloc.userStream,
+            stream: bloc.matchesStream,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 switch (snapshot.data.status) {
@@ -54,12 +60,31 @@ class _BlockedState extends State<Blocked> {
                       child: CircularProgressIndicator(),
                     );
                     break;
-                  case Status.DONE:
+                  case Status.GETBLOCKEDLIST:
                     bloc.userSink.add(ApiResponse.idle('message'));
-                    Fluttertoast.showToast(msg: 'Password changed');
-                    myCallback(() {
-                      Navigator.pop(context);
-                    });
+
+                    return ListView(
+                      children: [
+                        ListTile(
+                          leading: Image(
+                            height: 48,
+                            image: NetworkImage(
+                                'https://via.placeholder.com/1080'),
+                          ),
+                          title: Text('Hello'),
+                          trailing: FlatButton(
+                            color: AppColors.secondaryElement.withOpacity(0.1),
+                            onPressed: () => {},
+                            child: Text(
+                              'Unblock',
+                              style:
+                                  TextStyle(color: AppColors.secondaryElement),
+                            ),
+                          ),
+                        )
+                      ],
+                    );
+
                     break;
                   case Status.ERROR:
                     bloc.userSink.add(ApiResponse.idle('message'));
@@ -73,22 +98,7 @@ class _BlockedState extends State<Blocked> {
                   default:
                 }
               }
-              return ListView(
-                children: [
-                  ListTile(
-                    leading: Image(
-                      height: 48,
-                      image: NetworkImage('https://via.placeholder.com/1080'),
-                    ),
-                    title: Text('Hello'),
-                    trailing: FlatButton(
-                      color: AppColors.secondaryElement.withOpacity(0.1),
-                      onPressed: () => {},
-                      child: Text('Unblock', style: TextStyle(color: AppColors.secondaryElement),),
-                    ),
-                  )
-                ],
-              );
+              return Container();
             }),
       ),
     );

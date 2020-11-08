@@ -35,12 +35,8 @@ class _KYCState extends State<KYC> {
   bool showGenderError = false;
   bool showWorkError = false;
   final bioController = TextEditingController();
-  final dob = TextEditingController();
   RangeValues selectedRange = RangeValues(18, 30);
   List<RadioModel> employStatus = new List<RadioModel>();
-  DateTime date = DateTime.now();
-  DateTime selectedDate = DateTime(
-      DateTime.now().year - 18, DateTime.now().month, DateTime.now().day);
 
   @override
   void initState() {
@@ -62,12 +58,11 @@ class _KYCState extends State<KYC> {
     prefs.setString('firstName', user.firstName);
     prefs.setString('lastName', user.lastName);
   }
-
-  _logout() async {
+_logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.remove('accessToken');
+    prefs.clear();
+    prefs.setBool('passKYC', true);
   }
-
   _getUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     token = prefs.getString('accessToken');
@@ -75,18 +70,6 @@ class _KYCState extends State<KYC> {
     bloc.getProfile(token);
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime picked = await showDatePicker(
-        context: context,
-        initialDate: selectedDate,
-        firstDate: DateTime(1910),
-        lastDate: DateTime(date.year - 18, date.month, date.day));
-    if (picked != null && picked != selectedDate)
-      setState(() {
-        selectedDate = picked;
-        dob.text = DateFormat('dd-MMM-yyyy').format(selectedDate.toLocal());
-      });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,9 +137,6 @@ class _KYCState extends State<KYC> {
                                       snapshot.data.data.data.workStatus)
                                     element.isSelected = true
                                 });
-                            dob.text = DateTime.fromMicrosecondsSinceEpoch(
-                                    snapshot.data.data.data.dateOfBirth)
-                                .toString();
                             selectedEmploy = snapshot.data.data.data.workStatus;
                             if (snapshot.data.data.data.genderPreference !=
                                 null) {
@@ -454,45 +434,7 @@ class _KYCState extends State<KYC> {
                             SizedBox(
                               height: 25,
                             ),
-                            Padding(
-                              padding: EdgeInsets.only(left: 20),
-                              child: Text(
-                                "What's your age?",
-                                textAlign: TextAlign.left,
-                                style: TextStyle(
-                                  color: AppColors.primaryText,
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: GestureDetector(
-                                onTap: () => _selectDate(context),
-                                child: AbsorbPointer(
-                                  child: TextFormField(
-                                      validator: (value) {
-                                        if (value.isEmpty) {
-                                          return 'Please select Date of Birth';
-                                        }
-                                        return null;
-                                      },
-                                      obscureText: false,
-                                      controller: dob,
-                                      decoration: InputDecoration(
-                                        prefixIcon: Icon(Icons.calendar_today),
-                                        contentPadding: EdgeInsets.fromLTRB(
-                                            20.0, 15.0, 20.0, 15.0),
-                                        hintText: "Date of Birth",
-                                      )),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 25,
-                            ),
-                            Padding(
+                          Padding(
                               padding: EdgeInsets.only(left: 20),
                               child: Text(
                                 "Talk About Yourself",
@@ -520,6 +462,9 @@ class _KYCState extends State<KYC> {
                                     contentPadding: EdgeInsets.fromLTRB(
                                         20.0, 15.0, 20.0, 15.0),
                                     hintText: "Bio",
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: const BorderSide(
+                                  color: Colors.green, width: 2.0),),
                                   )),
                             ),
                             SizedBox(
@@ -555,9 +500,9 @@ class _KYCState extends State<KYC> {
                                     overlayRadius: 28.0),
                               ),
                               child: RangeSlider(
-                                min: 16,
-                                divisions: 80,
-                                max: 96,
+                                min: 18,
+                                divisions: 42,
+                                max: 60,
                                 labels: RangeLabels(
                                   selectedRange.start.round().toString(),
                                   selectedRange.end.round().toString(),
@@ -614,7 +559,6 @@ class _KYCState extends State<KYC> {
                                       "workStatus": selectedEmploy
                                     };
                                     if (showInterestError == false) {
-                                      print(selectedDate.toString());
                                       bloc.updateProfile(data, token);
                                     }
                                   }

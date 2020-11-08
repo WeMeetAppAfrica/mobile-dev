@@ -10,7 +10,7 @@ import 'package:wemeet/src/resources/app_exceptions.dart';
 class ApiBaseHelper {
   final String _baseUrl = "https://wemeetng.herokuapp.com/api/v1/";
 
-  Future<dynamic> get(String url, token) async {
+  Future<dynamic> get(String url, [token]) async {
     var responseJson;
     print(token);
     try {
@@ -29,17 +29,53 @@ class ApiBaseHelper {
     return responseJson;
   }
 
+  Future<dynamic> getWOT(
+    String url,
+  ) async {
+    var responseJson;
+    try {
+      final response = await http.get(
+        _baseUrl + url,
+        headers: {
+          "Accept": "application/json",
+        },
+      );
+      print(_baseUrl + url);
+      responseJson = _returnResponse(response);
+    } on SocketException {
+      throw FetchDataException('No Internet connection');
+    }
+    return responseJson;
+  }
+
   Future<dynamic> post(String url, Object request, [String token]) async {
-    print(request);
     var responseJson;
     try {
       final response = await http.post(_baseUrl + url,
           headers: {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": 'Bearer ' + token
+            "Authorization": token != null ? 'Bearer $token' : null
           },
           body: jsonEncode(request));
+      responseJson = _returnResponse(response);
+    } on SocketException {
+      print('error');
+      throw FetchDataException('No Internet connection');
+    }
+    return responseJson;
+  }
+
+  Future<dynamic> postOp(String url, [String token]) async {
+    print(url);
+    var responseJson;
+    try {
+      final response = await http.post(_baseUrl + url, headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": 'Bearer ' + token
+      });
+      print('eeeee');
       responseJson = _returnResponse(response);
       print('eeeee');
     } on SocketException {
@@ -157,6 +193,7 @@ class ApiBaseHelper {
         throw BadRequestException(response.body.toString());
       case 401:
       case 403:
+      case 409:
         throw UnauthorisedException(response.body.toString());
       case 404:
         print(json.decode(response.body));

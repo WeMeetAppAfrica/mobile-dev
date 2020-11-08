@@ -48,9 +48,17 @@ class ApiResponse<T> {
       : status = Status.ADDIMAGEUPDATE5DONE;
   ApiResponse.getProfile(this.data) : status = Status.GETPROFILE;
   ApiResponse.getEmailToken(this.data) : status = Status.GETEMAILTOKEN;
+  ApiResponse.resendEmailToken(this.data) : status = Status.RESENDEMAILTOKEN;
   ApiResponse.sendMessage(this.data) : status = Status.SENDMESSAGE;
   ApiResponse.songRequest(this.data) : status = Status.SONGREQUEST;
   ApiResponse.done(this.data) : status = Status.DONE;
+  ApiResponse.forgotPass(this.data) : status = Status.FORGOTPASS;
+  ApiResponse.verifyForgotToken(this.data) : status = Status.VERIFYFORGOTTOKEN;
+  ApiResponse.getBlockedList(this.data) : status = Status.GETBLOCKEDLIST;
+  ApiResponse.resetPassword(this.data) : status = Status.RESETPASSWORD;
+  ApiResponse.upgradePlan(this.data) : status = Status.UPGRADEPLAN;
+  ApiResponse.blocked(this.data) : status = Status.BLOCKED;
+  ApiResponse.reported(this.data) : status = Status.REPORTED;
   ApiResponse.activated(this.data) : status = Status.ACTIVATED;
   ApiResponse.error(this.message) : status = Status.ERROR;
   ApiResponse.addImgError(this.message) : status = Status.ADDIMGERROR;
@@ -68,8 +76,13 @@ enum Status {
   ADDFB,
   LOADING,
   SONGREQUEST,
+  GETBLOCKEDLIST,
+  VERIFYFORGOTTOKEN,
+  RESETPASSWORD,
+  FORGOTPASS,
   PROIMAGELOADING,
   PROIMAGEDONE,
+  UPGRADEPLAN,
   ADDIMAGEDONE,
   ADDIMAGELOADING,
   SENDMESSAGE,
@@ -80,6 +93,7 @@ enum Status {
   ADDIMAGE3LOADING,
   ADDIMAGE3DONE,
   GETEMAILTOKEN,
+  RESENDEMAILTOKEN,
   ADDIMAGE4LOADING,
   ADDIMAGE4DONE,
   ADDIMAGE5LOADING,
@@ -100,6 +114,8 @@ enum Status {
   PROIMGERROR,
   GETPROFILE,
   DONE,
+  BLOCKED,
+  REPORTED,
   ACTIVATED,
   ERROR,
   LOGOUT

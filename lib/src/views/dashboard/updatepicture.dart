@@ -76,6 +76,7 @@ class _UpdatePhotosState extends State<UpdatePhotos> {
         case 'picture0':
           setState(() {
             _picture0 = pickedFile;
+            profile.profileImage = null;
           });
           print(_picture0.path);
           bloc.uploadProPhoto(_picture0.path, token);
@@ -253,8 +254,8 @@ class _UpdatePhotosState extends State<UpdatePhotos> {
                                 print('add photo');
                                 _showPicker(context, 'picture0');
                               },
-                              child: _picture0 == null
-                                  ? profile.profileImage == null
+                              child: profile.profileImage == null
+                                  ? _picture0 == null
                                       ? Container(
                                           height: 120.0,
                                           width: 120,
@@ -269,33 +270,75 @@ class _UpdatePhotosState extends State<UpdatePhotos> {
                                             borderRadius: Radii.k8pxRadius,
                                           ),
                                         )
-                                      : Container(
-                                          height: 120.0,
-                                          width: 120,
-                                          child: Image(
-                                            image: NetworkImage(
-                                                profile.profileImage),
-                                            fit: BoxFit.cover,
-                                          ),
-                                          decoration: new BoxDecoration(
-                                            color: Color.fromARGB(
-                                                255, 247, 247, 247),
-                                            border: new Border.all(
-                                                width: 1.0,
-                                                color: Color.fromARGB(
-                                                    255, 247, 247, 247)),
-                                            borderRadius: Radii.k8pxRadius,
-                                          ),
-                                        )
-                                  : StreamBuilder(
-                                      stream: bloc.uploadStream,
-                                      builder: (context, snapshot) {
-                                        if (snapshot.hasData) {
-                                          switch (snapshot.data.status) {
-                                            case Status.PROIMAGEUPDATELOADING:
-                                              return Stack(
-                                                children: [
-                                                  Container(
+                                      : StreamBuilder(
+                                          stream: bloc.uploadStream,
+                                          builder: (context, snapshot) {
+                                            if (snapshot.hasData) {
+                                              switch (snapshot.data.status) {
+                                                case Status
+                                                    .PROIMAGELOADING:
+                                                  return Stack(
+                                                    children: [
+                                                      Container(
+                                                        height: 120.0,
+                                                        width: 120,
+                                                        child: Image(
+                                                          image: FileImage(File(
+                                                              _picture0.path)),
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                        decoration:
+                                                            new BoxDecoration(
+                                                          color: Color.fromARGB(
+                                                              255,
+                                                              247,
+                                                              247,
+                                                              247),
+                                                          border:
+                                                              new Border.all(
+                                                                  width: 1.0,
+                                                                  color: Color
+                                                                      .fromARGB(
+                                                                          255,
+                                                                          247,
+                                                                          247,
+                                                                          247)),
+                                                          borderRadius:
+                                                              Radii.k8pxRadius,
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        height: 120.0,
+                                                        width: 120,
+                                                        child: Center(
+                                                            child:
+                                                                CircularProgressIndicator()),
+                                                        color: Color.fromRGBO(
+                                                            255, 255, 255, 0.6),
+                                                      ),
+                                                    ],
+                                                  );
+                                                  break;
+                                                case Status.ERROR:
+                                                  try {
+                                                    error = json.decode(snapshot
+                                                        .data
+                                                        .message)['message'];
+                                                  } on FormatException {
+                                                    error =
+                                                        snapshot.data.message;
+                                                  }
+                                                  myCallback(() {
+                                                    _picture0 = null;
+                                                  });
+                                                  bloc.uploadSink.add(
+                                                      ApiResponse.idle(
+                                                          'message'));
+                                                  break;
+                                                case Status.PROIMAGEDONE:
+                                                  proImage = snapshot
+                                                      .data.data.data.imageUrl;
+                                                  return Container(
                                                     height: 120.0,
                                                     width: 120,
                                                     child: Image(
@@ -317,94 +360,74 @@ class _UpdatePhotosState extends State<UpdatePhotos> {
                                                       borderRadius:
                                                           Radii.k8pxRadius,
                                                     ),
-                                                  ),
-                                                  Container(
+                                                  );
+                                                  break;
+                                                default:
+                                              }
+                                            }
+                                            return profile.profileImage == null
+                                                ? Container(
                                                     height: 120.0,
                                                     width: 120,
-                                                    child: Center(
-                                                        child:
-                                                            CircularProgressIndicator()),
-                                                    color: Color.fromRGBO(
-                                                        255, 255, 255, 0.6),
-                                                  ),
-                                                ],
-                                              );
-                                              break;
-                                            case Status.ERROR:
-                                              try {
-                                                error = json.decode(snapshot
-                                                    .data.message)['message'];
-                                              } on FormatException {
-                                                error = snapshot.data.message;
-                                              }
-                                              myCallback(() {
-                                                _picture0 = null;
-                                              });
-                                              bloc.uploadSink.add(
-                                                  ApiResponse.idle('message'));
-                                              break;
-                                            case Status.PROIMAGEUPDATEDONE:
-                                              proImage = snapshot
-                                                  .data.data.data.imageUrl;
-                                              return Container(
-                                                height: 120.0,
-                                                width: 120,
-                                                child: Image(
-                                                  image: FileImage(
-                                                      File(_picture0.path)),
-                                                  fit: BoxFit.cover,
-                                                ),
-                                                decoration: new BoxDecoration(
-                                                  color: Color.fromARGB(
-                                                      255, 247, 247, 247),
-                                                  border: new Border.all(
-                                                      width: 1.0,
+                                                    child: Icon(
+                                                        Icons.photo_camera),
+                                                    decoration:
+                                                        new BoxDecoration(
                                                       color: Color.fromARGB(
-                                                          255, 247, 247, 247)),
-                                                  borderRadius:
-                                                      Radii.k8pxRadius,
-                                                ),
-                                              );
-                                              break;
-                                            default:
-                                          }
-                                        }
-                                        return profile.profileImage == null
-                                            ? Container(
-                                                height: 120.0,
-                                                width: 120,
-                                                child: Icon(Icons.photo_camera),
-                                                decoration: new BoxDecoration(
-                                                  color: Color.fromARGB(
-                                                      255, 247, 247, 247),
-                                                  border: new Border.all(
-                                                      width: 1.0,
+                                                          255, 247, 247, 247),
+                                                      border: new Border.all(
+                                                          width: 1.0,
+                                                          color: Color.fromARGB(
+                                                              255,
+                                                              247,
+                                                              247,
+                                                              247)),
+                                                      borderRadius:
+                                                          Radii.k8pxRadius,
+                                                    ),
+                                                  )
+                                                : Container(
+                                                    height: 120.0,
+                                                    width: 120,
+                                                    child: Image(
+                                                      image: NetworkImage(
+                                                          profile.profileImage),
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                    decoration:
+                                                        new BoxDecoration(
                                                       color: Color.fromARGB(
-                                                          255, 247, 247, 247)),
-                                                  borderRadius:
-                                                      Radii.k8pxRadius,
-                                                ),
-                                              )
-                                            : Container(
-                                                height: 120.0,
-                                                width: 120,
-                                                child: Image(
-                                                  image: NetworkImage(
-                                                      profile.profileImage),
-                                                  fit: BoxFit.cover,
-                                                ),
-                                                decoration: new BoxDecoration(
-                                                  color: Color.fromARGB(
-                                                      255, 247, 247, 247),
-                                                  border: new Border.all(
-                                                      width: 1.0,
-                                                      color: Color.fromARGB(
-                                                          255, 247, 247, 247)),
-                                                  borderRadius:
-                                                      Radii.k8pxRadius,
-                                                ),
-                                              );
-                                      }),
+                                                          255, 247, 247, 247),
+                                                      border: new Border.all(
+                                                          width: 1.0,
+                                                          color: Color.fromARGB(
+                                                              255,
+                                                              247,
+                                                              247,
+                                                              247)),
+                                                      borderRadius:
+                                                          Radii.k8pxRadius,
+                                                    ),
+                                                  );
+                                          })
+                                  : Container(
+                                      height: 120.0,
+                                      width: 120,
+                                      child: Image(
+                                        image:
+                                            NetworkImage(profile.profileImage),
+                                        fit: BoxFit.cover,
+                                      ),
+                                      decoration: new BoxDecoration(
+                                        color:
+                                            Color.fromARGB(255, 247, 247, 247),
+                                        border: new Border.all(
+                                            width: 1.0,
+                                            color: Color.fromARGB(
+                                                255, 247, 247, 247)),
+                                        borderRadius: Radii.k8pxRadius,
+                                      ),
+                                    ),
                             ),
                           ),
                           SizedBox(

@@ -85,6 +85,7 @@ class _MessagesState extends State<Messages> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => Chat(
+                                        token: widget.token,
                                         peerAvatar: items[index]
                                             ['profileImage'],
                                         peerId: items[index]['id'].toString(),
@@ -184,6 +185,7 @@ class _MessagesState extends State<Messages> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => Chat(
+                                        token: widget.token,
                                             peerAvatar: chat['profileImage'],
                                             peerName: chat['name'],
                                             peerId: chat['id'],

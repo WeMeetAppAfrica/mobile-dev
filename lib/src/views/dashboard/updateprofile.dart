@@ -411,6 +411,9 @@ class _UpdateProfileState extends State<UpdateProfile> {
                                 contentPadding:
                                     EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                                 hintText: "Date of Birth",
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: const BorderSide(
+                                  color: Colors.green, width: 2.0),),
                               )),
                         ),
                       ),
@@ -446,6 +449,10 @@ class _UpdateProfileState extends State<UpdateProfile> {
                             contentPadding:
                                 EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                             hintText: "Bio",
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: const BorderSide(
+                                  color: Colors.green, width: 2.0),
+                            ),
                           )),
                     ),
                     SizedBox(
@@ -481,9 +488,9 @@ class _UpdateProfileState extends State<UpdateProfile> {
                             RoundSliderOverlayShape(overlayRadius: 28.0),
                       ),
                       child: RangeSlider(
-                        min: 16,
-                        divisions: 80,
-                        max: 96,
+                        min: 18,
+                        divisions: 42,
+                        max: 60,
                         labels: RangeLabels(
                           selectedRange.start.round().toString(),
                           selectedRange.end.round().toString(),

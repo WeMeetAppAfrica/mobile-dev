@@ -13,6 +13,7 @@ import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wemeet/src/views/auth/activate.dart';
+import 'package:wemeet/src/views/auth/forgot.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/register.dart';
 import 'package:wemeet/src/views/dashboard/home.dart';
@@ -30,6 +31,7 @@ class _LoginState extends State<Login> {
   Position _currentPosition;
   String deviceId;
   String pushToken;
+  bool loading = false;
   bool _obscureText = true;
   String token;
   final emailController = TextEditingController();
@@ -57,13 +59,14 @@ class _LoginState extends State<Login> {
     print(await Geolocator.getLastKnownPosition());
   }
 
-  Future<Position> _getCurrentLocation() async {
-    print('saa');
-    print('saa');
+  login() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs?.setBool("isLoggedIn", true);
+  }
 
+  Future<Position> _getCurrentLocation() async {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    print('saa');
     setState(() {
       _currentPosition = position;
     });
@@ -88,6 +91,7 @@ class _LoginState extends State<Login> {
     setState(() {
       pushToken = prefs.getString('pushToken');
     });
+    print('push $pushToken');
   }
 
   _setUser(user, token) async {
@@ -95,6 +99,7 @@ class _LoginState extends State<Login> {
     prefs.setString('accessToken', token);
     prefs.setString('id', user.id.toString());
     prefs.setString('profileImage', user.profileImage);
+    prefs.setString('email', user.email);
     prefs.setString('firstName', user.firstName);
     prefs.setString('lastName', user.lastName);
     prefs.setBool('passKYC', user.profileImage == null ? false : true);
@@ -118,16 +123,25 @@ class _LoginState extends State<Login> {
             if (snapshot.hasData) {
               switch (snapshot.data.status) {
                 case Status.LOADING:
-                  return showCircularProgress();
+                  loading = true;
+
+                  print(
+                      'whyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy');
+                  // return showCircularProgress();
+                  break;
+                case Status.IDLE:
+                  loading = false;
                   break;
                 case Status.DONE:
                   bloc.loginSink.add(ApiResponse.idle('message'));
+                  login();
                   token = snapshot.data.data.data.tokenInfo.accessToken;
                   if (snapshot.data.data.data.user.active) {
+                    print('to push $pushToken');
                     FirebaseFirestore.instance
                         .collection('users')
                         .doc(snapshot.data.data.data.user.id.toString())
-                        .update({
+                        .set({
                       "pushToken": pushToken,
                       "chattingWith": null,
                       "firstName": snapshot.data.data.data.user.firstName,
@@ -138,7 +152,8 @@ class _LoginState extends State<Login> {
                     _setUser(snapshot.data.data.data.user,
                         snapshot.data.data.data.tokenInfo.accessToken);
                     if (snapshot.data.data.data.user.profileImage == null) {
-                      Fluttertoast.showToast(msg: 'Please complete your profile');
+                      Fluttertoast.showToast(
+                          msg: 'Please complete your profile');
                     }
                     myCallback(() {
                       Navigator.pushReplacement(
@@ -237,7 +252,7 @@ class _LoginState extends State<Login> {
                             child: TextFormField(
                                 validator: (value) {
                                   if (value.isEmpty) {
-                                    return 'Please enter email';
+                                    return 'Please enter email address';
                                   }
                                   return null;
                                 },
@@ -246,7 +261,11 @@ class _LoginState extends State<Login> {
                                   prefixIcon: Icon(Icons.mail_outline),
                                   contentPadding: EdgeInsets.fromLTRB(
                                       20.0, 15.0, 20.0, 15.0),
-                                  hintText: "Email",
+                                  hintText: "Email Address",
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: const BorderSide(
+                                        color: Colors.green, width: 2.0),
+                                  ),
                                 )),
                           ),
                           SizedBox(height: 25.0),
@@ -274,6 +293,10 @@ class _LoginState extends State<Login> {
                                 contentPadding:
                                     EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                                 hintText: "Password",
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: const BorderSide(
+                                      color: Colors.green, width: 2.0),
+                                ),
                               ),
                             ),
                           ),
@@ -281,69 +304,82 @@ class _LoginState extends State<Login> {
                             alignment: Alignment.topRight,
                             child: Container(
                               margin: EdgeInsets.only(top: 17, right: 38),
-                              child: Text(
-                                "Forgot Password",
-                                textAlign: TextAlign.right,
-                                style: TextStyle(
-                                  color: AppColors.accentText,
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 12,
+                              child: InkWell(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ForgotPass(),
+                                  ),
+                                ),
+                                child: Text(
+                                  "Forgot Password",
+                                  textAlign: TextAlign.right,
+                                  style: TextStyle(
+                                    color: AppColors.accentText,
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                           Align(
                             alignment: Alignment.topCenter,
-                            child: InkWell(
-                              onTap: () {
-                                if (_formKey.currentState.validate()) {
-                                  final data = {
-                                    "deviceId": pushToken,
-                                    "email": emailController.text,
-                                    "latitude": _currentPosition.latitude,
-                                    "longitude": _currentPosition.longitude,
-                                    "password": passwordController.text,
-                                  };
-                                  bloc.login(data);
-                                }
-                              },
-                              child: Container(
-                                width: 72,
-                                height: 72,
-                                margin: EdgeInsets.only(top: 72),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryBackground,
-                                  border: Border.fromBorderSide(
-                                      Borders.primaryBorder),
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(36)),
-                                ),
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Positioned(
-                                      left: 16,
-                                      right: 16,
-                                      child: Container(
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.secondaryElement,
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(20)),
-                                        ),
-                                        child: Container(),
+                            child: loading
+                                ? CircularProgressIndicator(
+                                    backgroundColor: AppColors.secondaryElement,
+                                  )
+                                : InkWell(
+                                    onTap: () {
+                                      if (_formKey.currentState.validate()) {
+                                        final data = {
+                                          "deviceId": pushToken,
+                                          "email": emailController.text,
+                                          "latitude": _currentPosition.latitude,
+                                          "longitude":
+                                              _currentPosition.longitude,
+                                          "password": passwordController.text,
+                                        };
+                                        bloc.login(data);
+                                      }
+                                    },
+                                    child: Container(
+                                      width: 72,
+                                      height: 72,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primaryBackground,
+                                        border: Border.fromBorderSide(
+                                            Borders.primaryBorder),
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(36)),
+                                      ),
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          Positioned(
+                                            left: 16,
+                                            right: 16,
+                                            child: Container(
+                                              height: 40,
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    AppColors.secondaryElement,
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(20)),
+                                              ),
+                                              child: Container(),
+                                            ),
+                                          ),
+                                          Positioned(
+                                            child: Image.asset(
+                                              "assets/images/arrow-right.png",
+                                              fit: BoxFit.none,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    Positioned(
-                                      child: Image.asset(
-                                        "assets/images/arrow-right.png",
-                                        fit: BoxFit.none,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                                  ),
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,

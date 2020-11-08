@@ -38,6 +38,7 @@ class _RegisterState extends State<Register> {
   String parseDate;
   final dob = TextEditingController();
   Position _currentPosition;
+  bool loading = false;
   DateTime date = DateTime.now();
   DateTime selectedDate = DateTime(
       DateTime.now().year - 18, DateTime.now().month, DateTime.now().day);
@@ -123,9 +124,12 @@ class _RegisterState extends State<Register> {
             if (snapshot.hasData) {
               switch (snapshot.data.status) {
                 case Status.LOADING:
-                  return showCircularProgress();
+                  loading = true;
+                  // return showCircularProgress();
                   break;
                 case Status.ERROR:
+                  bloc.registerSink.add(ApiResponse.idle('message'));
+                  loading = false;
                   try {
                     Fluttertoast.showToast(
                         msg: json.decode(snapshot.data.message)['message']);
@@ -134,6 +138,8 @@ class _RegisterState extends State<Register> {
                   }
                   break;
                 case Status.ADDFB:
+                  loading = false;
+                  bloc.registerSink.add(ApiResponse.idle('message'));
                   users
                       .doc(userData.user.id.toString())
                       .set({
@@ -146,9 +152,10 @@ class _RegisterState extends State<Register> {
                       .then((value) => bloc.getEmailToken(token))
                       .catchError(
                           (error) => print("Failed to add user: $error"));
-                  return showCircularProgress();
+                  loading = true;
                   break;
                 case Status.DONE:
+                  loading = false;
                   token = snapshot.data.data.data.tokenInfo.accessToken;
                   userData = snapshot.data.data.data;
                   bloc.registerSink.add(ApiResponse.addFB('snap'));
@@ -157,6 +164,7 @@ class _RegisterState extends State<Register> {
                   break;
                 case Status.GETEMAILTOKEN:
                   print('object');
+                  loading = false;
                   print('userData - ${userData.user}');
                   myCallback(() {
                     Navigator.pushReplacement(
@@ -228,6 +236,10 @@ class _RegisterState extends State<Register> {
                                   contentPadding: EdgeInsets.fromLTRB(
                                       20.0, 15.0, 20.0, 15.0),
                                   hintText: "Your Name",
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: const BorderSide(
+                                        color: Colors.green, width: 2.0),
+                                  ),
                                 )),
                           ),
                           Padding(
@@ -245,6 +257,10 @@ class _RegisterState extends State<Register> {
                                 contentPadding:
                                     EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                                 hintText: "Phone Number",
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: const BorderSide(
+                                      color: Colors.green, width: 2.0),
+                                ),
                               ),
                             ),
                           ),
@@ -267,6 +283,10 @@ class _RegisterState extends State<Register> {
                                       contentPadding: EdgeInsets.fromLTRB(
                                           20.0, 15.0, 20.0, 15.0),
                                       hintText: "Date of Birth",
+                                      focusedBorder: UnderlineInputBorder(
+                                        borderSide: const BorderSide(
+                                            color: Colors.green, width: 2.0),
+                                      ),
                                     )),
                               ),
                             ),
@@ -287,6 +307,10 @@ class _RegisterState extends State<Register> {
                                   contentPadding: EdgeInsets.fromLTRB(
                                       20.0, 15.0, 20.0, 15.0),
                                   hintText: "Email",
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: const BorderSide(
+                                        color: Colors.green, width: 2.0),
+                                  ),
                                 )),
                           ),
                           Padding(
@@ -310,6 +334,10 @@ class _RegisterState extends State<Register> {
                                 contentPadding:
                                     EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                                 hintText: "Password",
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: const BorderSide(
+                                      color: Colors.green, width: 2.0),
+                                ),
                               ),
                             ),
                           ),
@@ -327,71 +355,80 @@ class _RegisterState extends State<Register> {
                           ),
                           Align(
                             alignment: Alignment.topCenter,
-                            child: InkWell(
-                              onTap: () {
-                                if (_formKey.currentState.validate() &&
-                                    _isChecked) {
-                                  final data = {
-                                    "deviceId": pushToken,
-                                    "dateOfBirth": parseDate,
-                                    "email": emailController.text,
-                                    "userName": emailController.text,
-                                    "firstName":
-                                        nameController.text.split(' ').length >
-                                                0
-                                            ? nameController.text.split(' ')[0]
-                                            : null,
-                                    "lastName":
-                                        nameController.text.split(' ').length >
-                                                1
-                                            ? nameController.text.split(' ')[1]
-                                            : null,
-                                    "latitude": _currentPosition.latitude,
-                                    "longitude": _currentPosition.longitude,
-                                    "password": passwordController.text,
-                                    "phone": phoneController.text
-                                  };
-                                  // print(parseDate);
-                                  bloc.signup(data);
-                                }
-                              },
-                              child: Container(
-                                width: 72,
-                                height: 72,
-                                margin: EdgeInsets.only(bottom: 32),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryBackground,
-                                  border: Border.fromBorderSide(
-                                      Borders.primaryBorder),
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(36)),
-                                ),
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Positioned(
-                                      left: 16,
-                                      right: 16,
-                                      child: Container(
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.secondaryElement,
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(20)),
-                                        ),
-                                        child: Container(),
+                            child: loading
+                                ? CircularProgressIndicator(
+                                    backgroundColor: AppColors.secondaryElement,
+                                  )
+                                : InkWell(
+                                    onTap: () {
+                                      if (_formKey.currentState.validate() &&
+                                          _isChecked) {
+                                        final data = {
+                                          "deviceId": pushToken,
+                                          "dateOfBirth": parseDate,
+                                          "email": emailController.text,
+                                          "userName": emailController.text,
+                                          "firstName": nameController.text
+                                                      .split(' ')
+                                                      .length >
+                                                  0
+                                              ? nameController.text
+                                                  .split(' ')[0]
+                                              : null,
+                                          "lastName": nameController.text
+                                                      .split(' ')
+                                                      .length >
+                                                  1
+                                              ? nameController.text
+                                                  .split(' ')[1]
+                                              : null,
+                                          "latitude": _currentPosition.latitude,
+                                          "longitude":
+                                              _currentPosition.longitude,
+                                          "password": passwordController.text,
+                                          "phone": phoneController.text
+                                        };
+                                        // print(parseDate);
+                                        bloc.signup(data);
+                                      }
+                                    },
+                                    child: Container(
+                                      width: 72,
+                                      height: 72,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primaryBackground,
+                                        border: Border.fromBorderSide(
+                                            Borders.primaryBorder),
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(36)),
+                                      ),
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          Positioned(
+                                            left: 16,
+                                            right: 16,
+                                            child: Container(
+                                              height: 40,
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    AppColors.secondaryElement,
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(20)),
+                                              ),
+                                              child: Container(),
+                                            ),
+                                          ),
+                                          Positioned(
+                                            child: Image.asset(
+                                              "assets/images/arrow-right.png",
+                                              fit: BoxFit.none,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    Positioned(
-                                      child: Image.asset(
-                                        "assets/images/arrow-right.png",
-                                        fit: BoxFit.none,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                                  ),
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,

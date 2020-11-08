@@ -5,6 +5,7 @@ import 'package:wemeet/src/models/apimodel.dart';
 import 'package:wemeet/src/models/getmatchesmodel.dart';
 import 'package:wemeet/src/models/imageupload.dart';
 import 'package:wemeet/src/models/login.dart';
+import 'package:wemeet/src/models/plansmodel.dart';
 import 'package:wemeet/src/models/profilemodel.dart';
 import 'package:wemeet/src/models/swipe.dart';
 import 'package:wemeet/src/models/swipesuggestions.dart';
@@ -41,6 +42,17 @@ class Repository {
     return ProfileModel.fromJson(response);
   }
 
+  Future<ProfileModel> updateLocation(request, token) async {
+    final response = await _helper.post('user/location', request, token);
+    return ProfileModel.fromJson(response);
+  }
+
+  Future<LoginModel> resetPassword(request) async {
+    final response =
+        await _helper.post('auth/accounts/reset-password', request);
+    return LoginModel.fromJson(response);
+  }
+
   Future<ProfileModel> updateProfileImage(request, token) async {
     print('upimg');
     final response = await _helper.post('user/profile/image', request, token);
@@ -54,6 +66,23 @@ class Repository {
 
   Future<LoginModel> getEmailToken(token) async {
     final response = await _helper.get('auth/emailverification', token);
+    print(response);
+    return LoginModel.fromJson(response);
+  }
+
+  Future<LoginModel> getForgotPass(email) async {
+    print('aaa');
+    final response =
+        await _helper.getWOT('auth/accounts/forgot-password?email=$email');
+    return LoginModel.fromJson(response);
+  }
+
+  Future<LoginModel> verifyForgotToken(email, token) async {
+    print('aaa');
+    final response = await _helper.getWOT(
+        'auth/accounts/verify-password-token?email=$email&token=$token');
+    response['data'] = null;
+    print(response['data']);
     return LoginModel.fromJson(response);
   }
 
@@ -61,6 +90,12 @@ class Repository {
     final response =
         await _helper.upload('image/upload', file, imageType, token);
     return ImageUpload.fromJson(response);
+  }
+
+  Future<GetMatchesModel> getBlockedList(token) async {
+    final response =
+        await _helper.get('user/blocks?pageNum=0&pageSize=10', token);
+    return GetMatchesModel.fromJson(response);
   }
 
   Future<GetMatchesModel> getMatches(token) async {
@@ -77,6 +112,27 @@ class Repository {
   Future<Swipe> swipe(request, token) async {
     final response = await _helper.post('swipe', request, token);
     return Swipe.fromJson(response);
+  }
+
+  Future<ApiModel> block(request, token) async {
+    final response =
+        await _helper.post('user/block?userId=$request', {}, token);
+    return ApiModel.fromJson(response);
+  }
+
+  Future<ApiModel> report(request, token) async {
+    final response = await _helper.post('user/report', {}, token);
+    return ApiModel.fromJson(response);
+  }
+
+  Future<PlansModel> getPlans(token) async {
+    final response = await _helper.get('payment/plans', token);
+    return PlansModel.fromJson(response);
+  }
+
+  Future<ApiModel> upgradePlan(request, token) async {
+    final response = await _helper.post('payment/upgrade', request, token);
+    return ApiModel.fromJson(response);
   }
 
   Future<ApiModel> songRequest(request, token) async {

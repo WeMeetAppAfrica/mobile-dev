@@ -14,22 +14,27 @@ import 'package:wemeet/src/views/dashboard/home.dart';
 
 import 'package:wemeet/values/values.dart';
 
-class Activate extends StatefulWidget {
+class ForgotPass extends StatefulWidget {
   final email;
   final token;
   final code;
-  Activate({Key key, this.email, this.token, this.code}) : super(key: key);
+  ForgotPass({Key key, this.email, this.token, this.code}) : super(key: key);
 
   @override
-  _ActivateState createState() => _ActivateState();
+  _ForgotPassState createState() => _ForgotPassState();
 }
 
-class _ActivateState extends State<Activate> {
+class _ForgotPassState extends State<ForgotPass> {
   Position _currentPosition;
   String deviceId;
   bool _obscureText = true;
+  bool _obscureConText = true;
   final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
   bool loading = false;
+  bool showToken = false;
+  bool showPassword = false;
   final codeController = TextEditingController();
   String error = '';
   final _formKey = GlobalKey<FormState>();
@@ -43,6 +48,12 @@ class _ActivateState extends State<Activate> {
   void _toggle() {
     setState(() {
       _obscureText = !_obscureText;
+    });
+  }
+
+  void _toggleCon() {
+    setState(() {
+      _obscureConText = !_obscureConText;
     });
   }
 
@@ -77,7 +88,6 @@ class _ActivateState extends State<Activate> {
 
   @override
   Widget build(BuildContext context) {
-    emailController.text = widget.email;
     _getId().then((id) {
       deviceId = id;
       print(deviceId);
@@ -95,31 +105,32 @@ class _ActivateState extends State<Activate> {
               switch (snapshot.data.status) {
                 case Status.LOADING:
                   loading = true;
-                  // return showCircularProgress();
                   break;
-                case Status.ACTIVATED:
-                  bloc.loginSink.add(ApiResponse.idle('message'));
+                case Status.IDLE:
                   loading = false;
-                  print(widget.token);
-                  _setUser(widget.token);
-                  Fluttertoast.showToast(msg: 'Please complete your profile');
-
-                  myCallback(() {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => KYC()),
-                    );
-                  });
                   break;
-                case Status.RESENDEMAILTOKEN:
+                case Status.FORGOTPASS:
                   bloc.loginSink.add(ApiResponse.idle('message'));
-                  print('object');
-                  loading = false;
+                  showToken = true;
                   Fluttertoast.showToast(msg: snapshot.data.data.message);
 
                   break;
+                case Status.VERIFYFORGOTTOKEN:
+                  bloc.loginSink.add(ApiResponse.idle('message'));
+                  showPassword = true;
+                  Fluttertoast.showToast(msg: snapshot.data.data.message);
+
+                  break;
+                case Status.RESETPASSWORD:
+                  bloc.loginSink.add(ApiResponse.idle('message'));
+                  Fluttertoast.showToast(msg: snapshot.data.data.message);
+                    myCallback(() {
+                      Navigator.pop(context);
+                    });
+
+                  break;
                 case Status.ERROR:
-                  loading = false;
+                  bloc.loginSink.add(ApiResponse.idle('message'));
                   try {
                     Fluttertoast.showToast(
                         msg: json.decode(snapshot.data.message)['message']);
@@ -148,16 +159,29 @@ class _ActivateState extends State<Activate> {
                         ),
                         Positioned(
                           left: 27,
-                          top: 90,
-                          child: Text(
-                            "Activate",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontFamily: 'Berkshire Swash',
-                              color: AppColors.secondaryText,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 24,
-                            ),
+                          top: 65,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              InkWell(
+                                child: Icon(Icons.arrow_back_ios,
+                                    color: AppColors.secondaryText),
+                                onTap: () => {Navigator.pop(context)},
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Text(
+                                "Forgot Password",
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  fontFamily: 'Berkshire Swash',
+                                  color: AppColors.secondaryText,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 24,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -188,7 +212,6 @@ class _ActivateState extends State<Activate> {
                                   }
                                   return null;
                                 },
-                                enabled: false,
                                 controller: emailController,
                                 decoration: InputDecoration(
                                   prefixIcon: Icon(Icons.mail_outline),
@@ -201,57 +224,94 @@ class _ActivateState extends State<Activate> {
                                   ),
                                 )),
                           ),
+                          showToken
+                              ? Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: TextFormField(
+                                      validator: (value) {
+                                        if (value.isEmpty) {
+                                          return 'Please enter token';
+                                        }
+                                        return null;
+                                      },
+                                      controller: codeController,
+                                      decoration: InputDecoration(
+                                        prefixIcon: Icon(Icons.lock),
+                                        contentPadding: EdgeInsets.fromLTRB(
+                                            20.0, 15.0, 20.0, 15.0),
+                                        hintText: "Token",
+                                        focusedBorder: UnderlineInputBorder(
+                                          borderSide: const BorderSide(
+                                              color: Colors.green, width: 2.0),
+                                        ),
+                                      )),
+                                )
+                              : Container(),
+                          showPassword
+                              ? Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: TextFormField(
+                                      validator: (value) {
+                                        if (value.isEmpty) {
+                                          return 'Please enter new password';
+                                        }
+                                        return null;
+                                      },
+                                      controller: passwordController,
+                                      obscureText: _obscureText,
+                                      decoration: InputDecoration(
+                                        prefixIcon: Icon(Icons.lock),
+                                        suffixIcon: IconButton(
+                                          icon: Icon(_obscureText
+                                              ? Icons.visibility
+                                              : Icons.visibility_off),
+                                          onPressed: () {
+                                            _toggle();
+                                          },
+                                        ),
+                                        contentPadding: EdgeInsets.fromLTRB(
+                                            20.0, 15.0, 20.0, 15.0),
+                                        hintText: "New Password",
+                                        focusedBorder: UnderlineInputBorder(
+                                          borderSide: const BorderSide(
+                                              color: Colors.green, width: 2.0),
+                                        ),
+                                      )),
+                                )
+                              : Container(),
+                          showPassword
+                              ? Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: TextFormField(
+                                      validator: (value) {
+                                        if (value.isEmpty) {
+                                          return 'Please confirm new password';
+                                        }
+                                        return null;
+                                      },
+                                      controller: confirmPasswordController,
+                                      obscureText: _obscureConText,
+                                      decoration: InputDecoration(
+                                        prefixIcon: Icon(Icons.lock),
+                                        suffixIcon: IconButton(
+                                          icon: Icon(_obscureConText
+                                              ? Icons.visibility
+                                              : Icons.visibility_off),
+                                          onPressed: () {
+                                            _toggleCon();
+                                          },
+                                        ),
+                                        contentPadding: EdgeInsets.fromLTRB(
+                                            20.0, 15.0, 20.0, 15.0),
+                                        hintText: "Confirm Password",
+                                        focusedBorder: UnderlineInputBorder(
+                                          borderSide: const BorderSide(
+                                              color: Colors.green, width: 2.0),
+                                        ),
+                                      )),
+                                )
+                              : Container(),
                           SizedBox(height: 25.0),
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: TextFormField(
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Please enter validation code';
-                                }
-                                return null;
-                              },
-                              obscureText: _obscureText,
-                              controller: codeController,
-                              decoration: InputDecoration(
-                                prefixIcon: Icon(Icons.lock_outline),
-                                suffixIcon: IconButton(
-                                  icon: Icon(_obscureText
-                                      ? Icons.visibility
-                                      : Icons.visibility_off),
-                                  onPressed: () {
-                                    _toggle();
-                                  },
-                                ),
-                                contentPadding:
-                                    EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                                hintText: "Code",
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: const BorderSide(
-                                      color: Colors.green, width: 2.0),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Align(
-                            alignment: Alignment.topRight,
-                            child: Container(
-                              margin: EdgeInsets.only(top: 17, right: 38),
-                              child: InkWell(
-                                onTap: () => bloc.resendEmailToken(widget.token),
-                                child: Text(
-                                  "Resend Activation Code",
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                    color: AppColors.accentText,
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 20),
                           Align(
                             alignment: Alignment.topCenter,
                             child: loading
@@ -260,9 +320,27 @@ class _ActivateState extends State<Activate> {
                                   )
                                 : InkWell(
                                     onTap: () {
+                                      if (showPassword) {
+                                        var request = {
+                                          "confirmPassword":
+                                              confirmPasswordController.text,
+                                          "email": emailController.text,
+                                          "password": passwordController.text,
+                                          "token": codeController.text
+                                        };
+                                        bloc.resetPassword(request);
+                                        return;
+                                      }
+                                      if (showToken) {
+                                        bloc.verifyForgotToken(
+                                            emailController.text,
+                                            codeController.text);
+                                        return;
+                                      }
                                       if (_formKey.currentState.validate()) {
-                                        bloc.emailVerification(
-                                            codeController.text, widget.token);
+                                        bloc.getForgotPass(
+                                            emailController.text);
+                                        return;
                                       }
                                     },
                                     child: Container(

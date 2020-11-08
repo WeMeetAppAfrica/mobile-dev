@@ -318,7 +318,10 @@ class _PlaylistState extends State<Playlist> {
                           decoration: new InputDecoration(
                               prefixIcon: Icon(FeatherIcons.music),
                               labelText: 'Song Description',
-                              hintText: 'eg. Joro by Layon ft. Elhi'),
+                              hintText: 'eg. Joro by Layon ft. Elhi',
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: const BorderSide(
+                                  color: Colors.green, width: 2.0),),),
                         ),
                       ],
                     );

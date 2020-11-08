@@ -119,6 +119,9 @@ class _UpdatePasswordState extends State<UpdatePassword> {
                         contentPadding:
                             EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                         hintText: "Current Password",
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: const BorderSide(
+                                  color: Colors.green, width: 2.0),),
                       ),
                       obscureText: _obscureText,
                     ),
@@ -146,6 +149,9 @@ class _UpdatePasswordState extends State<UpdatePassword> {
                         contentPadding:
                             EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                         hintText: "New Password",
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: const BorderSide(
+                                  color: Colors.green, width: 2.0),),
                       ),
                       obscureText: _obscureNewText,
                     ),
@@ -173,6 +179,9 @@ class _UpdatePasswordState extends State<UpdatePassword> {
                         contentPadding:
                             EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                         hintText: "Confirm New Password",
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: const BorderSide(
+                                  color: Colors.green, width: 2.0),),
                       ),
                       obscureText: _obscureConText,
                     ),
