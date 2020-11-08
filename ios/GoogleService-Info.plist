@@ -3,23 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>271301618675-atgn2kqa18bqbeevgca60mnnipqo0n6g.apps.googleusercontent.com</string>
+	<string>277983141718-ofcia7h48lsp9mmbspiphelsj0hbompi.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.271301618675-atgn2kqa18bqbeevgca60mnnipqo0n6g</string>
-	<key>ANDROID_CLIENT_ID</key>
-	<string>271301618675-ckkisbfguf8j2hfh8d8ebpvomccljgti.apps.googleusercontent.com</string>
+	<string>com.googleusercontent.apps.277983141718-ofcia7h48lsp9mmbspiphelsj0hbompi</string>
 	<key>API_KEY</key>
-	<string>AIzaSyDkagVKnfoWIUjOsyfMDGkSjvv0ocalJOY</string>
+	<string>AIzaSyDrFI4tLBOADCFQjPDUAF335anYcQj0_N8</string>
 	<key>GCM_SENDER_ID</key>
-	<string>271301618675</string>
+	<string>277983141718</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.wemeetng.wemeet</string>
 	<key>PROJECT_ID</key>
-	<string>wemeet-19cb4</string>
+	<string>wemeet-293821</string>
 	<key>STORAGE_BUCKET</key>
-	<string>wemeet-19cb4.appspot.com</string>
+	<string>wemeet-293821.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -31,8 +29,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:271301618675:ios:8963c19ebf0af15db98086</string>
+	<string>1:277983141718:ios:0e2ada485f7dbcec51c0f7</string>
 	<key>DATABASE_URL</key>
-	<string>https://wemeet-19cb4.firebaseio.com</string>
+	<string>https://wemeet-293821.firebaseio.com</string>
 </dict>
 </plist>
