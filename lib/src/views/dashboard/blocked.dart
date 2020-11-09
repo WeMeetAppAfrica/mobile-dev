@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
@@ -19,6 +20,7 @@ class _BlockedState extends State<Blocked> {
   bool _obscureText = true;
   final passController = TextEditingController();
   final confirmPassController = TextEditingController();
+  var blocked = List();
   final newPassController = TextEditingController();
   bool _obscureNewText = true;
   final _formKey = GlobalKey<FormState>();
@@ -62,28 +64,8 @@ class _BlockedState extends State<Blocked> {
                     break;
                   case Status.GETBLOCKEDLIST:
                     bloc.userSink.add(ApiResponse.idle('message'));
-
-                    return ListView(
-                      children: [
-                        ListTile(
-                          leading: Image(
-                            height: 48,
-                            image: NetworkImage(
-                                'https://via.placeholder.com/1080'),
-                          ),
-                          title: Text('Hello'),
-                          trailing: FlatButton(
-                            color: AppColors.secondaryElement.withOpacity(0.1),
-                            onPressed: () => {},
-                            child: Text(
-                              'Unblock',
-                              style:
-                                  TextStyle(color: AppColors.secondaryElement),
-                            ),
-                          ),
-                        )
-                      ],
-                    );
+                    blocked = snapshot.data.data.data.content;
+                    print(snapshot.data.data.data);
 
                     break;
                   case Status.ERROR:
@@ -98,7 +80,63 @@ class _BlockedState extends State<Blocked> {
                   default:
                 }
               }
-              return Container();
+              return blocked.length > 0
+                  ? StreamBuilder(
+                      stream: bloc.userStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          switch (snapshot.data.status) {
+                            case Status.LOADING:
+                              return Center(child: CircularProgressIndicator());
+                              break;
+                            case Status.DONE:
+                              bloc.userSink.add(ApiResponse.idle('message'));
+                              Fluttertoast.showToast(msg: 'User unblocked');
+                              break;
+                            case Status.ERROR:
+                              bloc.userSink.add(ApiResponse.idle('message'));
+                              try {
+                                Fluttertoast.showToast(
+                                    msg: json.decode(
+                                        snapshot.data.message)['message']);
+                              } on FormatException {
+                                Fluttertoast.showToast(
+                                    msg: snapshot.data.message);
+                              }
+                              break;
+                            default:
+                          }
+                        }
+                        return ListView.builder(
+                          itemCount: blocked.length,
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                              leading: Image(
+                                height: 48,
+                                width: 48,
+                                fit: BoxFit.cover,
+                                image: NetworkImage(
+                                    '${blocked[index]['profileImage']}'),
+                              ),
+                              title: Text(
+                                  '${blocked[index]['firstName']} ${blocked[index]['lastName']}'),
+                              trailing: FlatButton(
+                                color:
+                                    AppColors.secondaryElement.withOpacity(0.1),
+                                onPressed: () => {
+                                  bloc.unblock(blocked[index]['id'], widget.token)
+                                },
+                                child: Text(
+                                  'Unblock',
+                                  style: TextStyle(
+                                      color: AppColors.secondaryElement),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      })
+                  : Center(child: Text('You have no blocked users'));
             }),
       ),
     );

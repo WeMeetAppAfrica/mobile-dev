@@ -56,8 +56,9 @@ class ApiResponse<T> {
   ApiResponse.verifyForgotToken(this.data) : status = Status.VERIFYFORGOTTOKEN;
   ApiResponse.getBlockedList(this.data) : status = Status.GETBLOCKEDLIST;
   ApiResponse.resetPassword(this.data) : status = Status.RESETPASSWORD;
-  ApiResponse.upgradePlan(this.data) : status = Status.UPGRADEPLAN;
+  ApiResponse.upgradePlan(this.message, this.data) : status = Status.UPGRADEPLAN;
   ApiResponse.blocked(this.data) : status = Status.BLOCKED;
+  ApiResponse.unblocked(this.data) : status = Status.UNBLOCKED;
   ApiResponse.reported(this.data) : status = Status.REPORTED;
   ApiResponse.activated(this.data) : status = Status.ACTIVATED;
   ApiResponse.error(this.message) : status = Status.ERROR;
@@ -75,6 +76,7 @@ enum Status {
   IDLE,
   ADDFB,
   LOADING,
+  UNBLOCKED,
   SONGREQUEST,
   GETBLOCKEDLIST,
   VERIFYFORGOTTOKEN,

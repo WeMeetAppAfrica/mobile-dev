@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/SwipeAnimation/detail.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
@@ -18,21 +19,25 @@ import 'package:wemeet/src/views/dashboard/updatepassword.dart';
 import 'package:wemeet/src/views/dashboard/updatepicture.dart';
 import 'package:wemeet/values/values.dart';
 
-class Profile extends StatefulWidget {
+class ProfilePage extends StatefulWidget {
   final token;
-  Profile({Key key, this.token}) : super(key: key);
+  ProfilePage({Key key, this.token}) : super(key: key);
 
   @override
-  _ProfileState createState() => _ProfileState();
+  _ProfilePageState createState() => _ProfilePageState();
 }
 
-class _ProfileState extends State<Profile> with TickerProviderStateMixin {
+class _ProfilePageState extends State<ProfilePage>
+    with TickerProviderStateMixin {
   List matches = [];
   var items = List();
   bool ki = true;
+  bool toggleLocation = true;
+  bool toggleProfile = false;
+  bool toggleLoading = false;
   dynamic details;
   dynamic type;
-  _ProfileState({this.type});
+  _ProfilePageState({this.type});
   double _appBarHeight = 500.0;
   AppBarBehavior _appBarBehavior = AppBarBehavior.pinned;
 
@@ -80,7 +85,9 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                         case Status.GETPROFILE:
                           bloc.profileSink.add(ApiResponse.idle('message'));
                           details = snapshot.data.data.data;
-
+                          print(details);
+                          toggleLocation = details.hideLocation;
+                          toggleProfile = details.hideProfile;
                           break;
                         case Status.ERROR:
                           bloc.profileSink.add(ApiResponse.idle('message'));
@@ -376,7 +383,7 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                                                           builder: (context) =>
                                                                               DetailPage(
                                                                             type:
-                                                                                Datum.fromJson(items[index]),
+                                                                                Profile.fromJson(items[index]),
                                                                           ),
                                                                         ));
                                                                   },
@@ -440,111 +447,211 @@ class _ProfileState extends State<Profile> with TickerProviderStateMixin {
                                                   ],
                                                 );
                                               }),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.stretch,
-                                            children: [
-                                              SizedBox(height: 18),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 12.0),
-                                                child: Text(
-                                                  'Location Services',
-                                                  style: TextStyle(
-                                                    fontFamily:
-                                                        'Berkshire Swash',
-                                                    color: AppColors.accentText,
-                                                    fontWeight: FontWeight.w100,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ),
-                                              ListTile(
-                                                onTap: () {
-                                                  Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            UpdateLocation(
-                                                          token: widget.token,
+                                          StreamBuilder(
+                                              stream: bloc.profileLocStream,
+                                              builder: (context, snapshot) {
+                                                if (snapshot.hasData) {
+                                                  switch (
+                                                      snapshot.data.status) {
+                                                    case Status.LOADING:
+                                                      toggleLoading = true;
+                                                      Fluttertoast.showToast(
+                                                          msg:
+                                                              'Updating Privacy Settings');
+                                                      break;
+                                                    case Status.DONE:
+                                                      bloc.profileLocSink.add(
+                                                          ApiResponse.idle(
+                                                              'message'));
+                                                      toggleLoading = false;
+                                                      print(snapshot.data.data
+                                                          .data.hideLocation);
+                                                      toggleLocation = snapshot
+                                                          .data
+                                                          .data
+                                                          .data
+                                                          .hideLocation;
+                                                      toggleProfile = snapshot
+                                                          .data
+                                                          .data
+                                                          .data
+                                                          .hideProfile;
+                                                      Fluttertoast.showToast(
+                                                          msg:
+                                                              'Privacy Settings Updated');
+                                                      break;
+                                                    default:
+                                                  }
+                                                }
+                                                return Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment
+                                                          .stretch,
+                                                  children: [
+                                                    SizedBox(height: 18),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 12.0),
+                                                      child: Text(
+                                                        'Location Services',
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              'Berkshire Swash',
+                                                          color: AppColors
+                                                              .accentText,
+                                                          fontWeight:
+                                                              FontWeight.w100,
+                                                          fontSize: 12,
                                                         ),
-                                                      ));
-                                                },
-                                                title: Text('Change Location'),
-                                                subtitle:
-                                                    Text('Lagos, Nigeria'),
-                                                trailing: Icon(
-                                                    FeatherIcons.chevronRight),
-                                              ),
-                                              ListTile(
-                                                title: Text(
-                                                    'Turn On/Off Location'),
-                                                subtitle: Text(
-                                                    'Decide wether users see your location'),
-                                                trailing: Icon(
-                                                  FeatherIcons.toggleRight,
-                                                  color: AppColors
-                                                      .secondaryElement,
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 12.0),
-                                                child: Text(
-                                                  'Profile',
-                                                  style: TextStyle(
-                                                    fontFamily:
-                                                        'Berkshire Swash',
-                                                    color: AppColors.accentText,
-                                                    fontWeight: FontWeight.w100,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ),
-                                              ListTile(
-                                                onTap: () {
-                                                  Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            Blocked(
-                                                          token: widget.token,
+                                                      ),
+                                                    ),
+                                                    ListTile(
+                                                      onTap: () {
+                                                        Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  UpdateLocation(
+                                                                token: widget
+                                                                    .token,
+                                                              ),
+                                                            ));
+                                                      },
+                                                      title: Text(
+                                                          'Change Location'),
+                                                      subtitle: Text(
+                                                          'Lagos, Nigeria'),
+                                                      trailing: Icon(
+                                                          FeatherIcons
+                                                              .chevronRight),
+                                                    ),
+                                                    ListTile(
+                                                      onTap: () {
+                                                        bloc.updateProfileLoc({
+                                                          "hideLocation":
+                                                              !toggleLocation
+                                                        }, widget.token);
+                                                      },
+                                                      title: Text(
+                                                          'Turn On/Off Location'),
+                                                      subtitle: Text(
+                                                          'Decide wether users see your location'),
+                                                      trailing: toggleLoading
+                                                          ? SizedBox(
+                                                              width: 10,
+                                                              height: 10,
+                                                              child:
+                                                                  CircularProgressIndicator(
+                                                                backgroundColor:
+                                                                    AppColors
+                                                                        .secondaryElement,
+                                                              ))
+                                                          : Icon(
+                                                              toggleLocation
+                                                                  ? FeatherIcons
+                                                                      .toggleRight
+                                                                  : FeatherIcons
+                                                                      .toggleLeft,
+                                                              color: toggleLocation
+                                                                  ? AppColors
+                                                                      .secondaryElement
+                                                                  : null,
+                                                            ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 12.0),
+                                                      child: Text(
+                                                        'Profile',
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              'Berkshire Swash',
+                                                          color: AppColors
+                                                              .accentText,
+                                                          fontWeight:
+                                                              FontWeight.w100,
+                                                          fontSize: 12,
                                                         ),
-                                                      ));
-                                                },
-                                                title: Text('Blocked Users'),
-                                                subtitle: Text(
-                                                    'See all users that have been blocked'),
-                                                trailing: Icon(
-                                                    FeatherIcons.chevronRight),
-                                              ),
-                                              ListTile(
-                                                title: Text('Hide My Profile'),
-                                                subtitle: Text(
-                                                    'Profile is currently visible'),
-                                                trailing: Icon(
-                                                  FeatherIcons.toggleLeft,
-                                                  // color: AppColors.secondaryElement,
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.all(16.0),
-                                                child: RaisedButton(
-                                                  onPressed: () => {},
-                                                  color: AppColors
-                                                      .secondaryElement,
-                                                  padding: EdgeInsets.all(18),
-                                                  child: Text(
-                                                    'Deactivate My Account',
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 18),
-                                                  ),
-                                                ),
-                                              )
-                                            ],
-                                          ),
+                                                      ),
+                                                    ),
+                                                    ListTile(
+                                                      onTap: () {
+                                                        Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder:
+                                                                  (context) =>
+                                                                      Blocked(
+                                                                token: widget
+                                                                    .token,
+                                                              ),
+                                                            ));
+                                                      },
+                                                      title:
+                                                          Text('Blocked Users'),
+                                                      subtitle: Text(
+                                                          'See all users that have been blocked'),
+                                                      trailing: Icon(
+                                                          FeatherIcons
+                                                              .chevronRight),
+                                                    ),
+                                                    ListTile(
+                                                      onTap: () {
+                                                        bloc.updateProfileLoc({
+                                                          "hideProfile":
+                                                              !toggleProfile
+                                                        }, widget.token);
+                                                      },
+                                                      title: Text(
+                                                          'Hide My Profile'),
+                                                      subtitle: Text(
+                                                          'Profile is currently visible'),
+                                                      trailing: toggleLoading
+                                                          ? SizedBox(
+                                                              width: 10,
+                                                              height: 10,
+                                                              child:
+                                                                  CircularProgressIndicator(
+                                                                backgroundColor:
+                                                                    AppColors
+                                                                        .secondaryElement,
+                                                              ))
+                                                          : Icon(
+                                                              toggleProfile
+                                                                  ? FeatherIcons
+                                                                      .toggleRight
+                                                                  : FeatherIcons
+                                                                      .toggleLeft,
+                                                              color: toggleProfile
+                                                                  ? AppColors
+                                                                      .secondaryElement
+                                                                  : null,
+                                                            ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              16.0),
+                                                      child: RaisedButton(
+                                                        onPressed: () => {},
+                                                        color: AppColors
+                                                            .secondaryElement,
+                                                        padding:
+                                                            EdgeInsets.all(18),
+                                                        child: Text(
+                                                          'Deactivate My Account',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 18),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                );
+                                              }),
                                           Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.stretch,

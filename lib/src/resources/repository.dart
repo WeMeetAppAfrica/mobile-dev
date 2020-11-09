@@ -5,6 +5,7 @@ import 'package:wemeet/src/models/apimodel.dart';
 import 'package:wemeet/src/models/getmatchesmodel.dart';
 import 'package:wemeet/src/models/imageupload.dart';
 import 'package:wemeet/src/models/login.dart';
+import 'package:wemeet/src/models/paymodel.dart';
 import 'package:wemeet/src/models/plansmodel.dart';
 import 'package:wemeet/src/models/profilemodel.dart';
 import 'package:wemeet/src/models/swipe.dart';
@@ -119,6 +120,11 @@ class Repository {
         await _helper.post('user/block?userId=$request', {}, token);
     return ApiModel.fromJson(response);
   }
+  Future<ApiModel> unblock(request, token) async {
+    final response =
+        await _helper.post('user/unblock?userId=$request', {}, token);
+    return ApiModel.fromJson(response);
+  }
 
   Future<ApiModel> report(request, token) async {
     final response = await _helper.post('user/report', {}, token);
@@ -130,9 +136,9 @@ class Repository {
     return PlansModel.fromJson(response);
   }
 
-  Future<ApiModel> upgradePlan(request, token) async {
+  Future<PayModel> upgradePlan(request, token) async {
     final response = await _helper.post('payment/upgrade', request, token);
-    return ApiModel.fromJson(response);
+    return PayModel.fromJson(response);
   }
 
   Future<ApiModel> songRequest(request, token) async {

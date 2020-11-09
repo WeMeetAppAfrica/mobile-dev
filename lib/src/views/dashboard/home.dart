@@ -7,6 +7,7 @@ import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tindercard/flutter_tindercard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wemeet/src/SwipeAnimation/activeCard.dart';
 import 'package:wemeet/src/SwipeAnimation/data.dart';
 import 'package:wemeet/src/SwipeAnimation/dummyCard.dart';
@@ -44,6 +45,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   Animation<double> bottom;
   Animation<double> width;
   int flag = 0;
+  int swipesLeft = 0;
+  bool disableSwipe = false;
   List data = imageData;
   List<Widget> actions;
   Widget leading;
@@ -71,6 +74,24 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     setState(() {
       cardList.removeAt(index);
     });
+  }
+
+  _launchTerms() async {
+    const url = 'http://www.africau.edu/images/default/sample.pdf';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  _launchPrivacy() async {
+    const url = 'http://www.africau.edu/images/default/sample.pdf';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   @override
@@ -178,27 +199,41 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   }
 
   dismissImg(img) {
-    print('UNLIKE');
-    var req = {"swipeeId": img.id, "type": "UNLIKE"};
-    print(req);
-    swipeBloc.swipe(req, widget.token);
-    setState(() {
-      data.remove(img);
-    });
-    print(selectedData);
+    if (!disableSwipe) {
+      setState(() {
+        swipesLeft = swipesLeft == -1 ? -1 : swipesLeft - 1;
+      });
+      print('UNLIKE');
+      var req = {"swipeeId": img.id, "type": "UNLIKE"};
+      print(req);
+      swipeBloc.swipe(req, widget.token);
+      setState(() {
+        data.remove(img);
+      });
+      print(selectedData);
+    } else {
+      _showDialog();
+    }
   }
 
   addImg(img) {
-    print('LIKE');
-    print(img.id);
-    var req = {"swipeeId": img.id, "type": "LIKE"};
-    print(req);
-    swipeBloc.swipe(req, widget.token);
-    setState(() {
-      data.remove(img);
-      selectedData.add(img);
-    });
-    print(selectedData);
+    if (!disableSwipe) {
+      setState(() {
+        swipesLeft = swipesLeft == -1 ? -1 : swipesLeft - 1;
+      });
+      print('LIKE $swipesLeft');
+      print(img.id);
+      var req = {"swipeeId": img.id, "type": "LIKE"};
+      print(req);
+      swipeBloc.swipe(req, widget.token);
+      setState(() {
+        data.remove(img);
+        selectedData.add(img);
+      });
+      print(selectedData);
+    } else {
+      _showDialog();
+    }
   }
 
   swipeRight() {
@@ -219,6 +254,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    swipesLeft == 0 ? disableSwipe = true : disableSwipe = false;
     timeDilation = 0.4;
     double initialBottom = 15.0;
     CardController controller;
@@ -323,7 +359,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Profile(
+                          builder: (context) => ProfilePage(
                             token: widget.token,
                           ),
                         ));
@@ -375,26 +411,19 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                 ),
                 Spacer(),
                 ListTile(
-                  title: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(FeatherIcons.file),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text('Privacy Policy'),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PrivacyPolicy(),
-                        ));
-                    // Update the state of the app.
-                    // ...
-                  },
-                ),
+                    title: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(FeatherIcons.file),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text('Privacy Policy'),
+                      ],
+                    ),
+                    onTap: () {
+                      _launchPrivacy();
+                    }),
                 ListTile(
                   title: Row(
                     children: [
@@ -402,17 +431,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                       SizedBox(
                         width: 10,
                       ),
-                      Text('Term of Use'),
+                      Text('Terms of Use'),
                     ],
                   ),
                   onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TermsOfUse(),
-                        ));
-                    // Update the state of the app.
-                    // ...
+                    _launchTerms();
                   },
                 ),
                 Spacer(),
@@ -616,10 +639,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                         );
                                         break;
                                       case Status.DONE:
-                                        print(snapshot.data.data.data);
-                                        data = snapshot.data.data.data;
-                                        return snapshot.data.data.data.length >
-                                                0
+                                        data = snapshot.data.data.data.profiles;
+                                        swipesLeft =
+                                            snapshot.data.data.data.swipesLeft;
+                                        print(swipesLeft);
+                                        return data.length > 0
                                             ? Column(
                                                 children: [
                                                   Stack(
@@ -874,7 +898,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                 ),
                 contentPadding: const EdgeInsets.all(16.0),
                 content: Column(
-                            mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'You are out of swipes for today.',

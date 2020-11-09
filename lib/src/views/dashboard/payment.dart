@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -41,22 +42,21 @@ class _PaymentState extends State<Payment> {
     });
   }
 
+  chargeCard(amount, access) async {
+    Charge charge = Charge()
+      ..amount = amount
+      //  ..reference = _getReference()
+      ..accessCode = access
+      ..email = email;
+    CheckoutResponse response = await PaystackPlugin.checkout(
+      context,
+      charge: charge,
+    );
+    print('Response = $response');
+  }
+
   @override
   Widget build(BuildContext context) {
-    chargeCard(amount, access) async {
-      Charge charge = Charge()
-        ..amount = amount
-        //  ..reference = _getReference()
-        ..accessCode = access
-        ..email = email;
-      CheckoutResponse response = await PaystackPlugin.checkout(
-        context,
-        method: CheckoutMethod.card, // Defaults to CheckoutMethod.selectable
-        charge: charge,
-      );
-      print('Response = $response');
-    }
-
     return Scaffold(
       appBar: AppBar(
         iconTheme: new IconThemeData(color: AppColors.primaryText),
@@ -81,18 +81,30 @@ class _PaymentState extends State<Payment> {
               ),
             ),
             StreamBuilder(
-                stream: bloc.userStream,
+                stream: bloc.payStream,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     switch (snapshot.data.status) {
+                      case Status.LOADING:
+                        return Container(
+                          height: MediaQuery.of(context).size.height * 0.8,
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                        break;
                       case Status.UPGRADEPLAN:
+                        bloc.paySink.add(ApiResponse.idle('message'));
                         load = false;
-                        print(snapshot.data.data.data);
-                        // chargeCard(
-                        //     1000, snapshot.data.data.data['access_code']);
+                        print(snapshot.data.data.data.accessCode);
+                        print(snapshot.data.message);
+                        myCallback(() {
+                          chargeCard(int.parse(snapshot.data.message),
+                              snapshot.data.data.data.accessCode);
+                        });
                         break;
                       case Status.ERROR:
-                        bloc.userSink.add(ApiResponse.idle('message'));
+                        bloc.paySink.add(ApiResponse.idle('message'));
                         load = false;
                         try {
                           Fluttertoast.showToast(
@@ -122,7 +134,10 @@ class _PaymentState extends State<Payment> {
                                 case Status.DONE:
                                   bloc.planSink
                                       .add(ApiResponse.idle('message'));
+                                  var f =
+                                      new NumberFormat("#,###,###.00", "en_US");
                                   snapshot.data.data.data.forEach((e) => {
+                                        print(e.code),
                                         pages.add(Padding(
                                           padding: EdgeInsets.only(
                                             top: 16.0,
@@ -164,7 +179,7 @@ class _PaymentState extends State<Payment> {
                                                   color: AppColors
                                                       .ternaryBackground,
                                                   child: Text(
-                                                    'NGN ${e.amount == null ? '0' : e.amount}  per month',
+                                                    'NGN ${e.amount == null ? '0' : f.format(e.amount / 100)}  per month',
                                                     style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold,
@@ -192,7 +207,8 @@ class _PaymentState extends State<Payment> {
                                                                   -1
                                                               ? 'Unlimited'
                                                               : e.limits
-                                                                  .dailySwipeLimit.toString(),
+                                                                  .dailySwipeLimit
+                                                                  .toString(),
                                                           style: TextStyle(
                                                               fontSize: 16),
                                                         ),
@@ -211,7 +227,8 @@ class _PaymentState extends State<Payment> {
                                                                   -1
                                                               ? 'Unlimited'
                                                               : e.limits
-                                                                  .dailyMessageLimit.toString(),
+                                                                  .dailyMessageLimit
+                                                                  .toString(),
                                                           style: TextStyle(
                                                               fontSize: 16),
                                                         ),
@@ -238,29 +255,45 @@ class _PaymentState extends State<Payment> {
                                                 ),
                                               ),
                                               SizedBox(height: 10),
-                                              Container(
-                                                child: FlatButton(
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      load = true;
-                                                    });
-                                                    var data = {
-                                                      "amount": e.amount == null ? 0 : e.amount,
-                                                      "plan_code": e.code,
-                                                      "email": email
-                                                    };
-                                                    bloc.upgradePlan(
-                                                        data, widget.token);
-                                                  },
-                                                  child: Text(
-                                                    '${e.code == 'DEFAULT_FREE_PLAN' ? 'Downgrade' : 'Upgrade'} To This Plan',
-                                                    style: TextStyle(
-                                                        color: Colors.white),
-                                                  ),
-                                                  color: AppColors
-                                                      .secondaryElement,
-                                                ),
-                                              )
+                                              e.code != 'DEFAULT_FREE_PLAN'
+                                                  ? Container(
+                                                      child: load
+                                                          ? CircularProgressIndicator(
+                                                              backgroundColor:
+                                                                  AppColors
+                                                                      .secondaryElement,
+                                                            )
+                                                          : FlatButton(
+                                                              onPressed: () {
+                                                                setState(() {
+                                                                  load = true;
+                                                                });
+                                                                var data = {
+                                                                  "amount": e.amount ==
+                                                                          null
+                                                                      ? 0
+                                                                      : e.amount,
+                                                                  "plan_code":
+                                                                      e.code,
+                                                                  "email": email
+                                                                };
+                                                                bloc.upgradePlan(
+                                                                    data,
+                                                                    e.amount,
+                                                                    widget
+                                                                        .token);
+                                                              },
+                                                              child: Text(
+                                                                'Upgrade To This Plan',
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .white),
+                                                              ),
+                                                              color: AppColors
+                                                                  .secondaryElement,
+                                                            ),
+                                                    )
+                                                  : Container()
                                             ],
                                           ),
                                         ))
