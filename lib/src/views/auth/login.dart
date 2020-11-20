@@ -246,7 +246,7 @@ class _LoginState extends State<Login> {
                               fontFamily: 'Berkshire Swash',
                               color: AppColors.secondaryText,
                               fontWeight: FontWeight.w400,
-                              fontSize: 24,
+                              fontSize: 20,
                             ),
                           ),
                         ),

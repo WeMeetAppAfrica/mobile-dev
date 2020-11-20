@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:wemeet/src/SwipeAnimation/data.dart';
 import 'package:flutter/material.dart';
@@ -112,12 +113,35 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                         flexibleSpace: Stack(
                           children: [
                             Positioned(
-                                child: type.profileImage != null ? Image(
-                                  fit: BoxFit.cover,
-                                  image: NetworkImage(
-                                    type.profileImage,
-                                  ),  
-                                ) : Container(),
+                                child: type.profileImage != null
+                                    ? CachedNetworkImage(
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) =>
+                                            Container(
+                                          child: CircularProgressIndicator(
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                    AppColors.secondaryElement),
+                                          ),
+                                          width: 200.0,
+                                          height: 200.0,
+                                          padding: EdgeInsets.all(70.0),
+                                          decoration: BoxDecoration(
+                                            color: Color.fromRGBO(
+                                                228, 228, 228, 1.0),
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(8.0),
+                                            ),
+                                          ),
+                                        ),
+                                        errorWidget: (context, url, error) =>
+                                            Container(
+                                                child: Center(
+                                          child: Icon(FeatherIcons.alertCircle),
+                                        )),
+                                        imageUrl: type.profileImage,
+                                      )
+                                    : Container(),
                                 top: 0,
                                 left: 0,
                                 right: 0,
@@ -240,8 +264,7 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ),
-                                  new Text(
-                                      "It's party, party, party like a nigga just got out of jail Flyin' in my 'Rari like a bat that just flew outta hell I'm from the east of ATL, but ballin' in the Cali hills Lil mama booty boomin', that bitch movin' and she standin' still I know these bitches choosin' me, but I got 80 on me still. host for the purposes of socializing, conversation, recreation, or as part of a festival or other commemoration of a special occasion. A party will typically feature food and beverages, and often music and dancing or other forms of entertainment.  "),
+                                  new Text(type.bio),
                                   new Container(
                                     margin: new EdgeInsets.only(top: 25.0),
                                     padding: new EdgeInsets.only(
@@ -258,36 +281,65 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
-                                        new Text(
-                                          "ATTENDEES",
-                                          style: new TextStyle(
-                                              fontWeight: FontWeight.bold),
+                                        Container(
+                                          height: 80,
+                                          child: ListView.builder(
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount:
+                                                  type.additionalImages.length,
+                                              itemBuilder: (context, index) {
+                                                return Container(
+                                                  margin: EdgeInsets.only(
+                                                      right: 10),
+                                                  child: CachedNetworkImage(
+                                                      width: 90,
+                                                      fit: BoxFit.cover,
+                                                      placeholder: (context,
+                                                              url) =>
+                                                          Container(
+                                                            child:
+                                                                CircularProgressIndicator(
+                                                              valueColor:
+                                                                  AlwaysStoppedAnimation<
+                                                                          Color>(
+                                                                      AppColors
+                                                                          .secondaryElement),
+                                                            ),
+                                                            width: 200.0,
+                                                            height: 200.0,
+                                                            padding:
+                                                                EdgeInsets.all(
+                                                                    70.0),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      228,
+                                                                      228,
+                                                                      228,
+                                                                      1.0),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .all(
+                                                                Radius.circular(
+                                                                    8.0),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                      errorWidget: (context,
+                                                              url, error) =>
+                                                          Container(
+                                                              child: Center(
+                                                            child: Icon(
+                                                                FeatherIcons
+                                                                    .alertCircle),
+                                                          )),
+                                                      imageUrl:
+                                                          type.additionalImages[
+                                                              index]),
+                                                );
+                                              }),
                                         ),
-                                        new Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceAround,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            new CircleAvatar(
-                                                backgroundImage: avatar1),
-                                            new CircleAvatar(
-                                              backgroundImage: avatar2,
-                                            ),
-                                            new CircleAvatar(
-                                              backgroundImage: avatar3,
-                                            ),
-                                            new CircleAvatar(
-                                              backgroundImage: avatar4,
-                                            ),
-                                            new CircleAvatar(
-                                              backgroundImage: avatar5,
-                                            ),
-                                            new CircleAvatar(
-                                              backgroundImage: avatar6,
-                                            )
-                                          ],
-                                        )
                                       ],
                                     ),
                                   ),

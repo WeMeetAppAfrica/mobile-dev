@@ -110,7 +110,7 @@ class _KYCState extends State<KYC> {
                           fontFamily: 'Berkshire Swash',
                           color: AppColors.secondaryText,
                           fontWeight: FontWeight.w400,
-                          fontSize: 24,
+                          fontSize: 20,
                         ),
                       ),
                     ),

@@ -334,8 +334,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                       snapshot.data.status) {
                                                     case Status.LOADING:
                                                       return Center(
-                                                        child:
-                                                            Container(),
+                                                        child: Container(),
                                                       );
                                                       break;
                                                     case Status.DONE:
@@ -396,9 +395,32 @@ class _ProfilePageState extends State<ProfilePage>
                                                               left: 12),
                                                       child: TextFormField(
                                                         onChanged: (value) {
-                                                          // print(items);
-                                                          filterSearchResults(
-                                                              value);
+                                                          print('items');
+                                                          var list = matches
+                                                              .where((f) =>
+                                                                  f['firstName']
+                                                                      .contains(
+                                                                          value
+                                                                              .toLowerCase()) ||
+                                                                  f['lastName']
+                                                                      .contains(
+                                                                          value
+                                                                              .toLowerCase()))
+                                                              .toList();
+                                                          setState(() {
+                                                            items = list; 
+                                                          });
+                                                          // setState(() {
+                                                          //   items.clear();
+                                                          //   items.addAll(matches.where((f) =>
+                                                          //       f['firstName']
+                                                          //           .contains(value
+                                                          //               .toLowerCase()) ||
+                                                          //       f['lastName']
+                                                          //           .contains(value
+                                                          //               .toLowerCase())));
+                                                          // });
+                                                          print(items);
                                                         },
                                                         decoration:
                                                             new InputDecoration(
@@ -875,64 +897,37 @@ class _ProfilePageState extends State<ProfilePage>
   void filterSearchResults(String query) {
     List dummyList = [];
     List copyList = matches;
-      print('matches');
-      print(matches);
-    if (query.isNotEmpty) {
-      copyList.forEach((item) {
-        print(item['firstName']);
-        if (item['firstName'].toLowerCase().contains(query.toLowerCase()) ||
-            item['lastName'].toLowerCase().contains(query.toLowerCase())) {
-          print('item');
-          dummyList.add(item);
-          print(dummyList);
-        }
-      });
-      setState(() {
-        items.clear();
-        items.addAll(dummyList);
-      });
-    } else {
-      print('matches jui');
-      print(copyList);
-      print('uyh $matches');
-      setState(() {
-        items.clear();
-        items.addAll(copyList);
-      });
-      print('object');
-      // setState(() {
-      //   items.clear();
-      //   items.addAll(copyList);
-      // });
-    }
-    // setState(() {
-    //   items = matches;
-    // });
-    // List dummySearchList = List();
-    // dummySearchList.addAll(matches);
+    print('matches');
+
+    print(matches
+        .where((f) =>
+            f['firstName'].contains(query.toLowerCase()) ||
+            f['lastName'].contains(query.toLowerCase()))
+        .toList());
+
     // if (query.isNotEmpty) {
-    //   print(query);
-    //   print(matches);
-    //   List dummyListData = List();
-    //   matches.forEach((item) {
+    //   copyList.forEach((item) {
     //     print(item['firstName']);
-    //     // if (item['firstName'].contains(query)) {
-    //     //   dummyListData.add(item);
-    //     // }
+    //     if (item['firstName'].toLowerCase().contains(query.toLowerCase()) ||
+    //         item['lastName'].toLowerCase().contains(query.toLowerCase())) {
+    //       print('item');
+    //       dummyList.add(item);
+    //       print(dummyList);
+    //     }
     //   });
-    //   // setState(() {
-    //   //   items.clear();
-    //   //   items.addAll(dummyListData);
-    //   // });
-    //   return;
-    // } else {
-    //   print('matches');
-    //   print(matches);
-    //   print(items);
     //   setState(() {
     //     items.clear();
-    //     items.addAll(matches);
+    //     items.addAll(dummyList);
     //   });
+    // } else {
+    //   print('matches jui');
+    //   print(copyList);
+    //   print('uyh $matches');
+    //   setState(() {
+    //     items.clear();
+    //     items.addAll(copyList);
+    //   });
+    //   print('object');
     // }
   }
 }

@@ -189,7 +189,7 @@ class _PictureState extends State<Picture> {
                                 fontFamily: 'Berkshire Swash',
                                 color: AppColors.secondaryText,
                                 fontWeight: FontWeight.w400,
-                                fontSize: 24,
+                                fontSize: 20,
                               ),
                             ),
                           ],

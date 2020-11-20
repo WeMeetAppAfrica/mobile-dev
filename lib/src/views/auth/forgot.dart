@@ -178,7 +178,7 @@ class _ForgotPassState extends State<ForgotPass> {
                                   fontFamily: 'Berkshire Swash',
                                   color: AppColors.secondaryText,
                                   fontWeight: FontWeight.w400,
-                                  fontSize: 24,
+                                  fontSize: 20,
                                 ),
                               ),
                             ],
