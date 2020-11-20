@@ -46,11 +46,11 @@ class SwipeBloc {
     }
   }
 
-  getSwipeSuggestions(token) async {
+  getSwipeSuggestions(token, locationFilter) async {
     swipeSugSink.add(ApiResponse.loading('Loading...'));
     try {
       SwipeSuggestions user =
-          await _repository.getSwipeSuggestions(token, 'false');
+          await _repository.getSwipeSuggestions(token, locationFilter);
       swipeSugSink.add(ApiResponse.done(user));
     } catch (e) {
       swipeSugSink.add(ApiResponse.error(e.toString()));

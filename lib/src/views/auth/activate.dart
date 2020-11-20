@@ -119,6 +119,7 @@ class _ActivateState extends State<Activate> {
 
                   break;
                 case Status.ERROR:
+                  bloc.loginSink.add(ApiResponse.idle('message'));
                   loading = false;
                   try {
                     Fluttertoast.showToast(
@@ -219,6 +220,7 @@ class _ActivateState extends State<Activate> {
                                   icon: Icon(_obscureText
                                       ? Icons.visibility
                                       : Icons.visibility_off),
+                                      focusColor: Colors.green,
                                   onPressed: () {
                                     _toggle();
                                   },

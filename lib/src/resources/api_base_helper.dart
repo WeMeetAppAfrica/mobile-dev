@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,7 +9,7 @@ import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/app_exceptions.dart';
 
 class ApiBaseHelper {
-  final String _baseUrl = "https://wemeetng.herokuapp.com/api/v1/";
+  final String _baseUrl = "https://dev.wemeet.africa/api/v1/";
 
   Future<dynamic> get(String url, [token]) async {
     var responseJson;
@@ -24,6 +25,7 @@ class ApiBaseHelper {
       );
       responseJson = _returnResponse(response);
     } on SocketException {
+      Fluttertoast.showToast(msg: 'No Internet connection');
       throw FetchDataException('No Internet connection');
     }
     return responseJson;
@@ -43,6 +45,7 @@ class ApiBaseHelper {
       print(_baseUrl + url);
       responseJson = _returnResponse(response);
     } on SocketException {
+      Fluttertoast.showToast(msg: 'No Internet connection');
       throw FetchDataException('No Internet connection');
     }
     return responseJson;
@@ -61,6 +64,7 @@ class ApiBaseHelper {
       responseJson = _returnResponse(response);
     } on SocketException {
       print('error');
+      Fluttertoast.showToast(msg: 'No Internet connection');
       throw FetchDataException('No Internet connection');
     }
     return responseJson;
@@ -80,6 +84,7 @@ class ApiBaseHelper {
       print('eeeee');
     } on SocketException {
       print('error');
+      Fluttertoast.showToast(msg: 'No Internet connection');
       throw FetchDataException('No Internet connection');
     }
     return responseJson;
@@ -109,6 +114,7 @@ class ApiBaseHelper {
       responseJson = _returnResponse(res);
     } on SocketException {
       print('error');
+      Fluttertoast.showToast(msg: 'No Internet connection');
       throw FetchDataException('No Internet connection');
     }
     return responseJson;
@@ -124,6 +130,7 @@ class ApiBaseHelper {
           body: jsonEncode(request));
       responseJson = _returnResponse(response);
     } on SocketException {
+      Fluttertoast.showToast(msg: 'No Internet connection');
       throw FetchDataException('No Internet connection');
     }
     return responseJson;
@@ -198,8 +205,12 @@ class ApiBaseHelper {
       case 404:
         print(json.decode(response.body));
         throw FetchDataException(json.decode(response.body)['message']);
+      case 503:
+        throw FetchDataException();
       case 500:
       default:
+        Fluttertoast.showToast(
+            msg: 'Error occured while communicating with server.');
         throw FetchDataException(
             'Error occured while Communication with Server with StatusCode : ${response.statusCode}');
     }

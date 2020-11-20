@@ -5,6 +5,7 @@ import 'package:wemeet/src/models/apimodel.dart';
 import 'package:wemeet/src/models/getmatchesmodel.dart';
 import 'package:wemeet/src/models/imageupload.dart';
 import 'package:wemeet/src/models/login.dart';
+import 'package:wemeet/src/models/musicmodel.dart';
 import 'package:wemeet/src/models/paymodel.dart';
 import 'package:wemeet/src/models/plansmodel.dart';
 import 'package:wemeet/src/models/profilemodel.dart';
@@ -89,7 +90,7 @@ class Repository {
 
   Future<ImageUpload> uploadPhoto(file, imageType, token) async {
     final response =
-        await _helper.upload('image/upload', file, imageType, token);
+        await _helper.upload('file/upload', file, imageType, token);
     return ImageUpload.fromJson(response);
   }
 
@@ -104,6 +105,12 @@ class Repository {
     return GetMatchesModel.fromJson(response);
   }
 
+  Future<MusicModel> getMusicList(token) async {
+    final response =
+        await _helper.get('file/music?pageNum=0&pageSize=10', token);
+    return MusicModel.fromJson(response);
+  }
+
   Future<SwipeSuggestions> getSwipeSuggestions(token, locationFilter) async {
     final response = await _helper.get(
         'swipe/suggest?locationFilter=' + locationFilter, token);
@@ -115,11 +122,16 @@ class Repository {
     return Swipe.fromJson(response);
   }
 
-  Future<ApiModel> block(request, token) async {
-    final response =
-        await _helper.post('user/block?userId=$request', {}, token);
+  Future<ApiModel> selfDelete(token) async {
+    final response = await _helper.postOp('auth/self-delete', token);
     return ApiModel.fromJson(response);
   }
+
+  Future<ApiModel> block(request, token) async {
+    final response = await _helper.postOp('user/block?userId=$request', token);
+    return ApiModel.fromJson(response);
+  }
+
   Future<ApiModel> unblock(request, token) async {
     final response =
         await _helper.post('user/unblock?userId=$request', {}, token);
@@ -127,7 +139,7 @@ class Repository {
   }
 
   Future<ApiModel> report(request, token) async {
-    final response = await _helper.post('user/report', {}, token);
+    final response = await _helper.post('user/report', request, token);
     return ApiModel.fromJson(response);
   }
 
@@ -138,6 +150,12 @@ class Repository {
 
   Future<PayModel> upgradePlan(request, token) async {
     final response = await _helper.post('payment/upgrade', request, token);
+    return PayModel.fromJson(response);
+  }
+
+  Future<PayModel> verifyUpgrade(reference, token) async {
+    final response =
+        await _helper.get('payment/verify?reference=$reference', token);
     return PayModel.fromJson(response);
   }
 

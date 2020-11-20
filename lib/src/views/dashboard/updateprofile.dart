@@ -24,6 +24,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
   List<RadioModel> gender = new List<RadioModel>();
   List<RadioModel> interest = new List<RadioModel>();
   String selectedGender;
+  double maxDist = 1.0;
   List selectedInterest;
   String selectedEmploy;
   final _formKey = GlobalKey<FormState>();
@@ -121,9 +122,14 @@ class _UpdateProfileState extends State<UpdateProfile> {
                               snapshot.data.data.data.workStatus)
                             element.isSelected = true
                         });
-                    dob.text = DateTime.fromMicrosecondsSinceEpoch(
-                            snapshot.data.data.data.dateOfBirth)
-                        .toString();
+                    maxDist = snapshot.data.data.data.swipeRadius.toDouble() >
+                                0 &&
+                            snapshot.data.data.data.swipeRadius.toDouble() < 101
+                        ? snapshot.data.data.data.swipeRadius.toDouble()
+                        : 1;
+                    dob.text = DateFormat('dd-MMM-yyyy').format(
+                        DateTime.fromMillisecondsSinceEpoch(
+                            snapshot.data.data.data.dateOfBirth));
                     selectedEmploy = snapshot.data.data.data.workStatus;
                     if (snapshot.data.data.data.genderPreference != null) {
                       snapshot.data.data.data.genderPreference
@@ -411,9 +417,10 @@ class _UpdateProfileState extends State<UpdateProfile> {
                                 contentPadding:
                                     EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                                 hintText: "Date of Birth",
-                            focusedBorder: UnderlineInputBorder(
-                              borderSide: const BorderSide(
-                                  color: Colors.green, width: 2.0),),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: const BorderSide(
+                                      color: Colors.green, width: 2.0),
+                                ),
                               )),
                         ),
                       ),
@@ -503,6 +510,41 @@ class _UpdateProfileState extends State<UpdateProfile> {
                     SizedBox(
                       height: 25,
                     ),
+                    ListTile(
+                      onTap: () {},
+                      title: Text('Maximum Distance'),
+                      subtitle: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          activeTrackColor: AppColors.secondaryElement,
+                          thumbColor: AppColors.secondaryElement,
+                          inactiveTrackColor: AppColors.primaryElement,
+                          trackShape: RectangularSliderTrackShape(),
+                          trackHeight: 1.0,
+                          valueIndicatorColor: AppColors.secondaryElement,
+                          thumbShape:
+                              RoundSliderThumbShape(enabledThumbRadius: 12.0),
+                          overlayColor: Colors.red.withAlpha(32),
+                          overlayShape:
+                              RoundSliderOverlayShape(overlayRadius: 28.0),
+                        ),
+                        child: Slider(
+                          min: 1,
+                          divisions: 99,
+                          max: 100,
+                          value: maxDist,
+                          onChanged: (double value) {
+                            setState(() {
+                              maxDist = value;
+                            });
+                          },
+                        ),
+                      ),
+                      trailing: Text('${maxDist.toInt()} mi'),
+                    ),
+
+                    SizedBox(
+                      height: 25,
+                    ),
                     Align(
                       alignment: Alignment.topCenter,
                       child: InkWell(
@@ -542,7 +584,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
                               "genderPreference": selectedInterest,
                               "maxAge": selectedRange.end.toInt(),
                               "minAge": selectedRange.start.toInt(),
-                              "swipeRadius": 0,
+                              "swipeRadius": maxDist.toInt(),
                               "workStatus": selectedEmploy
                             };
                             if (showInterestError == false) {

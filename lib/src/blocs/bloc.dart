@@ -5,6 +5,7 @@ import 'package:wemeet/src/models/apimodel.dart';
 import 'package:wemeet/src/models/getmatchesmodel.dart';
 import 'package:wemeet/src/models/imageupload.dart';
 import 'package:wemeet/src/models/login.dart';
+import 'package:wemeet/src/models/musicmodel.dart';
 import 'package:wemeet/src/models/paymodel.dart';
 import 'package:wemeet/src/models/plansmodel.dart';
 import 'package:wemeet/src/models/profilemodel.dart';
@@ -19,6 +20,7 @@ class Bloc {
   StreamController _apiController;
   StreamController _planController;
   StreamController _payController;
+  StreamController _musicController;
   StreamController _uploadController;
   StreamController _messageController;
   StreamController _songController;
@@ -38,6 +40,8 @@ class Bloc {
   Stream<ApiResponse<PlansModel>> get planStream => _planController.stream;
   StreamSink<ApiResponse<PayModel>> get paySink => _payController.sink;
   Stream<ApiResponse<PayModel>> get payStream => _payController.stream;
+  StreamSink<ApiResponse<MusicModel>> get musicSink => _musicController.sink;
+  Stream<ApiResponse<MusicModel>> get musicStream => _musicController.stream;
   StreamSink<ApiResponse<ImageUpload>> get uploadSink => _uploadController.sink;
   Stream<ApiResponse<ImageUpload>> get uploadStream => _uploadController.stream;
   StreamSink<ApiResponse<LoginModel>> get loginSink => _loginController.sink;
@@ -62,6 +66,7 @@ class Bloc {
     _apiController = BehaviorSubject<ApiResponse<ApiModel>>();
     _planController = BehaviorSubject<ApiResponse<PlansModel>>();
     _payController = BehaviorSubject<ApiResponse<PayModel>>();
+    _musicController = BehaviorSubject<ApiResponse<MusicModel>>();
     _uploadController = BehaviorSubject<ApiResponse<ImageUpload>>();
     _loginController = BehaviorSubject<ApiResponse<LoginModel>>();
     _messageController = BehaviorSubject<ApiResponse<ApiModel>>();
@@ -129,6 +134,19 @@ class Bloc {
       profileLocSink.add(ApiResponse.done(user));
     } catch (e) {
       profileLocSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
+  selfDelete(token) async {
+    print('request');
+    userSink.add(ApiResponse.loading('Loading...'));
+    try {
+      ApiModel user = await _userRepository.selfDelete(token);
+      print('object $user');
+      userSink.add(ApiResponse.selfDelete(user));
+    } catch (e) {
+      userSink.add(ApiResponse.error(e.toString()));
       print(e);
     }
   }
@@ -240,6 +258,48 @@ class Bloc {
     }
   }
 
+  verifyUpgrade(reference, token) async {
+    print('reference');
+    paySink.add(ApiResponse.loading('Loading...'));
+    try {
+      PayModel user = await _userRepository.verifyUpgrade(reference, token);
+      print(user);
+      paySink.add(ApiResponse.verifyUpgrade(user));
+    } catch (e) {
+      paySink.add(ApiResponse.error(e.toString()));
+      try {
+        if (json.decode(e.toString())['responseCode'] == 'INVALID_TOKEN') {
+          paySink.add(ApiResponse.logout(e.toString()));
+        } else {
+          paySink.add(ApiResponse.error(e.toString()));
+        }
+      } catch (w) {
+        print(e);
+      }
+    }
+  }
+
+  getMusic(token) async {
+    print('reference');
+    musicSink.add(ApiResponse.loading('Loading...'));
+    try {
+      MusicModel user = await _userRepository.getMusicList(token);
+      print(user);
+      musicSink.add(ApiResponse.done(user));
+    } catch (e) {
+      musicSink.add(ApiResponse.error(e.toString()));
+      try {
+        if (json.decode(e.toString())['responseCode'] == 'INVALID_TOKEN') {
+          musicSink.add(ApiResponse.logout(e.toString()));
+        } else {
+          musicSink.add(ApiResponse.error(e.toString()));
+        }
+      } catch (w) {
+        print(e);
+      }
+    }
+  }
+
   getEmailToken(token) async {
     print('request');
     registerSink.add(ApiResponse.loading('Loading...'));
@@ -271,6 +331,19 @@ class Bloc {
     try {
       ApiModel user = await _userRepository.sendMessage(request, token);
       messageSink.add(ApiResponse.sendMessage(user));
+    } catch (e) {
+      messageSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
+  sendMedia(request, token) async {
+    print('request');
+    print(token);
+    messageSink.add(ApiResponse.loading('Loading...'));
+    try {
+      ApiModel user = await _userRepository.sendMessage(request, token);
+      messageSink.add(ApiResponse.sendMedia(user));
     } catch (e) {
       messageSink.add(ApiResponse.error(e.toString()));
       print(e);
@@ -315,6 +388,7 @@ class Bloc {
 
   report(request, token) async {
     print('request');
+    print(request);
     userSink.add(ApiResponse.loading('Loading...'));
     try {
       ApiModel user = await _userRepository.report(request, token);
@@ -462,6 +536,7 @@ class Bloc {
     _apiController?.close();
     _planController?.close();
     _payController?.close();
+    _musicController?.close();
     _uploadController?.close();
     _loginController?.close();
     _messageController?.close();

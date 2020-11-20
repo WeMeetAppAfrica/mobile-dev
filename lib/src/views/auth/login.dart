@@ -4,11 +4,13 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info/device_info.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -53,6 +55,24 @@ class _LoginState extends State<Login> {
     setState(() {
       _obscureText = !_obscureText;
     });
+  }
+
+  _launchTerms() async {
+    const url = 'https://wemeet.africa/termsandconditions.pdf';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  _launchPrivacy() async {
+    const url = 'https://wemeet.africa/privacypolicy.pdf';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   _isLoc() async {
@@ -171,6 +191,8 @@ class _LoginState extends State<Login> {
                   }
                   break;
                 case Status.ERROR:
+                  bloc.loginSink.add(ApiResponse.idle('message'));
+                  // print(snapshot.data);
                   try {
                     Fluttertoast.showToast(
                         msg: json.decode(snapshot.data.message)['message']);
@@ -258,7 +280,9 @@ class _LoginState extends State<Login> {
                                 },
                                 controller: emailController,
                                 decoration: InputDecoration(
-                                  prefixIcon: Icon(Icons.mail_outline),
+                                  prefixIcon: Icon(
+                                    Icons.mail_outline,
+                                  ),
                                   contentPadding: EdgeInsets.fromLTRB(
                                       20.0, 15.0, 20.0, 15.0),
                                   hintText: "Email Address",
@@ -281,11 +305,14 @@ class _LoginState extends State<Login> {
                               obscureText: _obscureText,
                               controller: passwordController,
                               decoration: InputDecoration(
-                                prefixIcon: Icon(Icons.lock_outline),
+                                prefixIcon: Icon(
+                                  Icons.lock_outline,
+                                ),
                                 suffixIcon: IconButton(
                                   icon: Icon(_obscureText
                                       ? Icons.visibility
                                       : Icons.visibility_off),
+                                  focusColor: Colors.green,
                                   onPressed: () {
                                     _toggle();
                                   },
@@ -411,13 +438,38 @@ class _LoginState extends State<Login> {
                             child: Container(
                               width: 265,
                               margin: EdgeInsets.only(bottom: 58),
-                              child: Text(
-                                "By using the We Meet platform, you agree to our Terms of Use & Privacy Policy",
+                              child: RichText(
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: AppColors.accentText,
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 12,
+                                text: new TextSpan(
+                                  children: [
+                                    new TextSpan(
+                                      text:
+                                          'By using the We Meet platform, you agree to our ',
+                                      style: new TextStyle(
+                                          color: AppColors.accentText),
+                                    ),
+                                    new TextSpan(
+                                      text: 'Terms of Use ',
+                                      style: new TextStyle(color: Colors.green),
+                                      recognizer: new TapGestureRecognizer()
+                                        ..onTap = () {
+                                          _launchTerms();
+                                        },
+                                    ),
+                                    new TextSpan(
+                                      text: '& ',
+                                      style: new TextStyle(
+                                          color: AppColors.accentText),
+                                    ),
+                                    new TextSpan(
+                                      text: 'Privacy Policy',
+                                      style: new TextStyle(color: Colors.green),
+                                      recognizer: new TapGestureRecognizer()
+                                        ..onTap = () {
+                                          _launchPrivacy();
+                                        },
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),

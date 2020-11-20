@@ -14,7 +14,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/auth/picture.dart';
+import 'package:wemeet/src/views/dashboard/player_widget.dart';
+import 'package:wemeet/src/views/dashboard/share-songs.dart';
 import 'package:wemeet/values/values.dart';
+
+enum PlayerState { stopped, playing, paused }
+enum PlayingRouteState { speakers, earpiece }
 
 class Chat extends StatefulWidget {
   final token;
@@ -38,6 +43,7 @@ class _ChatState extends State<Chat> {
   Choice _selectedChoice = choices[0];
   String groupChatId = '';
   String id;
+  List songs = [];
 
   SharedPreferences prefs;
   @override
@@ -95,7 +101,18 @@ class _ChatState extends State<Chat> {
           IconButton(
             icon: Icon(FeatherIcons.music),
             color: AppColors.accentText,
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ShareSongs(
+                      peerName: widget.peerName,
+                      peerAvatar: widget.peerAvatar,
+                      token: widget.token,
+                      peerId: widget.peerId,
+                    ),
+                  ));
+            },
           ),
           PopupMenuButton(
             onSelected: _select,
@@ -206,9 +223,9 @@ class ChatScreenState extends State<ChatScreen> {
   String peerId;
   String peerName;
   String peerAvatar;
-  dynamic unsent = null;
   String id;
   String firstName;
+  List songs = [];
   String profileImage;
 
   List<QueryDocumentSnapshot> listMessage = new List.from([]);
@@ -225,6 +242,17 @@ class ChatScreenState extends State<ChatScreen> {
   final TextEditingController textEditingController = TextEditingController();
   final ScrollController listScrollController = ScrollController();
   final FocusNode focusNode = FocusNode();
+  String url;
+  Duration _duration;
+  Duration _position;
+
+  PlayerState _playerState = PlayerState.stopped;
+  PlayingRouteState _playingRouteState = PlayingRouteState.speakers;
+  StreamSubscription _durationSubscription;
+  dynamic unsent;
+  String isPlaying = '';
+  List messages = [];
+  bool allowSend = true;
 
   _scrollListener() {
     if (listScrollController.offset >=
@@ -359,92 +387,125 @@ class ChatScreenState extends State<ChatScreen> {
   Widget buildItem(int index, DocumentSnapshot document) {
     if (document.data()['idFrom'] == id) {
       // Right (my message)
-      return Row(
-        children: <Widget>[
-          document.data()['type'] == 0
-              // Text
-              ? Container(
-                  child: Text(
-                    document.data()['content'],
-                    style: TextStyle(color: AppColors.primaryText),
-                  ),
-                  padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-                  width: 200.0,
-                  decoration: BoxDecoration(
-                      color: Color.fromRGBO(228, 228, 228, 1.0),
-                      borderRadius: BorderRadius.circular(8.0)),
-                  margin: EdgeInsets.only(
-                      bottom: isLastMessageRight(index) ? 20.0 : 10.0,
-                      right: 10.0),
-                )
-              : document.data()['type'] == 1
-                  // Image
-                  ? Container(
-                      child: FlatButton(
-                        child: Material(
-                          child: CachedNetworkImage(
-                            placeholder: (context, url) => Container(
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.secondaryElement),
-                              ),
-                              width: 200.0,
-                              height: 200.0,
-                              padding: EdgeInsets.all(70.0),
-                              decoration: BoxDecoration(
-                                color: Color.fromRGBO(228, 228, 228, 1.0),
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(8.0),
-                                ),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Material(
-                              child: Image.asset(
-                                'images/img_not_available.jpeg',
-                                width: 200.0,
-                                height: 200.0,
-                                fit: BoxFit.cover,
-                              ),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(8.0),
-                              ),
-                              clipBehavior: Clip.hardEdge,
-                            ),
-                            imageUrl: document.data()['content'],
-                            width: 200.0,
-                            height: 200.0,
-                            fit: BoxFit.cover,
-                          ),
-                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                          clipBehavior: Clip.hardEdge,
+      return Container(
+        child: Column(
+          children: [
+            Row(
+              children: <Widget>[
+                document.data()['type'] == 0
+                    // Text
+                    ? Container(
+                        child: Text(
+                          document.data()['content'],
+                          style: TextStyle(color: AppColors.primaryText),
                         ),
-                        onPressed: () {
-                          // Navigator.push(
-                          //     context,
-                          //     MaterialPageRoute(
-                          //         builder: (context) => FullPhoto(
-                          //             url: document.data()['content'])));
-                        },
-                        padding: EdgeInsets.all(0),
-                      ),
-                      margin: EdgeInsets.only(
-                          bottom: isLastMessageRight(index) ? 20.0 : 10.0,
-                          right: 10.0),
-                    )
-                  // Sticker
-                  : Container(
-                      child: Image.asset(
-                        'images/${document.data()['content']}.gif',
-                        width: 100.0,
-                        height: 100.0,
-                        fit: BoxFit.cover,
-                      ),
-                      margin: EdgeInsets.only(
-                          bottom: isLastMessageRight(index) ? 20.0 : 10.0,
-                          right: 10.0),
-                    ),
-        ],
-        mainAxisAlignment: MainAxisAlignment.end,
+                        padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+                        width: 200.0,
+                        decoration: BoxDecoration(
+                            color: Color.fromRGBO(228, 228, 228, 1.0),
+                            borderRadius: BorderRadius.circular(8.0)),
+                        margin: EdgeInsets.only(
+                            bottom: isLastMessageRight(index) ? 10.0 : 5.0,
+                            right: 10.0),
+                      )
+                    : document.data()['type'] == 1
+                        // Image
+                        ? Container(
+                            child: FlatButton(
+                              child: Material(
+                                child: CachedNetworkImage(
+                                  placeholder: (context, url) => Container(
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          AppColors.secondaryElement),
+                                    ),
+                                    width: 200.0,
+                                    height: 200.0,
+                                    padding: EdgeInsets.all(70.0),
+                                    decoration: BoxDecoration(
+                                      color: Color.fromRGBO(228, 228, 228, 1.0),
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(8.0),
+                                      ),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Material(
+                                    child: Image.asset(
+                                      'images/img_not_available.jpeg',
+                                      width: 200.0,
+                                      height: 200.0,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(8.0),
+                                    ),
+                                    clipBehavior: Clip.hardEdge,
+                                  ),
+                                  imageUrl: document.data()['content'],
+                                  width: 200.0,
+                                  height: 200.0,
+                                  fit: BoxFit.cover,
+                                ),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8.0)),
+                                clipBehavior: Clip.hardEdge,
+                              ),
+                              onPressed: () {
+                                // Navigator.push(
+                                //     context,
+                                //     MaterialPageRoute(
+                                //         builder: (context) => FullPhoto(
+                                //             url: document.data()['content'])));
+                              },
+                              padding: EdgeInsets.all(0),
+                            ),
+                            margin: EdgeInsets.only(
+                                bottom: isLastMessageRight(index) ? 20.0 : 10.0,
+                                right: 10.0),
+                          )
+                        // Sticker
+                        : document.data()['type'] == 2
+                            ? Container(
+                                padding: EdgeInsets.only(right: 20),
+                                decoration: BoxDecoration(
+                                    color: AppColors.secondaryElement,
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(20))),
+                                height: 135,
+                                width: MediaQuery.of(context).size.width * 0.75,
+                                child: PlayerWidget(
+                                  url: document.data()['songUrl'],
+                                  artwork: document.data()['artworkUrl'],
+                                ),
+                                margin: EdgeInsets.only(
+                                    bottom:
+                                        isLastMessageRight(index) ? 10.0 : 5.0,
+                                    right: 10.0),
+                              )
+                            : Container(),
+              ],
+              mainAxisAlignment: MainAxisAlignment.end,
+            ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Container(
+                padding: EdgeInsets.only(right: 20),
+                child: Text(
+                  DateFormat('dd MMM kk:mm').format(
+                      DateTime.fromMillisecondsSinceEpoch(
+                          int.parse(document.data()['timestamp']))),
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                      color: AppColors.accentText,
+                      fontSize: 12.0,
+                      fontStyle: FontStyle.italic),
+                ),
+                margin: EdgeInsets.only(bottom: 5.0),
+              ),
+            ),
+          ],
+        ),
       );
     } else {
       // Left (peer message)
@@ -543,35 +604,38 @@ class ChatScreenState extends State<ChatScreen> {
                             ),
                             margin: EdgeInsets.only(left: 10.0),
                           )
-                        : Container(
-                            child: Image.asset(
-                              'images/${document.data()['content']}.gif',
-                              width: 100.0,
-                              height: 100.0,
-                              fit: BoxFit.cover,
-                            ),
-                            margin: EdgeInsets.only(
-                                bottom: isLastMessageRight(index) ? 20.0 : 10.0,
-                                right: 10.0),
-                          ),
+                        : document.data()['type'] == 2
+                            ? Container(
+                                padding: EdgeInsets.only(right: 20),
+                                decoration: BoxDecoration(
+                                    color: AppColors.secondaryElement,
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(20))),
+                                height: 135,
+                                width: MediaQuery.of(context).size.width * .75,
+                                child: PlayerWidget(
+                                  url: document.data()['songUrl'],
+                                  artwork: document.data()['artworkUrl'],
+                                ),
+                                margin: EdgeInsets.only(left: 10.0),
+                              )
+                            : Container(),
               ],
             ),
 
             // Time
-            isLastMessageLeft(index)
-                ? Container(
-                    child: Text(
-                      DateFormat('dd MMM kk:mm').format(
-                          DateTime.fromMillisecondsSinceEpoch(
-                              int.parse(document.data()['timestamp']))),
-                      style: TextStyle(
-                          color: AppColors.accentText,
-                          fontSize: 12.0,
-                          fontStyle: FontStyle.italic),
-                    ),
-                    margin: EdgeInsets.only(left: 50.0, top: 5.0, bottom: 5.0),
-                  )
-                : Container()
+            Container(
+              child: Text(
+                DateFormat('dd MMM kk:mm').format(
+                    DateTime.fromMillisecondsSinceEpoch(
+                        int.parse(document.data()['timestamp']))),
+                style: TextStyle(
+                    color: AppColors.accentText,
+                    fontSize: 12.0,
+                    fontStyle: FontStyle.italic),
+              ),
+              margin: EdgeInsets.only(left: 50.0, top: 5.0, bottom: 5.0),
+            )
           ],
           crossAxisAlignment: CrossAxisAlignment.start,
         ),
@@ -614,7 +678,6 @@ class ChatScreenState extends State<ChatScreen> {
           .update({'chattingWith': null});
       Navigator.pop(context);
     }
-
     return Future.value(false);
   }
 
@@ -818,6 +881,7 @@ class ChatScreenState extends State<ChatScreen> {
                       break;
                     case Status.SENDMESSAGE:
                       print('done oo');
+                      print(unsent);
                       bloc.messageSink.add(ApiResponse.idle('message'));
                       var documentReference = FirebaseFirestore.instance
                           .collection('messages')
@@ -1024,7 +1088,6 @@ class ChatScreenState extends State<ChatScreen> {
                               }
                               return Container();
                             }
-
                             return buildItem(
                                 index, snapshot.data.documents[index - 1]);
                           },

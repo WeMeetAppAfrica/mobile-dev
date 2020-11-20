@@ -160,7 +160,7 @@ class _RegisterState extends State<Register> {
                   userData = snapshot.data.data.data;
                   bloc.registerSink.add(ApiResponse.addFB('snap'));
                   Fluttertoast.showToast(
-                      msg: 'Account created, continue to activate.');
+                      msg: 'Account created, sending activation code...');
                   break;
                 case Status.GETEMAILTOKEN:
                   print('object');
@@ -221,7 +221,7 @@ class _RegisterState extends State<Register> {
                       child: ListView(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.all(16.0),
+                            padding: const EdgeInsets.only(top: 16.0,left: 16.0,right: 16.0, bottom: 8.0),
                             child: TextFormField(
                                 validator: (value) {
                                   if (value.isEmpty) {
@@ -241,6 +241,21 @@ class _RegisterState extends State<Register> {
                                         color: Colors.green, width: 2.0),
                                   ),
                                 )),
+                          ),
+                          Align(
+                            alignment: Alignment.topRight,
+                            child: Container(
+                              margin: EdgeInsets.only(right: 20),
+                              child: Text(
+                                "(First & Last Name)",
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  color: AppColors.accentText,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(16.0),
@@ -327,9 +342,12 @@ class _RegisterState extends State<Register> {
                               decoration: InputDecoration(
                                 prefixIcon: Icon(Icons.lock_outline),
                                 suffixIcon: IconButton(
-                                    icon: Icon(_obscureText
-                                        ? Icons.visibility
-                                        : Icons.visibility_off),
+                                    icon: Icon(
+                                      _obscureText
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                    ),
+                                    focusColor: Colors.green,
                                     onPressed: () => _toggle()),
                                 contentPadding:
                                     EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),

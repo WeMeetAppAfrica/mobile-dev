@@ -15,6 +15,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.5.0-nullsafety.1"
+  audio_service:
+    dependency: "direct main"
+    description:
+      name: audio_service
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.11.2"
   audioplayers:
     dependency: "direct main"
     description:
@@ -216,13 +223,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.4.2"
-  flutter_google_places:
-    dependency: "direct main"
+  flutter_isolate:
+    dependency: transitive
     description:
-      name: flutter_google_places
+      name: flutter_isolate
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.6"
+    version: "1.0.0+14"
   flutter_local_notifications:
     dependency: "direct main"
     description:
@@ -302,7 +309,7 @@ packages:
       name: google_maps_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.3"
+    version: "1.0.6"
   google_maps_flutter_platform_interface:
     dependency: transitive
     description:
@@ -310,13 +317,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.4"
-  google_maps_place_picker:
-    dependency: "direct main"
-    description:
-      name: google_maps_place_picker
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.0"
   google_maps_webservice:
     dependency: "direct main"
     description:
@@ -373,6 +373,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.6.2"
+  just_audio:
+    dependency: "direct main"
+    description:
+      name: just_audio
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.2"
+  location:
+    dependency: transitive
+    description:
+      name: location
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.5.4"
   matcher:
     dependency: transitive
     description:
@@ -492,6 +506,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.0.4"
+  place_picker:
+    dependency: "direct main"
+    description:
+      name: place_picker
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.9.16"
   platform:
     dependency: transitive
     description:
@@ -743,5 +764,5 @@ packages:
     source: hosted
     version: "4.2.0"
 sdks:
-  dart: ">=2.10.0-110 <2.11.0"
+  dart: ">=2.10.0 <2.11.0"
   flutter: ">=1.22.0 <2.0.0"

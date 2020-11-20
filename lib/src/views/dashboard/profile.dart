@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -7,7 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/SwipeAnimation/detail.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/blocs/swipe_bloc.dart';
-import 'package:wemeet/src/models/swipesuggestions.dart';
+import 'package:wemeet/src/models/profilemodel.dart';
+import 'package:wemeet/src/models/swipesuggestions.dart' as Pro;
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/login.dart';
@@ -31,8 +33,9 @@ class _ProfilePageState extends State<ProfilePage>
     with TickerProviderStateMixin {
   List matches = [];
   var items = List();
-  bool ki = true;
+  String locationFilter;
   bool toggleLocation = true;
+  SharedPreferences prefs;
   bool toggleProfile = false;
   bool toggleLoading = false;
   dynamic details;
@@ -43,14 +46,76 @@ class _ProfilePageState extends State<ProfilePage>
 
   void initState() {
     super.initState();
+    _getUser();
+    getObject(widget.token, 'profile');
     bloc.getProfile(widget.token);
+    print('details $details');
     swipeBloc.getMatches(widget.token);
+  }
+
+  String _generateKey(String userId, String key) {
+    return '$userId/$key';
+  }
+
+  @override
+  void saveObject(String userId, String key, Data object) async {
+    final prefs = await SharedPreferences.getInstance();
+    // 1
+    final string = JsonEncoder().convert(object);
+    // 2
+    print('string');
+    print(string);
+    await prefs.setString(_generateKey(userId, key), string);
+  }
+
+  @override
+  Future<dynamic> getObject(String userId, String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    // 3
+    final objectString = prefs.getString(_generateKey(userId, key));
+    // 4
+    print('objectString');
+    print(objectString);
+    if (objectString != null) {
+      print(Data.fromJson(
+              JsonDecoder().convert(objectString) as Map<String, dynamic>)
+          .id);
+      setState(() {
+        details = Data.fromJson(
+            JsonDecoder().convert(objectString) as Map<String, dynamic>);
+      });
+      return Data.fromJson(
+          JsonDecoder().convert(objectString) as Map<String, dynamic>);
+    }
+    return null;
+  }
+
+  @override
+  Future<void> removeObject(String userId, String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    // 5
+    prefs.remove(_generateKey(userId, key));
   }
 
   _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    var locationFilter = prefs.getString('locationFilter');
     prefs.clear();
     prefs.setBool('passKYC', true);
+    prefs.setString('locationFilter', locationFilter);
+    prefs.setBool('passWalkthrough', true);
+  }
+
+  _getUser() async {
+    prefs = await SharedPreferences.getInstance();
+    setState(() {
+      locationFilter = prefs.getString('locationFilter') ?? 'true';
+    });
+  }
+
+  _setPref() async {
+    prefs = await SharedPreferences.getInstance();
+    prefs.setString('locationFilter', locationFilter);
   }
 
   @override
@@ -78,14 +143,15 @@ class _ProfilePageState extends State<ProfilePage>
                     if (snapshot.hasData) {
                       switch (snapshot.data.status) {
                         case Status.LOADING:
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
+                          if (getObject(widget.token, 'profile') == null)
+                            return Center(
+                              child: Container(),
+                            );
                           break;
                         case Status.GETPROFILE:
                           bloc.profileSink.add(ApiResponse.idle('message'));
                           details = snapshot.data.data.data;
-                          print(details);
+                          saveObject(widget.token, 'profile', details);
                           toggleLocation = details.hideLocation;
                           toggleProfile = details.hideProfile;
                           break;
@@ -110,6 +176,10 @@ class _ProfilePageState extends State<ProfilePage>
                           break;
                         default:
                       }
+                    }
+                    if (details != null) {
+                      print('details.id');
+                      print(details);
                       return DefaultTabController(
                         length: 4,
                         child: new Stack(
@@ -204,7 +274,8 @@ class _ProfilePageState extends State<ProfilePage>
                                   delegate:
                                       new SliverChildListDelegate(<Widget>[
                                     new Container(
-                                      height: 700,
+                                      height:
+                                          MediaQuery.of(context).size.height,
                                       decoration: new BoxDecoration(
                                         color: Colors.white,
                                         borderRadius:
@@ -263,7 +334,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                     case Status.LOADING:
                                                       return Center(
                                                         child:
-                                                            CircularProgressIndicator(),
+                                                            Container(),
                                                       );
                                                       break;
                                                     case Status.DONE:
@@ -271,96 +342,86 @@ class _ProfilePageState extends State<ProfilePage>
                                                           .data.data.content;
                                                       items = snapshot.data.data
                                                           .data.content;
-                                                      // swipeBloc.matchSink.add(
-                                                      //     ApiResponse.idle(
-                                                      //         'message'));
+                                                      swipeBloc.matchSink.add(
+                                                          ApiResponse.idle(
+                                                              'message'));
                                                       break;
                                                     default:
                                                   }
                                                 }
                                                 return Column(
                                                   children: [
-                                                    items.length > 0
-                                                        ? Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                        .only(
-                                                                    left: 12.0,
-                                                                    top: 18),
-                                                            child: Row(
-                                                              children: [
-                                                                Text(
-                                                                  'Matches',
-                                                                  style:
-                                                                      TextStyle(
-                                                                    fontFamily:
-                                                                        'Berkshire Swash',
-                                                                    color: AppColors
-                                                                        .primaryText,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w400,
-                                                                    fontSize:
-                                                                        24,
-                                                                  ),
-                                                                ),
-                                                                SizedBox(
-                                                                  width: 10,
-                                                                ),
-                                                                // Text(
-                                                                //   'people',
-                                                                //   style: TextStyle(
-                                                                //     color: AppColors
-                                                                //         .accentText,
-                                                                //     fontWeight:
-                                                                //         FontWeight
-                                                                //             .w400,
-                                                                //     fontSize: 14,
-                                                                //   ),
-                                                                // ),
-                                                              ],
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 12.0,
+                                                              top: 18),
+                                                      child: Row(
+                                                        children: [
+                                                          Text(
+                                                            'Matches',
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  'Berkshire Swash',
+                                                              color: AppColors
+                                                                  .primaryText,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              fontSize: 24,
                                                             ),
-                                                          )
-                                                        : Container(),
-                                                    items.length > 0
-                                                        ? Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                        .only(
-                                                                    top: 16.0,
-                                                                    left: 12),
-                                                            child:
-                                                                TextFormField(
-                                                              onChanged:
-                                                                  (value) {
-                                                                // print(items);
-                                                                filterSearchResults(
-                                                                    value);
-                                                              },
-                                                              decoration:
-                                                                  new InputDecoration(
-                                                                      prefixIcon: Icon(
-                                                                          FeatherIcons
-                                                                              .search),
-                                                                      fillColor:
-                                                                          AppColors
-                                                                              .secondaryBackground,
-                                                                      filled:
-                                                                          true,
-                                                                      hintText:
-                                                                          'Search',
-                                                                      focusedBorder:
-                                                                          UnderlineInputBorder(
-                                                                        borderSide: const BorderSide(
-                                                                            color:
-                                                                                Colors.green,
-                                                                            width: 2.0),
-                                                                      ),
-                                                                      border: InputBorder
-                                                                          .none),
-                                                            ),
-                                                          )
-                                                        : Container(),
+                                                          ),
+                                                          SizedBox(
+                                                            width: 10,
+                                                          ),
+                                                          // Text(
+                                                          //   'people',
+                                                          //   style: TextStyle(
+                                                          //     color: AppColors
+                                                          //         .accentText,
+                                                          //     fontWeight:
+                                                          //         FontWeight
+                                                          //             .w400,
+                                                          //     fontSize: 14,
+                                                          //   ),
+                                                          // ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 16.0,
+                                                              left: 12),
+                                                      child: TextFormField(
+                                                        onChanged: (value) {
+                                                          // print(items);
+                                                          filterSearchResults(
+                                                              value);
+                                                        },
+                                                        decoration:
+                                                            new InputDecoration(
+                                                                prefixIcon: Icon(
+                                                                    FeatherIcons
+                                                                        .search),
+                                                                fillColor: AppColors
+                                                                    .secondaryBackground,
+                                                                filled: true,
+                                                                hintText:
+                                                                    'Search',
+                                                                focusedBorder:
+                                                                    UnderlineInputBorder(
+                                                                  borderSide: const BorderSide(
+                                                                      color: Colors
+                                                                          .green,
+                                                                      width:
+                                                                          2.0),
+                                                                ),
+                                                                border:
+                                                                    InputBorder
+                                                                        .none),
+                                                      ),
+                                                    ),
                                                     items.length > 0
                                                         ? Container(
                                                             height: MediaQuery.of(
@@ -383,15 +444,18 @@ class _ProfilePageState extends State<ProfilePage>
                                                                           builder: (context) =>
                                                                               DetailPage(
                                                                             type:
-                                                                                Profile.fromJson(items[index]),
+                                                                                Pro.Profile.fromJson(items[index]),
                                                                           ),
                                                                         ));
                                                                   },
                                                                   leading:
-                                                                      Image(
+                                                                      CachedNetworkImage(
+                                                                    fit: BoxFit
+                                                                        .cover,
                                                                     height: 48,
-                                                                    image: NetworkImage(
-                                                                        '${items[index]['profileImage']}'),
+                                                                    width: 48,
+                                                                    imageUrl:
+                                                                        '${items[index]['profileImage']}',
                                                                   ),
                                                                   title: Text(
                                                                       '${items[index]['firstName']} ${items[index]['lastName']}'),
@@ -424,13 +488,9 @@ class _ProfilePageState extends State<ProfilePage>
                                                                         onPressed:
                                                                             () =>
                                                                                 {
-                                                                          setState(
-                                                                              () {
-                                                                            ki =
-                                                                                false;
-                                                                          }),
-                                                                          print(
-                                                                              ki)
+                                                                          bloc.block(
+                                                                              items[index]['id'].toString(),
+                                                                              widget.token),
                                                                         },
                                                                       ), // icon-2
                                                                     ],
@@ -559,6 +619,33 @@ class _ProfilePageState extends State<ProfilePage>
                                                                   : null,
                                                             ),
                                                     ),
+                                                    ListTile(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          locationFilter =
+                                                              locationFilter ==
+                                                                      'true'
+                                                                  ? 'false'
+                                                                  : 'true';
+                                                        });
+                                                        _setPref();
+                                                      },
+                                                      title: Text('Global'),
+                                                      subtitle: Text(
+                                                          'Going global will allow you to see people nearby and from around the world.'),
+                                                      trailing: Icon(
+                                                        locationFilter == 'true'
+                                                            ? FeatherIcons
+                                                                .toggleRight
+                                                            : FeatherIcons
+                                                                .toggleLeft,
+                                                        color: locationFilter ==
+                                                                'true'
+                                                            ? AppColors
+                                                                .secondaryElement
+                                                            : null,
+                                                      ),
+                                                    ),
                                                     Padding(
                                                       padding:
                                                           const EdgeInsets.only(
@@ -635,7 +722,8 @@ class _ProfilePageState extends State<ProfilePage>
                                                           const EdgeInsets.all(
                                                               16.0),
                                                       child: RaisedButton(
-                                                        onPressed: () => {},
+                                                        onPressed: () =>
+                                                            {_showDialog()},
                                                         color: AppColors
                                                             .secondaryElement,
                                                         padding:
@@ -702,8 +790,9 @@ class _ProfilePageState extends State<ProfilePage>
                           ],
                         ),
                       );
+                    } else {
+                      return Center(child: CircularProgressIndicator());
                     }
-                    return Container();
                   }),
             ),
           ),
@@ -712,9 +801,81 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
+  _showDialog() async {
+    await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                'Confirm',
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontFamily: 'Berkshire Swash',
+                  color: AppColors.secondaryElement,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 24,
+                ),
+              ),
+              contentPadding: const EdgeInsets.all(16.0),
+              content:
+                  Text('Are you sure you want to deactivate your account?'),
+              actions: <Widget>[
+                FlatButton(
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.primaryText),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                StreamBuilder(
+                    stream: bloc.userStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        switch (snapshot.data.status) {
+                          case Status.LOADING:
+                            return Center(
+                              child: Container(),
+                            );
+                            break;
+                          case Status.SELFDELETE:
+                            bloc.userSink.add(ApiResponse.idle('message'));
+                            Fluttertoast.showToast(msg: 'Profile Deactivated');
+                            Navigator.pop(context);
+                            _logout();
+                            Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Login(),
+                                ),
+                                (Route<dynamic> route) => false);
+                            break;
+                          default:
+                        }
+                      }
+                      return FlatButton(
+                        onPressed: () => {bloc.selfDelete(widget.token)},
+                        color: AppColors.secondaryElement,
+                        padding: EdgeInsets.all(18),
+                        child: Text('Deactivate'),
+                      );
+                    }),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void filterSearchResults(String query) {
     List dummyList = [];
     List copyList = matches;
+      print('matches');
+      print(matches);
     if (query.isNotEmpty) {
       copyList.forEach((item) {
         print(item['firstName']);
@@ -725,15 +886,19 @@ class _ProfilePageState extends State<ProfilePage>
           print(dummyList);
         }
       });
-      print('matches');
-      print(matches);
       setState(() {
         items.clear();
         items.addAll(dummyList);
       });
     } else {
-      print('matches');
-      print(matches);
+      print('matches jui');
+      print(copyList);
+      print('uyh $matches');
+      setState(() {
+        items.clear();
+        items.addAll(copyList);
+      });
+      print('object');
       // setState(() {
       //   items.clear();
       //   items.addAll(copyList);

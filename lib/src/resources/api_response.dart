@@ -1,6 +1,7 @@
 class ApiResponse<T> {
   Status status;
   T data;
+  List songs;
   String message;
   bool get hasData => data != null;
 
@@ -50,13 +51,19 @@ class ApiResponse<T> {
   ApiResponse.getEmailToken(this.data) : status = Status.GETEMAILTOKEN;
   ApiResponse.resendEmailToken(this.data) : status = Status.RESENDEMAILTOKEN;
   ApiResponse.sendMessage(this.data) : status = Status.SENDMESSAGE;
+  ApiResponse.sendMedia(this.data) : status = Status.SENDMEDIA;
   ApiResponse.songRequest(this.data) : status = Status.SONGREQUEST;
   ApiResponse.done(this.data) : status = Status.DONE;
+  ApiResponse.selfDelete(this.data) : status = Status.SELFDELETE;
+  ApiResponse.play(this.songs) : status = Status.PLAY;
+  ApiResponse.getMusicList(this.data) : status = Status.GETMUSICLIST;
   ApiResponse.forgotPass(this.data) : status = Status.FORGOTPASS;
   ApiResponse.verifyForgotToken(this.data) : status = Status.VERIFYFORGOTTOKEN;
   ApiResponse.getBlockedList(this.data) : status = Status.GETBLOCKEDLIST;
   ApiResponse.resetPassword(this.data) : status = Status.RESETPASSWORD;
-  ApiResponse.upgradePlan(this.message, this.data) : status = Status.UPGRADEPLAN;
+  ApiResponse.upgradePlan(this.message, this.data)
+      : status = Status.UPGRADEPLAN;
+  ApiResponse.verifyUpgrade(this.data) : status = Status.VERIFYUPGRADE;
   ApiResponse.blocked(this.data) : status = Status.BLOCKED;
   ApiResponse.unblocked(this.data) : status = Status.UNBLOCKED;
   ApiResponse.reported(this.data) : status = Status.REPORTED;
@@ -76,7 +83,11 @@ enum Status {
   IDLE,
   ADDFB,
   LOADING,
+  SENDMEDIA,
+  VERIFYUPGRADE,
   UNBLOCKED,
+  SELFDELETE,
+  PLAY,
   SONGREQUEST,
   GETBLOCKEDLIST,
   VERIFYFORGOTTOKEN,
@@ -116,6 +127,7 @@ enum Status {
   PROIMGERROR,
   GETPROFILE,
   DONE,
+  GETMUSICLIST,
   BLOCKED,
   REPORTED,
   ACTIVATED,

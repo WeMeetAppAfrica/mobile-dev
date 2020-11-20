@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/src/views/auth/picture.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:wemeet/src/views/dashboard/bgaudio.dart';
 import 'package:wemeet/src/views/dashboard/home.dart';
 import 'package:wemeet/src/views/onboarding/screen1.dart';
 import 'package:wemeet/src/views/onboarding/screen2.dart';
@@ -25,7 +27,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'WeMeet',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
@@ -37,13 +39,13 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.green,
         // This makes the visual density adapt to the platform that you run
         // the app on. For desktop platforms, the controls will be smaller and
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'WeMeet - Swipe'),
     );
   }
 }
@@ -114,8 +116,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void showNotification(message) async {
     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
       Platform.isAndroid ? 'com.wemeetng.wemeet' : 'com.wemeetng.wemeet',
-      'Flutter chat demo',
-      'your channel description',
+      'WeMeet',
+      'swipe, meet',
       playSound: true,
       enableVibration: true,
       importance: Importance.max,
@@ -216,8 +218,8 @@ class _MyHomePageState extends State<MyHomePage> {
       body: token != null
           ? passKYC
               ? Home(
-                  token: token,
-                )
+                    token: token,
+                  )
               : KYC()
           : passWalkthrough
               ? Login()

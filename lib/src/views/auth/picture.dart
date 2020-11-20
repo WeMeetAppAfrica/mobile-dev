@@ -299,24 +299,30 @@ class _PictureState extends State<Picture> {
                                                           height: 120.0,
                                                           width: 120,
                                                           child: Image(
-                                                            image: FileImage(File(
-                                                                _picture0.path)),
+                                                            image: FileImage(
+                                                                File(_picture0
+                                                                    .path)),
                                                             fit: BoxFit.cover,
                                                           ),
                                                           decoration:
                                                               new BoxDecoration(
-                                                            color: Color.fromARGB(
-                                                                255, 247, 247, 247),
-                                                            border: new Border.all(
+                                                            color:
+                                                                Color.fromARGB(
+                                                                    255,
+                                                                    247,
+                                                                    247,
+                                                                    247),
+                                                            border: new Border
+                                                                    .all(
                                                                 width: 1.0,
-                                                                color:
-                                                                    Color.fromARGB(
+                                                                color: Color
+                                                                    .fromARGB(
                                                                         255,
                                                                         247,
                                                                         247,
                                                                         247)),
-                                                            borderRadius:
-                                                                Radii.k8pxRadius,
+                                                            borderRadius: Radii
+                                                                .k8pxRadius,
                                                           ),
                                                         ),
                                                         Container(
@@ -326,24 +332,30 @@ class _PictureState extends State<Picture> {
                                                               child:
                                                                   CircularProgressIndicator()),
                                                           color: Color.fromRGBO(
-                                                              255, 255, 255, 0.6),
+                                                              255,
+                                                              255,
+                                                              255,
+                                                              0.6),
                                                         ),
                                                       ],
                                                     );
                                                     break;
                                                   case Status.PROIMAGEDONE:
-                                                    proImage = snapshot
-                                                        .data.data.data.imageUrl;
+                                                    proImage = snapshot.data
+                                                        .data.data.imageUrl;
                                                     break;
                                                   case Status.PROIMGERROR:
                                                     bloc.uploadSink.add(
                                                         ApiResponse.idle(
                                                             'message'));
                                                     try {
-                                                      error = json.decode(snapshot
-                                                          .data.message)['message'];
+                                                      error = json.decode(
+                                                              snapshot.data
+                                                                  .message)[
+                                                          'message'];
                                                     } catch (e) {
-                                                      error = snapshot.data.message;
+                                                      error =
+                                                          snapshot.data.message;
                                                     }
                                                     Fluttertoast.showToast(
                                                         msg: error);
@@ -356,20 +368,22 @@ class _PictureState extends State<Picture> {
                                                       height: 120.0,
                                                       width: 120,
                                                       child: Image(
-                                                        image: FileImage(
-                                                            File(_picture0.path)),
+                                                        image: FileImage(File(
+                                                            _picture0.path)),
                                                         fit: BoxFit.cover,
                                                       ),
-                                                      decoration: new BoxDecoration(
+                                                      decoration:
+                                                          new BoxDecoration(
                                                         color: Color.fromARGB(
                                                             255, 247, 247, 247),
                                                         border: new Border.all(
                                                             width: 1.0,
-                                                            color: Color.fromARGB(
-                                                                255,
-                                                                247,
-                                                                247,
-                                                                247)),
+                                                            color:
+                                                                Color.fromARGB(
+                                                                    255,
+                                                                    247,
+                                                                    247,
+                                                                    247)),
                                                         borderRadius:
                                                             Radii.k8pxRadius,
                                                       ),
@@ -377,18 +391,20 @@ class _PictureState extends State<Picture> {
                                                   : Container(
                                                       height: 120.0,
                                                       width: 120,
-                                                      child:
-                                                          Icon(Icons.photo_camera),
-                                                      decoration: new BoxDecoration(
+                                                      child: Icon(
+                                                          Icons.photo_camera),
+                                                      decoration:
+                                                          new BoxDecoration(
                                                         color: Color.fromARGB(
                                                             255, 247, 247, 247),
                                                         border: new Border.all(
                                                             width: 1.0,
-                                                            color: Color.fromARGB(
-                                                                255,
-                                                                247,
-                                                                247,
-                                                                247)),
+                                                            color:
+                                                                Color.fromARGB(
+                                                                    255,
+                                                                    247,
+                                                                    247,
+                                                                    247)),
                                                         borderRadius:
                                                             Radii.k8pxRadius,
                                                       ),
@@ -587,8 +603,9 @@ class _PictureState extends State<Picture> {
                                     // print(data);
                                     bloc.updateProfileImage(data, widget.token);
                                   } else {
-                                    bloc.profileSink.add(ApiResponse.error(
-                                        'Profile picture must be uploaded.'));
+                                    Fluttertoast.showToast(
+                                        msg:
+                                            'Profile picture must be uploaded.');
                                   }
                                 },
                                 child: Container(
@@ -658,10 +675,11 @@ class _PictureState extends State<Picture> {
       ),
     );
   }
-_logout() async {
+
+  _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.clear();
-    prefs.setBool('passKYC', true);
+    prefs.setBool('passWalkthrough', true);
   }
 }
 

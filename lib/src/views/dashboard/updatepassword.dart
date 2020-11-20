@@ -66,7 +66,7 @@ class _UpdatePasswordState extends State<UpdatePassword> {
               switch (snapshot.data.status) {
                 case Status.LOADING:
                   return Center(
-                    child: CircularProgressIndicator(),
+                    child: Container(),
                   );
                   break;
                 case Status.DONE:

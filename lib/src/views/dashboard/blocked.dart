@@ -59,7 +59,7 @@ class _BlockedState extends State<Blocked> {
                 switch (snapshot.data.status) {
                   case Status.LOADING:
                     return Center(
-                      child: CircularProgressIndicator(),
+                      child: Container(),
                     );
                     break;
                   case Status.GETBLOCKEDLIST:

@@ -8,6 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
+import 'package:wemeet/src/views/dashboard/home.dart';
 import 'package:wemeet/values/values.dart';
 
 class Payment extends StatefulWidget {
@@ -30,7 +31,7 @@ class _PaymentState extends State<Payment> {
     super.initState();
 
     PaystackPlugin.initialize(
-        publicKey: 'pk_test_168c5a3a8ff410245befef2595ac1d43500cb194');
+        publicKey: 'pk_test_1ee70468f4f53355ca5b88f3f4d4ac0dd9504749');
     _getUser();
     bloc.getPlans(widget.token);
   }
@@ -42,7 +43,7 @@ class _PaymentState extends State<Payment> {
     });
   }
 
-  chargeCard(amount, access) async {
+  chargeCard(amount, access, reference) async {
     Charge charge = Charge()
       ..amount = amount
       //  ..reference = _getReference()
@@ -52,6 +53,7 @@ class _PaymentState extends State<Payment> {
       context,
       charge: charge,
     );
+    bloc.verifyUpgrade(reference, widget.token);
     print('Response = $response');
   }
 
@@ -93,14 +95,33 @@ class _PaymentState extends State<Payment> {
                           ),
                         );
                         break;
+                      case Status.VERIFYUPGRADE:
+                        // bloc.paySink.add(ApiResponse.idle('message'));
+                        print('snapshot.data.data');
+                        print(snapshot.data.data.data.status);
+                        if (snapshot.data.data.data.status == 'success') {
+                          Fluttertoast.showToast(
+                              msg: snapshot.data.data.message);
+                          myCallback(() {
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      Home(token: widget.token),
+                                ));
+                          });
+                        }
+                        break;
                       case Status.UPGRADEPLAN:
                         bloc.paySink.add(ApiResponse.idle('message'));
                         load = false;
                         print(snapshot.data.data.data.accessCode);
                         print(snapshot.data.message);
                         myCallback(() {
-                          chargeCard(int.parse(snapshot.data.message),
-                              snapshot.data.data.data.accessCode);
+                          chargeCard(
+                              int.parse(snapshot.data.message),
+                              snapshot.data.data.data.accessCode,
+                              snapshot.data.data.data.reference);
                         });
                         break;
                       case Status.ERROR:

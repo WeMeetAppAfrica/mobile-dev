@@ -3,13 +3,11 @@ import 'dart:convert';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_maps_place_picker/google_maps_place_picker.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
-import 'package:wemeet/src/views/dashboard/profile.dart';
 import 'package:wemeet/values/values.dart';
+import 'package:place_picker/place_picker.dart';
 
 class UpdateLocation extends StatefulWidget {
   final token;
@@ -49,6 +47,23 @@ class _UpdateLocationState extends State<UpdateLocation> {
     setState(() {
       _obscureConText = !_obscureConText;
     });
+  }
+
+  void showPlacePicker() async {
+    LocationResult result = await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => PlacePicker(
+              "AIzaSyDr-EyWx9exuZVkbYCv_50rzRJUoVlYRe4",
+            )));
+
+    // Handle the result in your way
+    if (result != null) {
+      setState(() {
+        lat = result.latLng.latitude;
+        long = result.latLng.longitude;
+        location = result.formattedAddress;
+        addressController.text = result.formattedAddress;
+      });
+    }
   }
 
   @override
@@ -111,29 +126,7 @@ class _UpdateLocationState extends State<UpdateLocation> {
                     ),
                     TextFormField(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PlacePicker(
-                              apiKey:
-                                  'AIzaSyDr-EyWx9exuZVkbYCv_50rzRJUoVlYRe4', // Put YOUR OWN KEY here.
-                              onPlacePicked: (result) {
-                                print(result.formattedAddress);
-                                addressController.text =
-                                    result.formattedAddress;
-                                lat = result.geometry.location.lat;
-                                long = result.geometry.location.lng;
-                                Navigator.of(context).pop();
-                              },
-                              hintText: 'Search',
-                              enableMapTypeButton: false,
-                              initialPosition: lat != null
-                                  ? LatLng(lat, long)
-                                  : LatLng(9.0174025, 4.1814097),
-                              useCurrentLocation: lat != null ? false : true,
-                            ),
-                          ),
-                        );
+                        showPlacePicker();
                       },
                       validator: (value) {
                         if (value.isEmpty) {

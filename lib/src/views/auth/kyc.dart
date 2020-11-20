@@ -24,6 +24,7 @@ class _KYCState extends State<KYC> {
   List<RadioModel> interest = new List<RadioModel>();
   String selectedGender;
   List selectedInterest;
+  double maxDist = 1.0;
   String selectedEmploy;
   String error = '';
   final _formKey = GlobalKey<FormState>();
@@ -58,18 +59,19 @@ class _KYCState extends State<KYC> {
     prefs.setString('firstName', user.firstName);
     prefs.setString('lastName', user.lastName);
   }
-_logout() async {
+
+  _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.clear();
-    prefs.setBool('passKYC', true);
+    prefs.setBool('passWalkthrough', true);
   }
+
   _getUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     token = prefs.getString('accessToken');
-    user = jsonDecode(prefs.getString('user'));
+    // user = jsonDecode(prefs.getString('user'));
     bloc.getProfile(token);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -131,6 +133,14 @@ _logout() async {
                                       snapshot.data.data.data.gender)
                                     element.isSelected = true
                                 });
+                            maxDist = snapshot.data.data.data.swipeRadius
+                                            .toDouble() >
+                                        0 &&
+                                    snapshot.data.data.data.swipeRadius
+                                            .toDouble() <
+                                        101
+                                ? snapshot.data.data.data.swipeRadius.toDouble()
+                                : 1;
                             selectedGender = snapshot.data.data.data.gender;
                             employStatus.forEach((element) => {
                                   if (element.buttonValue ==
@@ -434,7 +444,7 @@ _logout() async {
                             SizedBox(
                               height: 25,
                             ),
-                          Padding(
+                            Padding(
                               padding: EdgeInsets.only(left: 20),
                               child: Text(
                                 "Talk About Yourself",
@@ -462,9 +472,10 @@ _logout() async {
                                     contentPadding: EdgeInsets.fromLTRB(
                                         20.0, 15.0, 20.0, 15.0),
                                     hintText: "Bio",
-                            focusedBorder: UnderlineInputBorder(
-                              borderSide: const BorderSide(
-                                  color: Colors.green, width: 2.0),),
+                                    focusedBorder: UnderlineInputBorder(
+                                      borderSide: const BorderSide(
+                                          color: Colors.green, width: 2.0),
+                                    ),
                                   )),
                             ),
                             SizedBox(
@@ -515,6 +526,39 @@ _logout() async {
                             SizedBox(
                               height: 25,
                             ),
+                            ListTile(
+                              onTap: () {},
+                              title: Text('Maximum Distance'),
+                              subtitle: SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  activeTrackColor: AppColors.secondaryElement,
+                                  thumbColor: AppColors.secondaryElement,
+                                  inactiveTrackColor: AppColors.primaryElement,
+                                  trackShape: RectangularSliderTrackShape(),
+                                  trackHeight: 1.0,
+                                  valueIndicatorColor:
+                                      AppColors.secondaryElement,
+                                  thumbShape: RoundSliderThumbShape(
+                                      enabledThumbRadius: 12.0),
+                                  overlayColor: Colors.red.withAlpha(32),
+                                  overlayShape: RoundSliderOverlayShape(
+                                      overlayRadius: 28.0),
+                                ),
+                                child: Slider(
+                                  min: 1,
+                                  divisions: 99,
+                                  max: 100,
+                                  value: maxDist,
+                                  onChanged: (double value) {
+                                    setState(() {
+                                      maxDist = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                              trailing: Text('${maxDist.toInt()} mi'),
+                            ),
+                            SizedBox(height: 25),
                             Align(
                               alignment: Alignment.topCenter,
                               child: InkWell(
@@ -555,7 +599,7 @@ _logout() async {
                                       "genderPreference": selectedInterest,
                                       "maxAge": selectedRange.end.toInt(),
                                       "minAge": selectedRange.start.toInt(),
-                                      "swipeRadius": 0,
+                                      "swipeRadius": maxDist.toInt(),
                                       "workStatus": selectedEmploy
                                     };
                                     if (showInterestError == false) {
