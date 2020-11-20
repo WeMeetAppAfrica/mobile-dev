@@ -399,6 +399,18 @@ class Bloc {
     }
   }
 
+  logout(request, token) async {
+    print('request');
+    userSink.add(ApiResponse.loading('Loading...'));
+    try {
+      ApiModel user = await _userRepository.logout(request, token);
+      userSink.add(ApiResponse.logout('user'));
+    } catch (e) {
+      userSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
   getLoginEmailToken(token) async {
     print('request');
     loginSink.add(ApiResponse.loading('Loading...'));

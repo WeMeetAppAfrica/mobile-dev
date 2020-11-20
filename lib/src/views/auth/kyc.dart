@@ -61,6 +61,7 @@ class _KYCState extends State<KYC> {
   }
 
   _logout() async {
+    bloc.logout({}, token);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.clear();
     prefs.setBool('passWalkthrough', true);

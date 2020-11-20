@@ -100,6 +100,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   bool isSuccessful = false;
   _logout() async {
+    bloc.logout({}, widget.token);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var locationFilter = prefs.getString('locationFilter');
     prefs.clear();

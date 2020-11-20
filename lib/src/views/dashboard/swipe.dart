@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/SwipeAnimation/activeCard.dart';
 import 'package:wemeet/src/SwipeAnimation/data.dart';
 import 'package:wemeet/src/SwipeAnimation/dummyCard.dart';
+import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/blocs/swipe_bloc.dart';
 import 'package:wemeet/src/models/swipesuggestions.dart';
 import 'package:wemeet/src/resources/api_response.dart';
@@ -112,6 +113,7 @@ class _SwipeScreenState extends State<SwipeScreen>
   }
 
   _logout() async {
+    bloc.logout({}, widget.token);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.clear();
     prefs.setBool('passKYC', true);

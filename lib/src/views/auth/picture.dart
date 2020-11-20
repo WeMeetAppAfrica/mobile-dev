@@ -677,6 +677,7 @@ class _PictureState extends State<Picture> {
   }
 
   _logout() async {
+    bloc.logout({}, widget.token);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.clear();
     prefs.setBool('passWalkthrough', true);

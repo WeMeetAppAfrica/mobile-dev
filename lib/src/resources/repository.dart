@@ -142,6 +142,10 @@ class Repository {
     final response = await _helper.post('user/report', request, token);
     return ApiModel.fromJson(response);
   }
+  Future<ApiModel> logout(request, token) async {
+    final response = await _helper.post('auth/logout', request, token);
+    return ApiModel.fromJson(response);
+  }
 
   Future<PlansModel> getPlans(token) async {
     final response = await _helper.get('payment/plans', token);

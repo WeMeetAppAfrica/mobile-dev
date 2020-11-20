@@ -98,6 +98,7 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   _logout() async {
+    bloc.logout({}, widget.token);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var locationFilter = prefs.getString('locationFilter');
     prefs.clear();
