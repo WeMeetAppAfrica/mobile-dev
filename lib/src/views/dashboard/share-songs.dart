@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -107,65 +106,7 @@ class _ShareSongsState extends State<ShareSongs> {
                               print('done oo');
                               print(groupChatId);
                               bloc.messageSink.add(ApiResponse.idle('message'));
-                              var documentReference = FirebaseFirestore.instance
-                                  .collection('messages')
-                                  .doc(groupChatId)
-                                  .collection(groupChatId)
-                                  .doc(DateTime.now()
-                                      .millisecondsSinceEpoch
-                                      .toString());
-
-                              FirebaseFirestore.instance
-                                  .runTransaction((transaction) async {
-                                transaction.set(
-                                  FirebaseFirestore.instance
-                                      .collection('messages')
-                                      .doc(groupChatId),
-                                  {
-                                    'userProfiles': [
-                                      {
-                                        'id': id,
-                                        'name': firstName,
-                                        'profileImage': profileImage
-                                      },
-                                      {
-                                        'id': peerId,
-                                        'name': peerName,
-                                        'profileImage': peerAvatar
-                                      }
-                                    ],
-                                    'users': [id, peerId],
-                                    'timestamp': DateTime.now()
-                                        .millisecondsSinceEpoch
-                                        .toString(),
-                                    'content': content.id.toString(),
-                                    'title': content.title,
-                                    'artist': content.artist,
-                                    'songUrl': content.songUrl,
-                                    'artworkUrl': content.artworkUrl,
-                                    'type': 2
-                                  },
-                                );
-                                transaction.set(
-                                  documentReference,
-                                  {
-                                    'idFrom': id,
-                                    'idTo': peerId,
-                                    'timestamp': DateTime.now()
-                                        .millisecondsSinceEpoch
-                                        .toString(),
-                                    'content': content.id.toString(),
-                                    'title': content.title,
-                                    'artist': content.artist,
-                                    'songUrl': content.songUrl,
-                                    'artworkUrl': content.artworkUrl,
-                                    'type': 2
-                                  },
-                                );
-                              }).then((e) {
-                                Navigator.pop(context);
-                                print("Transaction successfully committed!");
-                              });
+                              
 
                               break;
                             default:

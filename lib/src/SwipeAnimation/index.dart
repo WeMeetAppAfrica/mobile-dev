@@ -200,6 +200,7 @@ class CardDemoState extends State<CardDemo> with TickerProviderStateMixin {
                           context,
                           dismissImg,
                           flag,
+                          '',
                           addImg,
                           swipeRight,
                           swipeLeft);

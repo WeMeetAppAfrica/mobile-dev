@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -17,7 +16,8 @@ import 'package:wemeet/values/values.dart';
 import 'package:device_info/device_info.dart';
 
 class Register extends StatefulWidget {
-  Register({Key key}) : super(key: key);
+  final currentPosition;
+  Register({Key key, this.currentPosition}) : super(key: key);
 
   @override
   _RegisterState createState() => _RegisterState();
@@ -49,7 +49,7 @@ class _RegisterState extends State<Register> {
   void initState() {
     super.initState();
     // initPlatformState();
-    _getCurrentLocation();
+    _currentPosition = widget.currentPosition;
     _getDevice();
   }
 
@@ -63,17 +63,6 @@ class _RegisterState extends State<Register> {
   void _toggle() {
     setState(() {
       _obscureText = !_obscureText;
-    });
-  }
-
-  _getCurrentLocation() {
-    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
-        .then((Position position) {
-      setState(() {
-        _currentPosition = position;
-      });
-    }).catchError((e) {
-      print(e);
     });
   }
 
@@ -106,7 +95,6 @@ class _RegisterState extends State<Register> {
 
   @override
   Widget build(BuildContext context) {
-    CollectionReference users = FirebaseFirestore.instance.collection('users');
 
     _getId().then((id) {
       deviceId = id;
@@ -140,18 +128,6 @@ class _RegisterState extends State<Register> {
                 case Status.ADDFB:
                   loading = false;
                   bloc.registerSink.add(ApiResponse.idle('message'));
-                  users
-                      .doc(userData.user.id.toString())
-                      .set({
-                        "pushToken": pushToken,
-                        "chattingWith": null,
-                        "firstName": userData.user.firstName,
-                        "lastName": userData.user.lastName,
-                        "profileImage": userData.user.profileImage,
-                      })
-                      .then((value) => bloc.getEmailToken(token))
-                      .catchError(
-                          (error) => print("Failed to add user: $error"));
                   loading = true;
                   break;
                 case Status.DONE:
@@ -221,7 +197,11 @@ class _RegisterState extends State<Register> {
                       child: ListView(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(top: 16.0,left: 16.0,right: 16.0, bottom: 8.0),
+                            padding: const EdgeInsets.only(
+                                top: 16.0,
+                                left: 16.0,
+                                right: 16.0,
+                                bottom: 8.0),
                             child: TextFormField(
                                 validator: (value) {
                                   if (value.isEmpty) {
@@ -267,6 +247,11 @@ class _RegisterState extends State<Register> {
                                 return null;
                               },
                               controller: phoneController,
+                              maxLength: 11,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: <TextInputFormatter>[
+                                FilteringTextInputFormatter.digitsOnly
+                              ],
                               decoration: InputDecoration(
                                 prefixIcon: Icon(Icons.phone),
                                 contentPadding:

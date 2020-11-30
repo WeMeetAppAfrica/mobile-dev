@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wemeet/src/models/MessageModel.dart';
 import 'package:wemeet/src/models/apimodel.dart';
 import 'package:wemeet/src/models/getmatchesmodel.dart';
 import 'package:wemeet/src/models/imageupload.dart';
@@ -142,6 +143,7 @@ class Repository {
     final response = await _helper.post('user/report', request, token);
     return ApiModel.fromJson(response);
   }
+
   Future<ApiModel> logout(request, token) async {
     final response = await _helper.post('auth/logout', request, token);
     return ApiModel.fromJson(response);
@@ -173,8 +175,32 @@ class Repository {
     return ApiModel.fromJson(response);
   }
 
-  Future<ApiModel> sendMessage(request, token) async {
-    final response = await _helper.post('message', request, token);
-    return ApiModel.fromJson(response);
+  Future<MessageModel> sendMessage(request, token) async {
+    final response = await _helper.postMessage('send', request, token);
+    return MessageModel.fromJson(response);
+  }
+
+  Future<MessageModel> loginMessages(request, token) async {
+    final response = await _helper.postMessage('login', request, token);
+    response['data']['message'] = null;
+    return MessageModel.fromJson(response);
+  }
+
+  Future<MessageModel> getMessages(receiverId, token) async {
+    print('ttt $token');
+    final response = await _helper.getMessage(receiverId, token);
+    return MessageModel.fromJson(response);
+  }
+
+  Future<MessageModel> getChats(token) async {
+    print('objectkk');
+    final response = await _helper.getMessage('chats', token);
+    return MessageModel.fromJson(response);
+  }
+
+  Future<MessageModel> getUserMessages(chatId, token) async {
+    print('ttt $token');
+    final response = await _helper.getMessage('user/' + chatId, token);
+    return MessageModel.fromJson(response);
   }
 }

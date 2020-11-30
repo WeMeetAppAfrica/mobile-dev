@@ -16,6 +16,7 @@ Positioned cardDemo(
     BuildContext context,
     Function dismissImg,
     int flag,
+    String token,
     Function addImg,
     Function swipeRight,
     Function swipeLeft) {
@@ -23,20 +24,28 @@ Positioned cardDemo(
   // print("Card");
   return new Positioned(
     // bottom: 100.0 + bottom,
-    right: flag == 0 ? right != 0.0 ? right : null : null,
-    left: flag == 1 ? right != 0.0 ? right : null : null,
+    right: flag == 0
+        ? right != 0.0
+            ? right
+            : null
+        : null,
+    left: flag == 1
+        ? right != 0.0
+            ? right
+            : null
+        : null,
     child: new Dismissible(
       key: new Key(new Random().toString()),
       crossAxisEndOffset: -0.3,
       background: Container(
         decoration: BoxDecoration(
-        color: Colors.green,
+          color: Colors.green,
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
       ),
       secondaryBackground: Container(
         decoration: BoxDecoration(
-        color: Colors.red,
+          color: Colors.red,
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
       ),
@@ -72,7 +81,11 @@ Positioned cardDemo(
                 //     new MaterialPageRoute(
                 //         builder: (context) => new DetailPage(type: match)));
                 Navigator.of(context).push(new PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => new DetailPage(type: match),
+                  pageBuilder: (_, __, ___) => new DetailPage(
+                    type: match,
+                    from: 'SWIPE',
+                    token: token,
+                  ),
                 ));
               },
               child: new Stack(
@@ -122,7 +135,7 @@ Positioned cardDemo(
                         child: Container(
                           margin: EdgeInsets.all(7),
                           child: Text(
-                            "${match.distanceInKm}km away",
+                            "${match.distanceInKm != 0 ? match.distanceInKm : 1}km away",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: AppColors.secondaryText,
@@ -165,13 +178,6 @@ Positioned cardDemo(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                FeatherIcons.mapPin,
-                                color: AppColors.secondaryText,
-                              ),
-                              SizedBox(
-                                width: 5,
-                              ),
                               Container(
                                 child: Text(
                                   '${match.workStatus}',

@@ -2,18 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:audio_service/audio_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/login.dart';
-import 'package:wemeet/src/views/auth/picture.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:wemeet/src/views/dashboard/bgaudio.dart';
 import 'package:wemeet/src/views/dashboard/home.dart';
+import 'package:wemeet/src/views/dashboard/sockio.dart';
 import 'package:wemeet/src/views/onboarding/screen1.dart';
 import 'package:wemeet/src/views/onboarding/screen2.dart';
 import 'package:wemeet/src/views/onboarding/screen3.dart';
@@ -217,9 +214,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: token != null
           ? passKYC
-              ? Home(
-                    token: token,
-                  )
+              ? Home(token: token)
               : KYC()
           : passWalkthrough
               ? Login()

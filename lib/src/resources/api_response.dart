@@ -51,12 +51,16 @@ class ApiResponse<T> {
   ApiResponse.getEmailToken(this.data) : status = Status.GETEMAILTOKEN;
   ApiResponse.resendEmailToken(this.data) : status = Status.RESENDEMAILTOKEN;
   ApiResponse.sendMessage(this.data) : status = Status.SENDMESSAGE;
+  ApiResponse.loginMessages(this.data) : status = Status.LOGINMESSAGES;
+  ApiResponse.getMessages(this.data) : status = Status.GETMESSAGES;
+  ApiResponse.getChats(this.data) : status = Status.GETCHATS;
   ApiResponse.sendMedia(this.data) : status = Status.SENDMEDIA;
   ApiResponse.songRequest(this.data) : status = Status.SONGREQUEST;
   ApiResponse.done(this.data) : status = Status.DONE;
   ApiResponse.selfDelete(this.data) : status = Status.SELFDELETE;
   ApiResponse.play(this.songs) : status = Status.PLAY;
   ApiResponse.getMusicList(this.data) : status = Status.GETMUSICLIST;
+  ApiResponse.addMessage(this.message) : status = Status.ADDMESSAGE;
   ApiResponse.forgotPass(this.data) : status = Status.FORGOTPASS;
   ApiResponse.verifyForgotToken(this.data) : status = Status.VERIFYFORGOTTOKEN;
   ApiResponse.getBlockedList(this.data) : status = Status.GETBLOCKEDLIST;
@@ -86,9 +90,12 @@ enum Status {
   SENDMEDIA,
   VERIFYUPGRADE,
   UNBLOCKED,
+  GETCHATS,
   SELFDELETE,
   PLAY,
   SONGREQUEST,
+  ADDMESSAGE,
+  LOGINMESSAGES,
   GETBLOCKEDLIST,
   VERIFYFORGOTTOKEN,
   RESETPASSWORD,
@@ -99,6 +106,7 @@ enum Status {
   ADDIMAGEDONE,
   ADDIMAGELOADING,
   SENDMESSAGE,
+  GETMESSAGES,
   ADDIMAGE1LOADING,
   ADDIMAGE1DONE,
   ADDIMAGE2LOADING,

@@ -9,7 +9,9 @@ import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/app_exceptions.dart';
 
 class ApiBaseHelper {
-  final String _baseUrl = "https://dev.wemeet.africa/api/v1/";
+  final String _baseUrl = "https://dev.wemeet.africa/api/backend-service/v1/";
+  final String _messageBaseUrl =
+      "https://dev.wemeet.africa/api/messaging-service/v1/";
 
   Future<dynamic> get(String url, [token]) async {
     var responseJson;
@@ -23,6 +25,28 @@ class ApiBaseHelper {
           "Authorization": 'Bearer ' + token
         },
       );
+      responseJson = _returnResponse(response);
+    } on SocketException {
+      Fluttertoast.showToast(msg: 'No Internet connection');
+      throw FetchDataException('No Internet connection');
+    }
+    return responseJson;
+  }
+
+  Future<dynamic> getMessage(String url, [token]) async {
+    var responseJson;
+    print(token);
+    print(_messageBaseUrl + url);
+    try {
+      final response = await http.get(
+        _messageBaseUrl + url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": 'Bearer '+token
+        },
+      );
+    print('objecddtkk');
       responseJson = _returnResponse(response);
     } on SocketException {
       Fluttertoast.showToast(msg: 'No Internet connection');
@@ -59,6 +83,26 @@ class ApiBaseHelper {
             "Content-Type": "application/json",
             "Accept": "application/json",
             "Authorization": token != null ? 'Bearer $token' : null
+          },
+          body: jsonEncode(request));
+      responseJson = _returnResponse(response);
+    } on SocketException {
+      print('error');
+      Fluttertoast.showToast(msg: 'No Internet connection');
+      throw FetchDataException('No Internet connection');
+    }
+    return responseJson;
+  }
+
+  Future<dynamic> postMessage(String url, Object request,
+      [String token]) async {
+    var responseJson;
+    try {
+      final response = await http.post(_messageBaseUrl + url,
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": token != null ? 'Bearer ' + token : null
           },
           body: jsonEncode(request));
       responseJson = _returnResponse(response);

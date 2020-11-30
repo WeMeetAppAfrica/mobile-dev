@@ -47,31 +47,35 @@ class Datum {
         this.amount,
         this.period,
         this.currency,
+        this.currentPlan,
         this.limits,
     });
 
     String name;
     String code;
-    dynamic amount;
-    dynamic period;
-    dynamic currency;
+    int amount;
+    String period;
+    String currency;
+    bool currentPlan;
     Limits limits;
 
     factory Datum.fromJson(Map<String, dynamic> json) => Datum(
         name: json["name"] == null ? null : json["name"],
         code: json["code"] == null ? null : json["code"],
-        amount: json["amount"],
-        period: json["period"],
-        currency: json["currency"],
+        amount: json["amount"] == null ? null : json["amount"],
+        period: json["period"] == null ? null : json["period"],
+        currency: json["currency"] == null ? null : json["currency"],
+        currentPlan: json["currentPlan"] == null ? null : json["currentPlan"],
         limits: json["limits"] == null ? null : Limits.fromJson(json["limits"]),
     );
 
     Map<String, dynamic> toJson() => {
         "name": name == null ? null : name,
         "code": code == null ? null : code,
-        "amount": amount,
-        "period": period,
-        "currency": currency,
+        "amount": amount == null ? null : amount,
+        "period": period == null ? null : period,
+        "currency": currency == null ? null : currency,
+        "currentPlan": currentPlan == null ? null : currentPlan,
         "limits": limits == null ? null : limits.toJson(),
     };
 }

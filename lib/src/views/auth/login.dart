@@ -1,12 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info/device_info.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -121,6 +118,7 @@ class _LoginState extends State<Login> {
     prefs.setString('profileImage', user.profileImage);
     prefs.setString('email', user.email);
     prefs.setString('firstName', user.firstName);
+    prefs.setString('workStatus', user.type);
     prefs.setString('lastName', user.lastName);
     prefs.setBool('passKYC', user.profileImage == null ? false : true);
   }
@@ -158,17 +156,6 @@ class _LoginState extends State<Login> {
                   token = snapshot.data.data.data.tokenInfo.accessToken;
                   if (snapshot.data.data.data.user.active) {
                     print('to push $pushToken');
-                    FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(snapshot.data.data.data.user.id.toString())
-                        .set({
-                      "pushToken": pushToken,
-                      "chattingWith": null,
-                      "firstName": snapshot.data.data.data.user.firstName,
-                      "lastName": snapshot.data.data.data.user.lastName,
-                      "profileImage": snapshot.data.data.data.user.profileImage,
-                    }).then((value) => print("User updated"));
-                    // .catchError((error) => print("Failed to add user: $error"));
                     _setUser(snapshot.data.data.data.user,
                         snapshot.data.data.data.tokenInfo.accessToken);
                     if (snapshot.data.data.data.user.profileImage == null) {
@@ -367,6 +354,8 @@ class _LoginState extends State<Login> {
                                               _currentPosition.longitude,
                                           "password": passwordController.text,
                                         };
+                                        print('login data');
+                                        print(data);
                                         bloc.login(data);
                                       }
                                     },
@@ -416,7 +405,7 @@ class _LoginState extends State<Login> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => Register(),
+                                      builder: (context) => Register(currentPosition: _currentPosition,),
                                     ),
                                   )
                                 },

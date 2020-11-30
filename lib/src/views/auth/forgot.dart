@@ -42,7 +42,6 @@ class _ForgotPassState extends State<ForgotPass> {
   void initState() {
     super.initState();
     // initPlatformState();
-    _getCurrentLocation();
   }
 
   void _toggle() {
@@ -54,17 +53,6 @@ class _ForgotPassState extends State<ForgotPass> {
   void _toggleCon() {
     setState(() {
       _obscureConText = !_obscureConText;
-    });
-  }
-
-  _getCurrentLocation() {
-    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
-        .then((Position position) {
-      setState(() {
-        _currentPosition = position;
-      });
-    }).catchError((e) {
-      print(e);
     });
   }
 

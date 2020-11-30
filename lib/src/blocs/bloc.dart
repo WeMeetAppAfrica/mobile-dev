@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:wemeet/src/models/MessageModel.dart';
 import 'package:wemeet/src/models/apimodel.dart';
 import 'package:wemeet/src/models/getmatchesmodel.dart';
 import 'package:wemeet/src/models/imageupload.dart';
@@ -50,8 +51,10 @@ class Bloc {
       _registerController.sink;
   Stream<ApiResponse<LoginModel>> get registerStream =>
       _registerController.stream;
-  StreamSink<ApiResponse<ApiModel>> get messageSink => _messageController.sink;
-  Stream<ApiResponse<ApiModel>> get messageStream => _messageController.stream;
+  StreamSink<ApiResponse<MessageModel>> get messageSink =>
+      _messageController.sink;
+  Stream<ApiResponse<MessageModel>> get messageStream =>
+      _messageController.stream;
   StreamSink<ApiResponse<ApiModel>> get songSink => _songController.sink;
   Stream<ApiResponse<ApiModel>> get songStream => _songController.stream;
   StreamSink<ApiResponse<ProfileModel>> get profileSink =>
@@ -69,7 +72,7 @@ class Bloc {
     _musicController = BehaviorSubject<ApiResponse<MusicModel>>();
     _uploadController = BehaviorSubject<ApiResponse<ImageUpload>>();
     _loginController = BehaviorSubject<ApiResponse<LoginModel>>();
-    _messageController = BehaviorSubject<ApiResponse<ApiModel>>();
+    _messageController = BehaviorSubject<ApiResponse<MessageModel>>();
     _matchesController = BehaviorSubject<ApiResponse<GetMatchesModel>>();
     _songController = BehaviorSubject<ApiResponse<ApiModel>>();
     _registerController = BehaviorSubject<ApiResponse<LoginModel>>();
@@ -329,8 +332,49 @@ class Bloc {
     print(token);
     messageSink.add(ApiResponse.loading('Loading...'));
     try {
-      ApiModel user = await _userRepository.sendMessage(request, token);
+      MessageModel user = await _userRepository.sendMessage(request, token);
       messageSink.add(ApiResponse.sendMessage(user));
+    } catch (e) {
+      messageSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
+  loginMessages(request, token) async {
+    print('request');
+    print(token);
+    messageSink.add(ApiResponse.loading('Loading...'));
+    try {
+      MessageModel user = await _userRepository.loginMessages(request, token);
+      messageSink.add(ApiResponse.loginMessages(user));
+    } catch (e) {
+      messageSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
+  getMessages(request, token) async {
+    print('request');
+    print(token);
+    messageSink.add(ApiResponse.loading('Loading...'));
+    try {
+      MessageModel user = await _userRepository.getMessages(request, token);
+      messageSink.add(ApiResponse.getMessages(user));
+    } catch (e) {
+      messageSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
+  getChats(token) async {
+    print('request');
+    print(token);
+    messageSink.add(ApiResponse.loading('Loading...'));
+    try {
+      MessageModel user = await _userRepository.getChats(token);
+      print(user);
+      print('ahah');
+      messageSink.add(ApiResponse.getChats(user));
     } catch (e) {
       messageSink.add(ApiResponse.error(e.toString()));
       print(e);
@@ -342,7 +386,7 @@ class Bloc {
     print(token);
     messageSink.add(ApiResponse.loading('Loading...'));
     try {
-      ApiModel user = await _userRepository.sendMessage(request, token);
+      MessageModel user = await _userRepository.sendMessage(request, token);
       messageSink.add(ApiResponse.sendMedia(user));
     } catch (e) {
       messageSink.add(ApiResponse.error(e.toString()));

@@ -25,7 +25,6 @@ class Activate extends StatefulWidget {
 }
 
 class _ActivateState extends State<Activate> {
-  Position _currentPosition;
   String deviceId;
   bool _obscureText = true;
   final emailController = TextEditingController();
@@ -37,7 +36,6 @@ class _ActivateState extends State<Activate> {
   void initState() {
     super.initState();
     // initPlatformState();
-    _getCurrentLocation();
   }
 
   void _toggle() {
@@ -46,16 +44,6 @@ class _ActivateState extends State<Activate> {
     });
   }
 
-  _getCurrentLocation() {
-    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
-        .then((Position position) {
-      setState(() {
-        _currentPosition = position;
-      });
-    }).catchError((e) {
-      print(e);
-    });
-  }
 
   Future<String> _getId() async {
     var deviceInfo = DeviceInfoPlugin();

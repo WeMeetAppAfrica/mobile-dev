@@ -25,22 +25,21 @@ dependencies:
   http: ^0.12.2
   flutter_paystack: ^1.0.4+1
   rxdart: ^0.24.0
+  flutter_socket_io: ^0.6.0
   shared_preferences: ^0.5.7+2
   image_picker: ^0.6.7+7
-  cloud_firestore: ^0.14.1+2
   feather_icons_flutter: ^4.7.4
+  firebase_messaging: ^7.0.3
   audio_service: ^0.11.0
   just_audio: ^0.2.1
-  firebase_core: ^0.5.0
+  socket_io_client: ^0.9.12
   tuple: ^1.0.3
   advance_pdf_viewer: ^1.2.0
   url_launcher: ^5.7.10
   geolocator: ^6.1.1
   google_maps_webservice: ^0.0.18
-  firebase_messaging: ^7.0.3
   flutter_local_notifications: ^3.0.0
   place_picker: ^0.9.16
-  firebase_storage: ^4.0.1
   cached_network_image: ^2.3.2+1
   flutter_tindercard: ^0.2.0
   audioplayers: ^0.16.1

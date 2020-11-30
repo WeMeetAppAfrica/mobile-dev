@@ -1,14 +1,19 @@
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/blocs/swipe_bloc.dart';
+import 'package:wemeet/src/chat/Global.dart';
+import 'package:wemeet/src/models/getmatchesmodel.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/auth/picture.dart';
+import 'package:wemeet/src/views/dashboard/chat-page.dart';
 import 'package:wemeet/src/views/dashboard/chat-screen.dart';
 import 'package:wemeet/src/views/dashboard/chat.dart';
 import 'package:wemeet/src/views/dashboard/music.dart';
@@ -26,13 +31,62 @@ class _MessagesState extends State<Messages> {
   SharedPreferences prefs;
   String id;
   String firstName;
+  String messageToken;
   List newChats = [];
+  List matches = [];
+  dynamic matchesCache;
   List activeChats = [];
   @override
   void initState() {
     // TODO: implement initState
     getUser();
+    G.initSocket();
+    initSocket();
     super.initState();
+  }
+
+  String _generateKey(String userId, String key) {
+    return '$userId/$key';
+  }
+
+  @override
+  void saveObject(String userId, String key, Data object) async {
+    final prefs = await SharedPreferences.getInstance();
+    // 1
+    final string = JsonEncoder().convert(object);
+    // 2
+    print('string');
+    print(string);
+    await prefs.setString(_generateKey(userId, key), string);
+  }
+
+  @override
+  Future<dynamic> getObject(String userId, String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    // 3
+    final objectString = prefs.getString(_generateKey(userId, key));
+    // 4
+    print('objectString');
+    print(objectString);
+    if (objectString != null) {
+      print(Data.fromJson(
+              JsonDecoder().convert(objectString) as Map<String, dynamic>)
+          .totalPages);
+      setState(() {
+        matchesCache = Data.fromJson(
+            JsonDecoder().convert(objectString) as Map<String, dynamic>);
+      });
+      return Data.fromJson(
+          JsonDecoder().convert(objectString) as Map<String, dynamic>);
+    }
+    return null;
+  }
+
+  @override
+  Future<void> removeObject(String userId, String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    // 5
+    prefs.remove(_generateKey(userId, key));
   }
 
   getUser() async {
@@ -41,198 +95,213 @@ class _MessagesState extends State<Messages> {
     firstName = prefs.getString('firstName') ?? '';
     print(id);
     print('initiated' + id.toString());
+    bloc.loginMessages({"userId": id}, widget.token);
+  }
 
-    swipeBloc.getMatches(widget.token);
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(id)
-        .update({'chattingWith': null})
-        .then((value) => print("User updated"))
-        .catchError((error) => print("Failed to add user: $error"));
+  setMessageToken(val) async {
+    prefs = await SharedPreferences.getInstance();
+    prefs.setString('messageToken', val);
+    messageToken = val;
+  }
 
-    setState(() {});
+  initSocket() async {
+    await G.socketUtils.initSocket();
+
+    G.socketUtils.setConnectListener(onConnect);
+  }
+
+  onConnect(data) {
+    print('Connected $data');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        StreamBuilder(
-            stream: swipeBloc.matchStream,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                switch (snapshot.data.status) {
-                  case Status.LOADING:
-                    return Container(
-                        height: 100,
-                        child: Center(
-                          child: Text('Loading matches...'),
-                        ));
-                    break;
-                  case Status.DONE:
-                    var items = snapshot.data.data.data.content;
-                    if (snapshot.data.data.data.content.length > 0) {
-                      return Container(
-                        height: 100,
-                        child: ListView.builder(
-                          itemCount: items.length,
-                          itemBuilder: (context, index) {
-                            if (!activeChats
-                                .contains(items[index]['id'].toString())) {
-                              return GestureDetector(
-                                onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Chat(
-                                        token: widget.token,
-                                        peerAvatar: items[index]
-                                            ['profileImage'],
-                                        peerId: items[index]['id'].toString(),
-                                        peerName: items[index]['firstName'],
-                                      ),
-                                    )),
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 8.0),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 30,
-                                        backgroundImage: items[index]
-                                                    ['profileImage'] !=
-                                                null
-                                            ? NetworkImage(
-                                                items[index]['profileImage'])
-                                            : null,
-                                        child:
-                                            items[index]['profileImage'] == null
-                                                ? Text(items[index]['name'])
-                                                : null,
-                                      ),
-                                      Text(items[index]['firstName'])
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                          scrollDirection: Axis.horizontal,
-                        ),
-                      );
-                    }
-
-                    break;
-                  default:
-                }
-              }
-              return Container(
-                height: 100,
-              );
-            }),
-        Container(
-          height: MediaQuery.of(context).size.height - 305,
-          color: Colors.white,
-          child: StreamBuilder(
-              stream: FirebaseFirestore.instance
-                  .collection('messages')
-                  .where("users", arrayContains: id)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                print('errr');
-                print(snapshot.connectionState);
-                if (snapshot.hasError) {
-                  print('errr');
-                  print(snapshot.error.toString());
-                }
-                switch (snapshot.connectionState) {
-                  case ConnectionState.waiting:
-                    print('loading...');
-                    return Center(
-                      child: Container(),
-                    );
-                    break;
-                  case ConnectionState.active:
-                    print('done...');
-                    print(activeChats);
-                    print(snapshot.data.documents.length);
-                    if (snapshot.data.documents.length > 0) {
-                      var chat;
-                      snapshot.data.documents.map((document) {
-                        document.data()['userProfiles'].forEach((e) {
-                          if (e['id'] != id) {
-                            chat = e;
-
-                            if (!activeChats.contains(e['id']))
-                              myCallback(() {
-                                setState(() {
-                                  activeChats.add(e['id']);
-                                });
-                              });
-                          }
-                        });
-                      }).toList();
-
-                      return ListView.builder(
-                          itemCount: snapshot.data.documents.length,
-                          itemBuilder: (context, index) {
-                            var message = snapshot.data.documents[index].data();
-
+    return StreamBuilder(
+        stream: bloc.messageStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            switch (snapshot.data.status) {
+              case Status.LOADING:
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+                break;
+              case Status.LOGINMESSAGES:
+                print('meme');
+                bloc.messageSink.add(ApiResponse.idle('message'));
+                print(snapshot.data.data.data.accessToken);
+                setMessageToken(snapshot.data.data.data.accessToken);
+                swipeBloc.getMatches(widget.token);
+                break;
+              case Status.ERROR:
+                Fluttertoast.showToast(msg: 'An error occured');
+                break;
+              default:
+            }
+          }
+          return Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                StreamBuilder(
+                    stream: swipeBloc.matchStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        switch (snapshot.data.status) {
+                          case Status.LOADING:
                             return Container(
-                              decoration: BoxDecoration(
-                                border: new Border(
-                                  bottom: new BorderSide(
-                                      color: Color.fromRGBO(228, 231, 227, 1)),
-                                ),
-                              ),
-                              child: ListTile(
-                                onTap: () => {
-                                  Navigator.push(
+                                height: 100,
+                                child: Center(
+                                  child: Text('Loading matches...'),
+                                ));
+                            break;
+                          case Status.DONE:
+                            var items = snapshot.data.data.data.content;
+                            matches = items;
+                            swipeBloc.matchSink
+                                .add(ApiResponse.idle('message'));
+                            bloc.getChats(messageToken);
+
+                            break;
+                          default:
+                        }
+                      }
+                      if (matches.length > 0) {
+                        return Container(
+                          height: 100,
+                          child: ListView.builder(
+                            itemCount: matches.length,
+                            itemBuilder: (context, index) {
+                              if (!activeChats
+                                  .contains(matches[index]['id'].toString())) {
+                                return GestureDetector(
+                                  onTap: () => Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => Chat(
-                                          token: widget.token,
-                                          peerAvatar: chat['profileImage'],
-                                          peerName: chat['name'],
-                                          peerId: chat['id'],
+                                        builder: (context) => ChatView(
+                                          token: messageToken,
+                                          // socket: socket,
+                                          peerAvatar: matches[index]
+                                              ['profileImage'],
+                                          peerId:
+                                              matches[index]['id'].toString(),
+                                          peerName: matches[index]['firstName'],
                                         ),
-                                      ))
-                                },
-                                leading: CircleAvatar(
-                                  backgroundImage: chat['profileImage'] != null
-                                      ? CachedNetworkImageProvider(
-                                          chat['profileImage'],
-                                        )
-                                      : null,
-                                  child: chat['profileImage'] == null
-                                      ? Text(chat['name'])
-                                      : null,
-                                ),
-                                title: Text(chat['name']),
-                                subtitle: Text(message['content'] != null
-                                    ? message['content']
-                                    : ''),
-                                trailing: Text(message['timestamp'] != null
-                                    ? DateFormat('dd MMM kk:mm').format(
-                                        DateTime.fromMillisecondsSinceEpoch(
-                                            int.parse(message['timestamp'])))
-                                    : ''),
-                              ),
-                            );
-                          });
-                    } else {
-                      return Center(
-                        child: Text('No active chats!'),
+                                      )),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 30,
+                                          backgroundImage: matches[index]
+                                                      ['profileImage'] !=
+                                                  null
+                                              ? NetworkImage(matches[index]
+                                                  ['profileImage'])
+                                              : null,
+                                          child: matches[index]
+                                                      ['profileImage'] ==
+                                                  null
+                                              ? Text(matches[index]['name'])
+                                              : null,
+                                        ),
+                                        Text(matches[index]['firstName'])
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            scrollDirection: Axis.horizontal,
+                          ),
+                        );
+                      }
+                      return Container(
+                        height: 100,
                       );
-                    }
-                    break;
-                  case ConnectionState.done:
-                    print('done');
-                    break;
-                  default:
-                }
-              }),
-        ),
-      ],
-    );
+                    }),
+                StreamBuilder(
+                    stream: bloc.messageStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        switch (snapshot.data.status) {
+                          case Status.LOADING:
+                            return Container(
+                                height: 100,
+                                child: Center(
+                                  child: Text('Loading matches...'),
+                                ));
+                            break;
+                          case Status.ERROR:
+                            print(snapshot.data.message);
+                            return Center(
+                                child: Text('erro ${snapshot.data.message}'));
+                            break;
+                          case Status.GETCHATS:
+                            print('sss');
+                            print(snapshot.data.data.data);
+                            activeChats = snapshot.data.data.data.messages;
+                            print(getDetails(activeChats[1]));
+                            break;
+                          default:
+                        }
+                      }
+                      return Flexible(
+                          child: ListView.builder(
+                              itemCount: activeChats.length,
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                  onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ChatView(
+                                          token: messageToken,
+                                          // socket: socket,
+                                          peerAvatar:  getDetails(activeChats[index])[
+                                                    'profileImage'],
+                                          peerId:
+                                              getDetails(activeChats[index])[
+                                                    'id'].toString(),
+                                          peerName:  getDetails(activeChats[index])[
+                                                    'firstName'],
+                                        ),
+                                      )),
+                                  leading: CircleAvatar(
+                                    radius: 30,
+                                    backgroundImage:
+                                        getDetails(activeChats[index])[
+                                                    'profileImage'] !=
+                                                null
+                                            ? NetworkImage(
+                                                getDetails(activeChats[index])[
+                                                    'profileImage'])
+                                            : null,
+                                  ),
+                                  subtitle: Text(activeChats[index].content),
+                                  title: Text(getDetails(
+                                          activeChats[index])['firstName'] +
+                                      ' ' +
+                                      getDetails(
+                                          activeChats[index])['lastName']),
+                                );
+                              }));
+                    }),
+              ],
+            ),
+          );
+        });
+  }
+
+  dynamic getDetails(message) {
+    var ret;
+    if (matches != null)
+      matches.forEach((e) => {
+            if (e['id'] == message.receiverId || e['id'] == message.senderId)
+              {ret = e}
+          });
+    return ret;
   }
 }

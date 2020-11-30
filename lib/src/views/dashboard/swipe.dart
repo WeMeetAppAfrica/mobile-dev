@@ -286,7 +286,19 @@ class _SwipeScreenState extends State<SwipeScreen>
             }
           }
           return Container(
-            color: Colors.white,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+                gradient: LinearGradient(
+                    begin: FractionalOffset.topCenter,
+                    end: FractionalOffset.bottomCenter,
+                    colors: [
+                      Colors.white,
+                      AppColors.ternaryBackground,
+                    ],
+                    stops: [
+                      0.1,
+                      1.0
+                    ])),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -299,8 +311,8 @@ class _SwipeScreenState extends State<SwipeScreen>
                         if (snapshot.hasData) {
                           switch (snapshot.data.status) {
                             case Status.LOADING:
-                            print('swipeSug');
-                            print(swipeSug);
+                              print('swipeSug');
+                              print(swipeSug);
                               if (swipeSug == null)
                                 return Container(
                                   height: 410,
@@ -456,6 +468,7 @@ class _SwipeScreenState extends State<SwipeScreen>
                                                       context,
                                                       dismissImg,
                                                       flag,
+                                                      widget.token,
                                                       addImg,
                                                       swipeRight,
                                                       swipeLeft);

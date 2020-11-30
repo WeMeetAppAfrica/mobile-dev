@@ -466,6 +466,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                                         MaterialPageRoute(
                                                                           builder: (context) =>
                                                                               DetailPage(
+                                                                                from: 'MATCH',
                                                                             type:
                                                                                 Pro.Profile.fromJson(items[index]),
                                                                           ),

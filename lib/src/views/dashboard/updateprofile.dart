@@ -157,6 +157,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
                     } on FormatException {
                       Fluttertoast.showToast(msg: snapshot.data.message);
                     }
+                    Navigator.pop(context);
                     break;
                   case Status.DONE:
                     bloc.profileSink.add(ApiResponse.idle('message'));

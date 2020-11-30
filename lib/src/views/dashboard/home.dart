@@ -7,17 +7,20 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_tindercard/flutter_tindercard.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
+import 'package:wemeet/src/blocs/swipe_bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/src/views/dashboard/advanced.dart';
 import 'package:wemeet/src/views/dashboard/audioplayertask.dart';
 import 'package:wemeet/src/views/dashboard/bgaudio.dart';
 import 'package:wemeet/src/views/dashboard/bgaudioplayer.dart';
+import 'package:wemeet/src/views/dashboard/chat-screen.dart';
 import 'package:wemeet/src/views/dashboard/messages.dart';
 import 'package:wemeet/src/views/dashboard/music.dart';
 import 'package:wemeet/src/views/dashboard/musicplayer.dart';
@@ -53,6 +56,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   AudioPlayerState _audioPlayerState;
   Duration _duration;
   Duration _position;
+  int toSwipe = 0;
   bool playing = false;
 
   PlayerState _playerState = PlayerState.stopped;
@@ -80,6 +84,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   Animation<double> rotate;
   Animation<double> right;
   SharedPreferences prefs;
+  bool matchMade = false;
   Animation<double> bottom;
   Animation<double> width;
   String locationFilter = 'true';
@@ -91,9 +96,13 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   String id;
   String firstName;
   String lastName;
+  String workStatus;
   String title;
   String profileImage;
+  dynamic swipeSug;
   dynamic currentData;
+  bool swipeRight = false;
+  bool swipeLeft = false;
   List selectedData = [];
   List<Widget> cardList;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -128,6 +137,28 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     }
   }
 
+  dismissImg(id) {
+    print('UNLIKE');
+    var req = {"swipeeId": id, "type": "UNLIKE"};
+    print(req);
+    swipeBloc.swipe(req, widget.token);
+  }
+
+  addImg(id) {
+    print('LIKE $swipesLeft');
+    var req = {"swipeeId": id, "type": "LIKE"};
+    print(req);
+    swipeBloc.swipe(req, widget.token);
+  }
+
+  _getSwipeSuggestions() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      locationFilter = prefs.getString('locationFilter') ?? 'true';
+    });
+    swipeBloc.getSwipeSuggestions(widget.token, locationFilter);
+  }
+
   _launchPrivacy() async {
     const url = 'https://wemeet.africa/privacypolicy.pdf';
     if (await canLaunch(url)) {
@@ -142,6 +173,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     // TODO: implement initState
     _getUser();
     bloc.getMusic(widget.token);
+    _getSwipeSuggestions();
     super.initState();
 
     title = 'Meet Someone';
@@ -172,6 +204,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     setState(() {
       id = prefs.getString('id') ?? '';
       firstName = prefs.getString('firstName') ?? '';
+      workStatus = prefs.getString('workStatus') ?? '';
       locationFilter = prefs.getString('locationFilter') ?? 'true';
       lastName = prefs.getString('lastName') ?? '';
       profileImage = prefs.getString('profileImage') ?? '';
@@ -181,760 +214,1267 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    CardController controller; //Use this to trigger swap.
     return WillPopScope(
       onWillPop: () async => false,
-      child: Scaffold(
-        key: _scaffoldKey,
-        drawer: ClipRRect(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(16.0),
-            bottom: Radius.circular(16.0),
-          ),
-          child: Drawer(
-            // Add a ListView to the drawer. This ensures the user can scroll
-            // through the options in the drawer if there isn't enough vertical
-            // space to fit everything.
-            child: Container(
-              color: Colors.white,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  DrawerHeader(
-                    decoration: BoxDecoration(color: Colors.white),
-                    child: Container(
-                      width: 133,
-                      height: 133,
-                      margin: EdgeInsets.only(left: 16),
-                      child: firstName != null
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => ProfilePage(
-                                            token: widget.token,
+      child: Stack(
+        children: [
+          Scaffold(
+            key: _scaffoldKey,
+            drawer: ClipRRect(
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(32.0),
+              ),
+              child: Drawer(
+                // Add a ListView to the drawer. This ensures the user can scroll
+                // through the options in the drawer if there isn't enough vertical
+                // space to fit everything.
+                child: Container(
+                  color: Colors.white,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      DrawerHeader(
+                        decoration: BoxDecoration(color: Colors.white),
+                        child: Container(
+                          width: 133,
+                          height: 133,
+                          margin: EdgeInsets.only(left: 16),
+                          child: firstName != null
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => ProfilePage(
+                                                token: widget.token,
+                                              ),
+                                            ));
+                                      },
+                                      child: Container(
+                                        width: 64,
+                                        height: 64,
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                          child: CachedNetworkImage(
+                                            fit: BoxFit.cover,
+                                            imageUrl: profileImage != null
+                                                ? profileImage
+                                                : 'https://via.placeholder.com/1080?text=No+Photo',
+                                            placeholder: (context, url) => Center(
+                                                child:
+                                                    CircularProgressIndicator()),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    Icon(Icons.error),
                                           ),
-                                        ));
-                                  },
-                                  child: Container(
-                                    width: 64,
-                                    height: 64,
-                                    child: CachedNetworkImage(
-                                      fit: BoxFit.cover,
-                                      imageUrl: profileImage != null
-                                          ? profileImage
-                                          : 'https://via.placeholder.com/1080?text=No+Photo',
-                                      placeholder: (context, url) => Center(
-                                          child: CircularProgressIndicator()),
-                                      errorWidget: (context, url, error) =>
-                                          Icon(Icons.error),
+                                        ),
+                                        decoration: new BoxDecoration(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(16)),
+                                        ),
+                                      ),
                                     ),
-                                    decoration: new BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(16)),
+                                    Container(
+                                      margin: EdgeInsets.only(
+                                          left: 1, top: 14, right: 6),
+                                      child: Text(
+                                        '$firstName $lastName',
+                                        textAlign: TextAlign.left,
+                                        style: TextStyle(
+                                          fontFamily: 'Berkshire Swash',
+                                          color: AppColors.primaryText,
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 18,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(
-                                      left: 1, top: 14, right: 6),
-                                  child: Text(
-                                    '$firstName $lastName',
-                                    textAlign: TextAlign.left,
-                                    style: TextStyle(
-                                      fontFamily: 'Berkshire Swash',
-                                      color: AppColors.primaryText,
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 18,
+                                    Opacity(
+                                      opacity: 0.56,
+                                      child: Text(
+                                        workStatus,
+                                        textAlign: TextAlign.left,
+                                        style: TextStyle(
+                                          color: AppColors.primaryText,
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 14,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                // Opacity(
-                                //   opacity: 0.56,
-                                //   child: Text(
-                                //     "Entrepreneur",
-                                //     textAlign: TextAlign.left,
-                                //     style: TextStyle(
-                                //       color: AppColors.primaryText,
-                                //       fontWeight: FontWeight.w400,
-                                //       fontSize: 14,
-                                //     ),
-                                //   ),
-                                // ),
-                              ],
-                            )
-                          : Container(),
-                    ),
-                  ),
-                  ListTile(
-                    title: Row(
-                      children: [
-                        Icon(FeatherIcons.home),
-                        SizedBox(
-                          width: 10,
+                                  ],
+                                )
+                              : Container(),
                         ),
-                        Text('Home'),
-                      ],
-                    ),
-                    onTap: () {
-                      // Update the state of the app.
-                      // ...
-                    },
-                  ),
-                  ListTile(
-                    title: Row(
-                      children: [
-                        Icon(FeatherIcons.user),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Text('Profile'),
-                      ],
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProfilePage(
-                              token: widget.token,
-                            ),
-                          ));
-                    },
-                  ),
-                  ListTile(
-                    title: Row(
-                      children: [
-                        Icon(FeatherIcons.music),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Text('Playlist'),
-                      ],
-                    ),
-                    onTap: () => {
-                      Navigator.pop(context),
-                      _controller.animateToPage(
-                        2,
-                        duration: Duration(milliseconds: 300),
-                        curve: Curves.linear,
-                      )
-                    },
-                  ),
-                  ListTile(
-                    title: Row(
-                      children: [
-                        Icon(FeatherIcons.creditCard),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Text('Subscription'),
-                      ],
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Payment(
-                              token: widget.token,
-                            ),
-                          ));
-                      // Update the state of the app.
-                      // ...
-                    },
-                  ),
-                  Spacer(),
-                  ListTile(
-                      title: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Icon(FeatherIcons.file),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Text('Privacy Policy'),
-                        ],
                       ),
-                      onTap: () {
-                        _launchPrivacy();
-                      }),
-                  ListTile(
-                    title: Row(
-                      children: [
-                        Icon(FeatherIcons.file),
-                        SizedBox(
-                          width: 10,
+                      ListTile(
+                        title: Row(
+                          children: [
+                            Icon(FeatherIcons.home),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Text('Home'),
+                          ],
                         ),
-                        Text('Terms of Use'),
-                      ],
-                    ),
-                    onTap: () {
-                      _launchTerms();
-                    },
-                  ),
-                  Spacer(),
-                  ListTile(
-                    title: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Icon(FeatherIcons.logOut),
-                        SizedBox(
-                          width: 10,
+                        onTap: () {
+                          // Update the state of the app.
+                          // ...
+                        },
+                      ),
+                      ListTile(
+                        title: Row(
+                          children: [
+                            Icon(FeatherIcons.user),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Text('Profile'),
+                          ],
                         ),
-                        Text('Logout'),
-                      ],
-                    ),
-                    onTap: () {
-                      _logout();
-                      Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Login(),
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProfilePage(
+                                  token: widget.token,
+                                ),
+                              ));
+                        },
+                      ),
+                      ListTile(
+                        title: Row(
+                          children: [
+                            Icon(FeatherIcons.music),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Text('Playlist'),
+                          ],
+                        ),
+                        onTap: () => {
+                          Navigator.pop(context),
+                          _controller.animateToPage(
+                            2,
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.linear,
+                          )
+                        },
+                      ),
+                      ListTile(
+                        title: Row(
+                          children: [
+                            Icon(FeatherIcons.creditCard),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Text('Subscription'),
+                          ],
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Payment(
+                                  token: widget.token,
+                                ),
+                              ));
+                          // Update the state of the app.
+                          // ...
+                        },
+                      ),
+                      Spacer(),
+                      ListTile(
+                          title: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(FeatherIcons.file),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Text('Privacy Policy'),
+                            ],
                           ),
-                          (Route<dynamic> route) => false);
-                      // Update the state of the app.
-                      // ...
-                    },
+                          onTap: () {
+                            _launchPrivacy();
+                          }),
+                      ListTile(
+                        title: Row(
+                          children: [
+                            Icon(FeatherIcons.file),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Text('Terms of Use'),
+                          ],
+                        ),
+                        onTap: () {
+                          _launchTerms();
+                        },
+                      ),
+                      Spacer(),
+                      ListTile(
+                        title: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(FeatherIcons.logOut),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Text('Logout'),
+                          ],
+                        ),
+                        onTap: () {
+                          _logout();
+                          Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Login(),
+                              ),
+                              (Route<dynamic> route) => false);
+                          // Update the state of the app.
+                          // ...
+                        },
+                      ),
+                      Spacer(),
+                    ],
                   ),
-                  Spacer(),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-        appBar: AppBar(
-          iconTheme: new IconThemeData(color: AppColors.primaryText),
-          backgroundColor: Colors.white,
-          elevation: 0.0,
-          leading: leading,
-          title: Text(
-            title,
-            textAlign: TextAlign.left,
-            style: TextStyle(
-              fontFamily: 'Berkshire Swash',
-              color: AppColors.primaryText,
-              fontWeight: FontWeight.w400,
-              fontSize: 24,
+            appBar: AppBar(
+              iconTheme: new IconThemeData(color: AppColors.primaryText),
+              backgroundColor: Colors.white,
+              elevation: 0.0,
+              leading: leading,
+              title: Text(
+                title,
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontFamily: 'Berkshire Swash',
+                  color: AppColors.primaryText,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 24,
+                ),
+              ),
+              actions: actions,
             ),
-          ),
-          actions: actions,
-        ),
-        body: Stack(
-          children: [
-            PageView(
-              controller: _controller,
-              onPageChanged: (value) {
-                print("Current Page: " + value.toString());
-                if (value == 1) {
-                  setState(() {
-                    title = 'Messages';
-                    actions = [];
-                    leading = IconButton(
-                      icon: new Icon(FeatherIcons.home),
-                      onPressed: () => _controller.animateToPage(
-                        0,
-                        duration: Duration(milliseconds: 300),
-                        curve: Curves.linear,
-                      ),
-                    );
-                  });
-                }
-                if (value == 0) {
-                  setState(() {
-                    title = 'Meet Someone';
-                    leading = IconButton(
-                      icon: new Icon(FeatherIcons.menu),
-                      onPressed: () => _scaffoldKey.currentState.openDrawer(),
-                    );
-                    actions = [
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(0.0, 0.0, 16.0, 0.0),
-                        child: IconButton(
-                          icon: Icon(
-                            FeatherIcons.messageSquare,
-                            color: AppColors.primaryText,
-                          ),
+            body: Stack(
+              children: [
+                PageView(
+                  physics: new NeverScrollableScrollPhysics(),
+                  controller: _controller,
+                  onPageChanged: (value) {
+                    print("Current Page: " + value.toString());
+                    if (value == 1) {
+                      setState(() {
+                        title = 'Messages';
+                        actions = [];
+                        leading = IconButton(
+                          icon: new Icon(FeatherIcons.home),
                           onPressed: () => _controller.animateToPage(
-                            1,
+                            0,
                             duration: Duration(milliseconds: 300),
                             curve: Curves.linear,
                           ),
-                        ),
-                      ),
-                    ];
-                  });
-                }
-                if (value == 2) {
-                  setState(() {
-                    title = '';
-                    leading = IconButton(
-                      icon: Icon(
-                        FeatherIcons.chevronLeft,
-                        color: AppColors.primaryText,
-                      ),
-                      onPressed: () => _controller.animateToPage(
-                        0,
-                        duration: Duration(milliseconds: 300),
-                        curve: Curves.linear,
-                      ),
-                    );
-                    actions = [];
-                  });
-                }
-              },
-              children: [
-                SwipeScreen(
-                  token: widget.token,
-                  locationFilter: locationFilter,
-                ),
-                Messages(
-                  token: widget.token,
-                ),
-                Container(
-                  color: Colors.white,
-                  child: ListView(
-                    padding: EdgeInsets.all(16),
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            "Today's Playlist",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontFamily: 'Berkshire Swash',
-                              color: AppColors.primaryText,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 32,
+                        );
+                      });
+                    }
+                    if (value == 0) {
+                      setState(() {
+                        title = 'Meet Someone';
+                        leading = IconButton(
+                          icon: new Icon(FeatherIcons.menu),
+                          onPressed: () =>
+                              _scaffoldKey.currentState.openDrawer(),
+                        );
+                        actions = [
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(0.0, 0.0, 16.0, 0.0),
+                            child: IconButton(
+                              icon: Icon(
+                                FeatherIcons.messageSquare,
+                                color: AppColors.primaryText,
+                              ),
+                              onPressed: () => _controller.animateToPage(
+                                1,
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.linear,
+                              ),
                             ),
                           ),
-                          Spacer(),
-                          IconButton(
-                            onPressed: () => {_showDialog()},
-                            color: AppColors.secondaryElement,
-                            icon: Icon(FeatherIcons.plus),
-                          )
-                        ],
-                      ),
-                      SizedBox(
-                        height: 18,
-                      ),
-                      StreamBuilder(
-                          stream: bloc.musicStream,
+                        ];
+                      });
+                    }
+                    if (value == 2) {
+                      setState(() {
+                        title = '';
+                        leading = IconButton(
+                          icon: Icon(
+                            FeatherIcons.chevronLeft,
+                            color: AppColors.primaryText,
+                          ),
+                          onPressed: () => _controller.animateToPage(
+                            0,
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.linear,
+                          ),
+                        );
+                        actions = [];
+                      });
+                    }
+                  },
+                  children: [
+                    // SwipeScreen(
+                    //   token: widget.token,
+                    //   locationFilter: locationFilter,
+                    // ),
+                    Center(
+                      child: StreamBuilder(
+                          stream: swipeBloc.swipeSugStream,
                           builder: (context, snapshot) {
                             if (snapshot.hasData) {
                               switch (snapshot.data.status) {
                                 case Status.LOADING:
-                                  return Center(
-                                    child: Container(),
+                                  print('swipeSug');
+                                  print(swipeSug);
+                                  if (swipeSug == null)
+                                    return Container(
+                                      height: 410,
+                                      child: Center(
+                                          child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          CircularProgressIndicator(
+                                            backgroundColor:
+                                                AppColors.secondaryElement,
+                                          ),
+                                          SizedBox(
+                                            height: 10,
+                                          ),
+                                          Text('Finding new matches...')
+                                        ],
+                                      )),
+                                    );
+                                  break;
+                                case Status.ERROR:
+                                  print('eeerrr');
+                                  swipeBloc.swipeSugSink
+                                      .add(ApiResponse.idle('message '));
+                                  if (snapshot.data.message != 'null') {
+                                    print(snapshot.data.message);
+                                    try {
+                                      if (json.decode(snapshot.data.message)[
+                                              'responseCode'] ==
+                                          'INVALID_TOKEN') {
+                                        _logout();
+                                        print('expire');
+                                        myCallback(() {
+                                          Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => Login(),
+                                              ));
+                                        });
+                                      }
+                                    } on FormatException catch (e) {
+                                      print(snapshot.data.message);
+                                    }
+                                  }
+                                  return Container(
+                                    height: 410,
+                                    child: Center(
+                                        child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text('Error finding new matches...'),
+                                        SizedBox(
+                                          height: 10,
+                                        ),
+                                        FlatButton(
+                                          color: AppColors.secondaryElement,
+                                          child: Text(
+                                            'Try Again',
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                          onPressed: () =>
+                                              _getSwipeSuggestions(),
+                                        )
+                                      ],
+                                    )),
                                   );
                                   break;
                                 case Status.DONE:
-                                  featured = snapshot.data.data.data.content;
+                                  swipeBloc.swipeSugSink
+                                      .add(ApiResponse.idle('message '));
+                                  swipeSug = snapshot.data.data.data;
+                                  // saveObject(widget.token, 'swipeSug',
+                                  //     snapshot.data.data.data);
 
-                                  break;
-                                case Status.ERROR:
+                                  toSwipe = swipeSug.profiles.length;
+                                  swipesLeft =
+                                      snapshot.data.data.data.swipesLeft;
+                                  disableSwipe = swipesLeft == 0 ? true : false;
+                                  print(swipesLeft);
+
                                   break;
                                 default:
                               }
                             }
-                            return Container(
-                              height: MediaQuery.of(context).size.height * 0.3,
-                              width: MediaQuery.of(context).size.width * 0.5,
-                              child: ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: featured.length,
-                                  itemBuilder: (context, index) {
-                                    return Card(
-                                      clipBehavior: Clip.antiAliasWithSaveLayer,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: Radii.k8pxRadius,
-                                      ),
-                                      child: Stack(
-                                        children: [
-                                          Image(
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.3,
-                                            width: MediaQuery.of(context)
+                            if (swipeSug != null) {
+                              return toSwipe > 0
+                                  ? Column(
+                                      children: [
+                                        Container(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.6,
+                                          child: new TinderSwapCard(
+                                            swipeUp: false,
+                                            swipeDown: false,
+                                            orientation: AmassOrientation.TOP,
+                                            totalNum: swipeSug.profiles.length,
+                                            stackNum: 3,
+                                            swipeEdge: 1.0,
+                                            maxWidth: MediaQuery.of(context)
                                                     .size
                                                     .width *
-                                                0.5,
-                                            fit: BoxFit.cover,
-                                            image: NetworkImage(
-                                              featured[index].artworkUrl,
-                                            ),
-                                          ),
-                                          Container(
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.3,
-                                            width: MediaQuery.of(context)
+                                                0.9,
+                                            maxHeight: MediaQuery.of(context)
                                                     .size
                                                     .width *
-                                                0.5,
-                                            decoration: BoxDecoration(
-                                                color: Colors.black,
-                                                gradient: LinearGradient(
-                                                    begin: FractionalOffset
-                                                        .topCenter,
-                                                    end: FractionalOffset
-                                                        .bottomCenter,
-                                                    colors: [
-                                                      Colors.transparent,
-                                                      Colors.black
-                                                          .withOpacity(0.7),
-                                                    ],
-                                                    stops: [
-                                                      0.6,
-                                                      1.0
-                                                    ])),
-                                          ),
-                                          Positioned(
-                                            bottom: 18,
-                                            left: 18,
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  featured[index].title,
-                                                  textAlign: TextAlign.left,
-                                                  style: TextStyle(
-                                                    color:
-                                                        AppColors.secondaryText,
-                                                    fontWeight: FontWeight.w700,
-                                                    fontSize: 22,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  featured[index].artist,
-                                                  textAlign: TextAlign.left,
-                                                  style: TextStyle(
-                                                    color: AppColors
-                                                        .secondaryText
-                                                        .withOpacity(0.8),
-                                                    fontWeight: FontWeight.w400,
-                                                    fontSize: 16,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                            );
-                          }),
-                      SizedBox(
-                        height: 18,
-                      ),
-                      StreamBuilder(
-                          stream: bloc.musicStream,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              switch (snapshot.data.status) {
-                                case Status.LOADING:
-                                  return Center(
-                                      child: CircularProgressIndicator());
-                                  break;
-                                case Status.DONE:
-                                  songs = snapshot.data.data.data.content;
-
-                                  break;
-                                case Status.ERROR:
-                                  bloc.musicSink
-                                      .add(ApiResponse.idle('message'));
-                                  try {
-                                    Fluttertoast.showToast(
-                                        msg: json.decode(
-                                            snapshot.data.message)['message']);
-                                  } on FormatException {
-                                    Fluttertoast.showToast(
-                                        msg: snapshot.data.message);
-                                  }
-                                  break;
-                                default:
-                              }
-                            }
-                            return Container(
-                              height: MediaQuery.of(context).size.height * 0.7,
-                              child: ListView.builder(
-                                  scrollDirection: Axis.vertical,
-                                  itemCount: songs.length,
-                                  itemBuilder: (context, index) {
-                                    return ListTile(
-                                      leading: Icon(
-                                        FeatherIcons.music,
-                                        color: AppColors.secondaryElement,
-                                      ),
-                                      trailing: ClipOval(
-                                        child: Material(
-                                          color: AppColors
-                                              .secondaryElement, // button color
-                                          child: InkWell(
-                                            child: SizedBox(
-                                              width: 56,
-                                              height: 56,
-                                              child: SizedBox(
-                                                  width: 48,
-                                                  height: 48,
-                                                  child: Icon(
-                                                    FeatherIcons.play,
-                                                    color: Colors.white,
-                                                  )),
-                                            ),
-                                            onTap: () async {
-                                              // AudioService.stop();
-                                              // _changeQueue(songs[index].songUrl);
-                                              // await AudioService.stop();
-                                              List orderSong = [];
-                                              List append = [];
-                                              for (int i = 0;
-                                                  i < songs.length;
-                                                  i++) {
-                                                if (index <= i) {
-                                                  orderSong.add(songs[i]);
-                                                } else {
-                                                  append.add(songs[i]);
+                                                0.9,
+                                            minWidth: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.8,
+                                            minHeight: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.8,
+                                            cardBuilder: (context, index) =>
+                                                InkWell(
+                                              onTapDown: (value) {
+                                                print(value);
+                                                if (swipesLeft == 0) {
+                                                  _showUpgrade();
                                                 }
+                                              },
+                                              onTap: () => {print(index)},
+                                              child: Card(
+                                                child: Stack(
+                                                  children: [
+                                                    Container(
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width *
+                                                              0.9,
+                                                      height:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width *
+                                                              0.9,
+                                                      child: CachedNetworkImage(
+                                                          placeholder:
+                                                              (context, url) =>
+                                                                  Center(
+                                                                    child:
+                                                                        CircularProgressIndicator(),
+                                                                  ),
+                                                          imageUrl:
+                                                              '${swipeSug.profiles[index].profileImage}',
+                                                          fit: BoxFit.cover,
+                                                          errorWidget: (context,
+                                                                  url, error) =>
+                                                              Center(
+                                                                child: Icon(
+                                                                    FeatherIcons
+                                                                        .x),
+                                                              )),
+                                                    ),
+                                                    if (swipeRight)
+                                                      Container(
+                                                        color: AppColors
+                                                            .ternaryBackground
+                                                            .withOpacity(0.3),
+                                                        child: Center(
+                                                          child: Icon(
+                                                              FeatherIcons
+                                                                  .heart),
+                                                        ),
+                                                      ),
+                                                    if (swipeLeft)
+                                                      Container(
+                                                        color: AppColors
+                                                            .secondaryElement
+                                                            .withOpacity(0.3),
+                                                        child: Center(
+                                                          child: Icon(
+                                                              FeatherIcons.x),
+                                                        ),
+                                                      )
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            cardController: controller =
+                                                CardController(),
+                                            swipeUpdateCallback:
+                                                (DragUpdateDetails details,
+                                                    Alignment align) {
+                                              /// Get swiping card's alignment
+                                              if (align.x < 0) {
+                                                swipeLeft = true;
+                                                swipeRight = false;
+                                                //Card is swipeLeft swiping
+                                              } else if (align.x > 0) {
+                                                swipeRight = true;
+                                                swipeLeft = false;
+                                                //Card is RIGHT swiping
                                               }
-                                              orderSong.addAll(append);
-                                              var m;
+                                            },
+                                            swipeCompleteCallback:
+                                                (CardSwipeOrientation
+                                                        orientation,
+                                                    int index) {
+                                              /// Get orientation & index of swiped card!
 
-                                              print('play');
-                                              if (AudioService.running) {
-                                                AudioService.skipToQueueItem(
-                                                    songs[index].songUrl);
-                                                return;
+                                              setState(() {
+                                                swipeLeft = false;
+                                                swipeRight = false;
+                                                toSwipe = toSwipe - 1;
+                                                swipesLeft = swipesLeft - 1;
+                                              });
+                                              print(orientation);
+
+                                              if (orientation ==
+                                                  CardSwipeOrientation.LEFT) {
+                                                print(swipeSug
+                                                    .profiles[index].id);
+                                                dismissImg(swipeSug
+                                                    .profiles[index].id);
                                               }
-                                              List<dynamic> list = [];
-                                              orderSong.forEach(
-                                                (element) => {
-                                                  m = MediaItem(
-                                                    id: element.songUrl,
-                                                    album: element.title,
-                                                    title: element.title,
-                                                    artist: element.artist,
-                                                    artUri: element.artworkUrl,
-                                                  ).toJson(),
-                                                  list.add(m)
-                                                },
-                                              );
-                                              var params = {"data": list};
-                                              _startAudioPlayerBtn(params);
-
-                                              // bloc.musicSink
-                                              //     .add(ApiResponse.play(orderSong));
-                                              // setState(() {
-                                              //   _currentPlay = index;
-                                              //   _queue = songs;
-                                              //   url = _queue[index].songUrl;
-                                              //   songs.forEach((element) {
-                                              //     element.isPlaying = false;
-                                              //   });
-                                              //   songs[index].isPlaying = true;
-                                              // });
-                                              // _play();
+                                              if (orientation ==
+                                                  CardSwipeOrientation.RIGHT) {
+                                                print('right');
+                                                addImg(swipeSug
+                                                    .profiles[index].id);
+                                              }
                                             },
                                           ),
                                         ),
-                                      ),
-                                      title: Text(songs[index].title),
-                                      subtitle: Text(songs[index].artist),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            RawMaterialButton(
+                                              onPressed: () {
+                                                if (swipesLeft == 0) {
+                                                  _showUpgrade();
+                                                  return null;
+                                                }
+                                                controller.triggerLeft();
+                                              },
+                                              elevation: 2.0,
+                                              fillColor: Color.fromARGB(
+                                                  255, 142, 198, 63),
+                                              child: Icon(
+                                                FeatherIcons.x,
+                                                color: AppColors.secondaryText,
+                                              ),
+                                              padding: EdgeInsets.all(15.0),
+                                              shape: CircleBorder(),
+                                            ),
+                                            RawMaterialButton(
+                                              onPressed: () {
+                                                if (swipesLeft == 0) {
+                                                  _showUpgrade();
+                                                  return null;
+                                                }
+                                                controller.triggerRight();
+                                              },
+                                              elevation: 2.0,
+                                              fillColor:
+                                                  AppColors.secondaryElement,
+                                              child: Icon(
+                                                Icons.favorite,
+                                                color: AppColors.secondaryText,
+                                              ),
+                                              padding: EdgeInsets.all(23.0),
+                                              shape: CircleBorder(),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    )
+                                  : Container(
+                                      height: 410,
+                                      child: Center(
+                                          child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                              'Oops, we currently have no new matches for you.'),
+                                          SizedBox(
+                                            height: 10,
+                                          ),
+                                          FlatButton(
+                                              color: AppColors.secondaryElement,
+                                              child: Text(
+                                                'Try Again',
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                              onPressed: () =>
+                                                  _getSwipeSuggestions())
+                                        ],
+                                      )),
                                     );
-                                  }),
-                            );
+                            } else {
+                              return Center(child: CircularProgressIndicator());
+                            }
                           }),
-                    ],
-                  ),
-                )
-                // Advanced()
+                    ),
+
+                    Messages(
+                      token: widget.token,
+                    ),
+                    Container(
+                      color: Colors.white,
+                      child: ListView(
+                        padding: EdgeInsets.all(16),
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                "Today's Playlist",
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  fontFamily: 'Berkshire Swash',
+                                  color: AppColors.primaryText,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 32,
+                                ),
+                              ),
+                              Spacer(),
+                              IconButton(
+                                onPressed: () => {_showDialog()},
+                                color: AppColors.secondaryElement,
+                                icon: Icon(FeatherIcons.plus),
+                              )
+                            ],
+                          ),
+                          SizedBox(
+                            height: 18,
+                          ),
+                          StreamBuilder(
+                              stream: bloc.musicStream,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  switch (snapshot.data.status) {
+                                    case Status.LOADING:
+                                      return Center(
+                                        child: Container(),
+                                      );
+                                      break;
+                                    case Status.DONE:
+                                      featured =
+                                          snapshot.data.data.data.content;
+
+                                      break;
+                                    case Status.ERROR:
+                                      break;
+                                    default:
+                                  }
+                                }
+                                return Container(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.3,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.5,
+                                  child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: featured.length,
+                                      itemBuilder: (context, index) {
+                                        return Card(
+                                          clipBehavior:
+                                              Clip.antiAliasWithSaveLayer,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: Radii.k8pxRadius,
+                                          ),
+                                          child: Stack(
+                                            children: [
+                                              Image(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.3,
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.5,
+                                                fit: BoxFit.cover,
+                                                image: NetworkImage(
+                                                  featured[index].artworkUrl,
+                                                ),
+                                              ),
+                                              Container(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.3,
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.5,
+                                                decoration: BoxDecoration(
+                                                    color: Colors.black,
+                                                    gradient: LinearGradient(
+                                                        begin: FractionalOffset
+                                                            .topCenter,
+                                                        end: FractionalOffset
+                                                            .bottomCenter,
+                                                        colors: [
+                                                          Colors.transparent,
+                                                          Colors.black
+                                                              .withOpacity(0.7),
+                                                        ],
+                                                        stops: [
+                                                          0.6,
+                                                          1.0
+                                                        ])),
+                                              ),
+                                              Positioned(
+                                                bottom: 18,
+                                                left: 18,
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      featured[index].title,
+                                                      textAlign: TextAlign.left,
+                                                      style: TextStyle(
+                                                        color: AppColors
+                                                            .secondaryText,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        fontSize: 22,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      featured[index].artist,
+                                                      textAlign: TextAlign.left,
+                                                      style: TextStyle(
+                                                        color: AppColors
+                                                            .secondaryText
+                                                            .withOpacity(0.8),
+                                                        fontWeight:
+                                                            FontWeight.w400,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      }),
+                                );
+                              }),
+                          SizedBox(
+                            height: 18,
+                          ),
+                          StreamBuilder(
+                              stream: bloc.musicStream,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  switch (snapshot.data.status) {
+                                    case Status.LOADING:
+                                      return Center(
+                                          child: CircularProgressIndicator());
+                                      break;
+                                    case Status.DONE:
+                                      songs = snapshot.data.data.data.content;
+
+                                      break;
+                                    case Status.ERROR:
+                                      bloc.musicSink
+                                          .add(ApiResponse.idle('message'));
+                                      try {
+                                        Fluttertoast.showToast(
+                                            msg: json.decode(snapshot
+                                                .data.message)['message']);
+                                      } on FormatException {
+                                        Fluttertoast.showToast(
+                                            msg: snapshot.data.message);
+                                      }
+                                      break;
+                                    default:
+                                  }
+                                }
+                                return Container(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.7,
+                                  child: ListView.builder(
+                                      scrollDirection: Axis.vertical,
+                                      itemCount: songs.length,
+                                      itemBuilder: (context, index) {
+                                        return ListTile(
+                                          leading: Icon(
+                                            FeatherIcons.music,
+                                            color: AppColors.secondaryElement,
+                                          ),
+                                          trailing: ClipOval(
+                                            child: Material(
+                                              color: AppColors
+                                                  .secondaryElement, // button color
+                                              child: InkWell(
+                                                child: SizedBox(
+                                                  width: 56,
+                                                  height: 56,
+                                                  child: SizedBox(
+                                                      width: 48,
+                                                      height: 48,
+                                                      child: Icon(
+                                                        FeatherIcons.play,
+                                                        color: Colors.white,
+                                                      )),
+                                                ),
+                                                onTap: () async {
+                                                  // AudioService.stop();
+                                                  // _changeQueue(songs[index].songUrl);
+                                                  // await AudioService.stop();
+                                                  List orderSong = [];
+                                                  List append = [];
+                                                  for (int i = 0;
+                                                      i < songs.length;
+                                                      i++) {
+                                                    if (index <= i) {
+                                                      orderSong.add(songs[i]);
+                                                    } else {
+                                                      append.add(songs[i]);
+                                                    }
+                                                  }
+                                                  orderSong.addAll(append);
+                                                  var m;
+
+                                                  print('play');
+                                                  if (AudioService.running) {
+                                                    AudioService
+                                                        .skipToQueueItem(
+                                                            songs[index]
+                                                                .songUrl);
+                                                    return;
+                                                  }
+                                                  List<dynamic> list = [];
+                                                  orderSong.forEach(
+                                                    (element) => {
+                                                      m = MediaItem(
+                                                        id: element.songUrl,
+                                                        album: element.title,
+                                                        title: element.title,
+                                                        artist: element.artist,
+                                                        artUri:
+                                                            element.artworkUrl,
+                                                      ).toJson(),
+                                                      list.add(m)
+                                                    },
+                                                  );
+                                                  var params = {"data": list};
+                                                  _startAudioPlayerBtn(params);
+
+                                                  // bloc.musicSink
+                                                  //     .add(ApiResponse.play(orderSong));
+                                                  // setState(() {
+                                                  //   _currentPlay = index;
+                                                  //   _queue = songs;
+                                                  //   url = _queue[index].songUrl;
+                                                  //   songs.forEach((element) {
+                                                  //     element.isPlaying = false;
+                                                  //   });
+                                                  //   songs[index].isPlaying = true;
+                                                  // });
+                                                  // _play();
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                          title: Text(songs[index].title),
+                                          subtitle: Text(songs[index].artist),
+                                        );
+                                      }),
+                                );
+                              }),
+                        ],
+                      ),
+                    )
+                    // Advanced()
+                  ],
+                ),
+                StreamBuilder(
+                    stream: bloc.musicStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        switch (snapshot.data.status) {
+                          case Status.LOADING:
+                            return Center(
+                              child: Container(),
+                            );
+                            break;
+                          case Status.GETMUSICLIST:
+                            // bloc.musicSink.add(ApiResponse.play(
+                            //     snapshot.data.data));
+                            break;
+                          case Status.DONE:
+                            print(snapshot.data.songs);
+                            var m;
+                            List<dynamic> list = List();
+                            snapshot.data.data.data.content.forEach(
+                              (element) => {
+                                m = MediaItem(
+                                  id: element.songUrl,
+                                  album: element.title,
+                                  title: element.title,
+                                  artist: element.artist,
+                                  duration: Duration(milliseconds: 5739820),
+                                  artUri: element.artworkUrl,
+                                ).toJson(),
+                                list.add(m)
+                              },
+                            );
+                            var params = {"data": list};
+                            // _startAudioPlayerBtn(params);
+                            break;
+                          case Status.ERROR:
+                            break;
+                          default:
+                        }
+                      }
+
+                      return AudioServiceWidget(
+                        child: StreamBuilder<AudioState>(
+                          stream: _audioStateStream,
+                          builder: (context, snapshot) {
+                            final audioState = snapshot.data;
+                            final queue = audioState?.queue;
+                            final mediaItem = audioState?.mediaItem;
+                            final playbackState = audioState?.playbackState;
+                            final processingState =
+                                playbackState?.processingState ??
+                                    AudioProcessingState.none;
+                            playing = playbackState?.playing ?? false;
+                            print('playbackState $playing');
+                            if (AudioService.running)
+                              return Positioned.fill(
+                                bottom: 25,
+                                child: Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: Container(
+                                      padding:
+                                          EdgeInsets.only(right: 20, left: 20),
+                                      decoration: BoxDecoration(
+                                          color: AppColors.secondaryElement,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(20))),
+                                      height: 80,
+                                      width: MediaQuery.of(context).size.width *
+                                          .8,
+                                      child: Container(
+                                          child: Container(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            if (processingState !=
+                                                AudioProcessingState.none) ...[
+                                              if (mediaItem?.title != null)
+                                                Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Flexible(
+                                                        child: Text(
+                                                      mediaItem.artist,
+                                                      style: TextStyle(
+                                                          color: Color.fromARGB(
+                                                              180,
+                                                              255,
+                                                              255,
+                                                              255),
+                                                          fontSize: 12),
+                                                    )),
+                                                    Flexible(
+                                                        child: Text(
+                                                      mediaItem.title,
+                                                      style: TextStyle(
+                                                          color: AppColors
+                                                              .secondaryText,
+                                                          fontSize: 16),
+                                                    )),
+                                                  ],
+                                                ),
+                                              Spacer(),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  IconButton(
+                                                    icon: Icon(
+                                                      FeatherIcons.skipBack,
+                                                      color: Colors.white,
+                                                    ),
+                                                    iconSize: 30,
+                                                    onPressed: () {
+                                                      if (mediaItem ==
+                                                          queue.first) {
+                                                        return;
+                                                      }
+                                                      AudioService
+                                                          .skipToPrevious();
+                                                    },
+                                                  ),
+                                                  !playing
+                                                      ? IconButton(
+                                                          icon: Icon(
+                                                            FeatherIcons
+                                                                .playCircle,
+                                                            color: Colors.white,
+                                                          ),
+                                                          iconSize: 30.0,
+                                                          onPressed:
+                                                              AudioService.play,
+                                                        )
+                                                      : IconButton(
+                                                          icon: Icon(
+                                                            FeatherIcons
+                                                                .pauseCircle,
+                                                            color: Colors.white,
+                                                          ),
+                                                          iconSize: 30.0,
+                                                          onPressed:
+                                                              AudioService
+                                                                  .pause,
+                                                        ),
+                                                  IconButton(
+                                                    icon: Icon(
+                                                      FeatherIcons.skipForward,
+                                                      color: Colors.white,
+                                                    ),
+                                                    iconSize: 30,
+                                                    onPressed: () {
+                                                      if (mediaItem ==
+                                                          queue.last) {
+                                                        return;
+                                                      }
+                                                      AudioService.skipToNext();
+                                                    },
+                                                  ),
+                                                  // IconButton(
+                                                  //   icon: Icon(
+                                                  //     FeatherIcons.stopCircle,
+                                                  //     color: Colors.white,
+                                                  //   ),
+                                                  //   iconSize: 30.0,
+                                                  //   onPressed: AudioService.stop,
+                                                  // ),
+                                                ],
+                                              )
+                                            ]
+                                          ],
+                                        ),
+                                      )),
+                                    )),
+                              );
+
+                            return Container();
+                          },
+                        ),
+                      );
+                    })
               ],
             ),
-            StreamBuilder(
-                stream: bloc.musicStream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    switch (snapshot.data.status) {
-                      case Status.LOADING:
-                        return Center(
-                          child: Container(),
-                        );
-                        break;
-                      case Status.GETMUSICLIST:
-                        // bloc.musicSink.add(ApiResponse.play(
-                        //     snapshot.data.data));
-                        break;
-                      case Status.DONE:
-                        print(snapshot.data.songs);
-                        var m;
-                        List<dynamic> list = List();
-                        snapshot.data.data.data.content.forEach(
-                          (element) => {
-                            m = MediaItem(
-                              id: element.songUrl,
-                              album: element.title,
-                              title: element.title,
-                              artist: element.artist,
-                              duration: Duration(milliseconds: 5739820),
-                              artUri: element.artworkUrl,
-                            ).toJson(),
-                            list.add(m)
-                          },
-                        );
-                        var params = {"data": list};
-                        // _startAudioPlayerBtn(params);
-                        break;
-                      case Status.ERROR:
-                        break;
-                      default:
-                    }
-                  }
-
-                  return AudioServiceWidget(
-                    child: StreamBuilder<AudioState>(
-                      stream: _audioStateStream,
-                      builder: (context, snapshot) {
-                        final audioState = snapshot.data;
-                        final queue = audioState?.queue;
-                        final mediaItem = audioState?.mediaItem;
-                        final playbackState = audioState?.playbackState;
-                        final processingState =
-                            playbackState?.processingState ??
-                                AudioProcessingState.none;
-                        playing = playbackState?.playing ?? false;
-                        print('playbackState $playing');
-                        if (AudioService.running)
-                          return Positioned.fill(
-                            bottom: 25,
-                            child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Container(
-                                  padding: EdgeInsets.only(right: 20, left: 20),
-                                  decoration: BoxDecoration(
-                                      color: AppColors.secondaryElement,
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(20))),
-                                  height: 80,
-                                  width: MediaQuery.of(context).size.width * .8,
-                                  child: Container(
-                                      child: Container(
-                                    width: MediaQuery.of(context).size.width,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        if (processingState !=
-                                            AudioProcessingState.none) ...[
-                                          if (mediaItem?.title != null)
-                                            Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Flexible(
-                                                    child: Text(
-                                                  mediaItem.artist,
-                                                  style: TextStyle(
-                                                      color: Color.fromARGB(
-                                                          180, 255, 255, 255),
-                                                      fontSize: 12),
-                                                )),
-                                                Flexible(
-                                                    child: Text(
-                                                  mediaItem.title,
-                                                  style: TextStyle(
-                                                      color: AppColors
-                                                          .secondaryText,
-                                                      fontSize: 16),
-                                                )),
-                                              ],
-                                            ),
-                                          Spacer(),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              IconButton(
-                                                icon: Icon(
-                                                  FeatherIcons.skipBack,
-                                                  color: Colors.white,
-                                                ),
-                                                iconSize: 30,
-                                                onPressed: () {
-                                                  if (mediaItem ==
-                                                      queue.first) {
-                                                    return;
-                                                  }
-                                                  AudioService.skipToPrevious();
-                                                },
-                                              ),
-                                              !playing
-                                                  ? IconButton(
-                                                      icon: Icon(
-                                                        FeatherIcons.playCircle,
-                                                        color: Colors.white,
-                                                      ),
-                                                      iconSize: 30.0,
-                                                      onPressed:
-                                                          AudioService.play,
-                                                    )
-                                                  : IconButton(
-                                                      icon: Icon(
-                                                        FeatherIcons
-                                                            .pauseCircle,
-                                                        color: Colors.white,
-                                                      ),
-                                                      iconSize: 30.0,
-                                                      onPressed:
-                                                          AudioService.pause,
-                                                    ),
-                                              IconButton(
-                                                icon: Icon(
-                                                  FeatherIcons.skipForward,
-                                                  color: Colors.white,
-                                                ),
-                                                iconSize: 30,
-                                                onPressed: () {
-                                                  if (mediaItem == queue.last) {
-                                                    return;
-                                                  }
-                                                  AudioService.skipToNext();
-                                                },
-                                              ),
-                                              // IconButton(
-                                              //   icon: Icon(
-                                              //     FeatherIcons.stopCircle,
-                                              //     color: Colors.white,
-                                              //   ),
-                                              //   iconSize: 30.0,
-                                              //   onPressed: AudioService.stop,
-                                              // ),
-                                            ],
-                                          )
-                                        ]
-                                      ],
-                                    ),
-                                  )),
-                                )),
-                          );
-
+          ),
+          StreamBuilder(
+              stream: swipeBloc.swipeStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  switch (snapshot.data.status) {
+                    case Status.DONE:
+                      dynamic js = json.encode(snapshot.data.data.data);
+                      js = json.decode(js);
+                      dynamic swipee = js['swipe']['swipee'];
+                      print('asda ${swipee['profileImage']}');
+                      if (js['match'] == false) {
+                        swipeBloc.swipeSink.add(ApiResponse.idle('message'));
                         return Container();
-                      },
+                      }
+                         return Scaffold(
+                  body: Container(
+                    color: Color.fromRGBO(245, 253, 237, 1),
+                    child: Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Spacer(),
+                          Text(
+                            'We have a match',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 36,
+                              fontFamily: 'Berkshire Swash',
+                              fontWeight: FontWeight.w400,
+                              color: Color.fromRGBO(142, 198, 63, 1),
+                            ),
+                          ),
+                          Spacer(),
+                          Container(
+                            height: MediaQuery.of(context).size.height * 0.4,
+                            child: Stack(
+                              alignment: Alignment.bottomCenter,
+                              children: [
+                                Positioned(
+                                  left: 50,
+                                  child: CircleAvatar(
+                                    backgroundColor: AppColors.secondaryElement,
+                                    radius: 105,
+                                    child: CircleAvatar(
+                                      radius: 100,
+                                      backgroundColor:
+                                          AppColors.secondaryElement,
+                                      backgroundImage: NetworkImage(
+                                        'https://via.placeholder.com/1080',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 0,
+                                  right: 50,
+                                  child: CircleAvatar(
+                                    backgroundColor:
+                                        Color.fromRGBO(142, 198, 63, 1),
+                                    radius: 105,
+                                    child: CircleAvatar(
+                                      radius: 100,
+                                      backgroundColor:
+                                          Color.fromRGBO(142, 198, 63, 1),
+                                      backgroundImage: NetworkImage(
+                                        'https://via.placeholder.com/1080',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 140,
+                                  left: 180,
+                                  child: CircleAvatar(
+                                    backgroundColor:
+                                        Color.fromRGBO(255, 255, 255, 1),
+                                    radius: 40,
+                                    child: CircleAvatar(
+                                      radius: 35,
+                                      child: Container(
+                                          decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              gradient: LinearGradient(
+                                                  colors: [
+                                                    AppColors.secondaryElement,
+                                                    Color.fromRGBO(
+                                                        142, 198, 63, 1),
+                                                  ],
+                                                  begin: Alignment.bottomLeft,
+                                                  end: Alignment.topRight)),
+                                          child: CircleAvatar(
+                                      radius: 35,
+                                              child: Icon(FeatherIcons.heart),
+                                              backgroundColor:
+                                                  Colors.transparent)),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Spacer(),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: RaisedButton(
+                              child: Padding(
+                                padding: const EdgeInsets.all(18.0),
+                                child: Text(
+                                  'Work My Magic',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              onPressed: () {
+                                swipeBloc.swipeSink
+                                    .add(ApiResponse.idle('message'));
+                                // Navigator.push(
+                                //     context,
+                                //     MaterialPageRoute(
+                                //       builder: (context) => Chat(
+                                //         peerAvatar:
+                                //             swipee['profileImage'],
+                                //         peerId: swipee['id'].toString(),
+                                //         peerName: swipee['firstName'],
+                                //       ),
+                                //     ));
+                              },
+                              color: AppColors.secondaryElement,
+                            ),
+                          ),
+                          SizedBox(height: 18),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: RaisedButton(
+                              child: Padding(
+                                padding: const EdgeInsets.all(18.0),
+                                child: Text(
+                                  'Talk Later... Keep Swiping',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              color: Color.fromRGBO(142, 198, 63, 1),
+                              onPressed: () {
+                                swipeBloc.swipeSink
+                                    .add(ApiResponse.idle('message'));
+                              },
+                            ),
+                          ),
+                          Spacer(),
+                        ],
+                      ),
                     ),
-                  );
-                })
-          ],
-        ),
+                  ),
+                );
+           
+                      break;
+                    default:
+                  }
+                }
+           return Container();  }),
+        ],
       ),
     );
   }
@@ -1065,6 +1605,55 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     : Container()
               ],
             );
+          },
+        );
+      },
+    );
+  }
+
+  _showUpgrade() async {
+    await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+                title: Text(
+                  'Upgrade',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Berkshire Swash',
+                    color: AppColors.secondaryElement,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 24,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.all(16.0),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'You are out of swipes for today.',
+                      textAlign: TextAlign.center,
+                    ),
+                    FlatButton(
+                      color: AppColors.secondaryElement,
+                      child: Text(
+                        'Subscribe',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () => {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Payment(
+                                token: widget.token,
+                              ),
+                            ))
+                      },
+                    )
+                  ],
+                ));
           },
         );
       },
