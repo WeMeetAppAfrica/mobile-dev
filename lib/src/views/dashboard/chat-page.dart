@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -59,7 +60,6 @@ class _ChatViewState extends State<ChatView> {
     // 1
     final string = JsonEncoder().convert(object);
     // 2
-    print('string');
     print(string);
     await prefs.setString(_generateKey(userId, peerId), string);
   }
@@ -100,6 +100,7 @@ class _ChatViewState extends State<ChatView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         brightness: Brightness.light,
         leading: IconButton(
@@ -109,12 +110,12 @@ class _ChatViewState extends State<ChatView> {
         ),
         iconTheme: new IconThemeData(color: AppColors.primaryText),
         backgroundColor: Colors.white,
-        elevation: 0.0,
+        elevation: 1.0,
         title: Row(
           children: [
             CircleAvatar(
               backgroundImage: widget.peerAvatar != null
-                  ? NetworkImage(widget.peerAvatar)
+                  ? CachedNetworkImageProvider(widget.peerAvatar)
                   : null,
               child: widget.peerAvatar == null ? Text(widget.peerAvatar) : null,
             ),
@@ -241,7 +242,7 @@ class _ChatViewState extends State<ChatView> {
               padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
               width: 200.0,
               decoration: BoxDecoration(
-                  color: Color.fromRGBO(228, 228, 228, 1.0),
+                  color: Color.fromRGBO(247, 247, 247, 1.0),
                   borderRadius: BorderRadius.circular(8.0)),
               margin: EdgeInsets.only(bottom: 5.0, right: 10.0, top: 5),
             ),
