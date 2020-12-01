@@ -15,6 +15,9 @@ class SocketService {
   }
 
   Socket _socket;
+
+  // Joined rooms
+  List<String> _rooms = [];
   
   void init() async {
     if(_socket == null) {
@@ -26,6 +29,10 @@ class SocketService {
     // check if connection is initialiazed
     if(_socket == null) {
       _connect();
+    }
+
+    if(_rooms.contains(room)) {
+      return;
     }
 
     print("joining room $room");
@@ -57,6 +64,11 @@ class SocketService {
     // set chat message listener
     _socket.on('new message', (data) {
       print("Received $data");
+      Map mssg = data["message"];
+      if(mssg == null || mssg.isEmpty) {
+        return;
+      }
+      _chatController.add(ChatModel.fromMap(mssg));
     });
   }
 

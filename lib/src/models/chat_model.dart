@@ -1,7 +1,7 @@
 class ChatModel {
   final int id;
   final String content;
-  final String sentAt;
+  final DateTime sentAt;
   final String type;
   final int receiverId;
   final int senderId;
@@ -23,7 +23,7 @@ class ChatModel {
     return ChatModel(
       id: data["id"],
       content: data["content"],
-      sentAt: data["sent_at"],
+      sentAt: DateTime.tryParse(data["sent_at"]),
       type: data["type"] ?? "",
       receiverId: data["receiver_id"],
       senderId: data["sender_id"],

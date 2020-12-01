@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
@@ -19,6 +20,10 @@ import 'package:wemeet/src/views/dashboard/chat.dart';
 import 'package:wemeet/src/views/dashboard/music.dart';
 import 'package:wemeet/values/values.dart';
 
+import 'package:wemeet/services/socket.dart';
+import 'package:wemeet/src/models/chat_model.dart';
+import 'package:wemeet/src/models/MessageModel.dart' as mm;
+
 class Messages extends StatefulWidget {
   final token;
   Messages({Key key, this.token}) : super(key: key);
@@ -36,11 +41,19 @@ class _MessagesState extends State<Messages> {
   List matches = [];
   dynamic matchesCache;
   List activeChats = [];
+
+  SocketService socketService = SocketService();
+
+  StreamSubscription<ChatModel> onChatMessage;
+
   @override
   void initState() {
     getUser();
     G.initSocket();
     initSocket();
+
+    onChatMessage = socketService?.onChatReceived?.listen(onChatReceive);
+
     super.initState();
   }
 
@@ -260,6 +273,7 @@ class _MessagesState extends State<Messages> {
                                       builder: (context) => ChatView(
                                         token: messageToken,
                                         // socket: socket,
+                                        chatId: mssg.chatId,
                                         peerAvatar: u["profileImage"],
                                         peerId: u['id'].toString(),
                                         peerName: u['firstName'],
@@ -270,7 +284,7 @@ class _MessagesState extends State<Messages> {
                                     backgroundImage: CachedNetworkImageProvider(u["profileImage"]),
                                   ),
                                   title: Text(
-                                    "${((u["firstName"] ?? "") + " " + (u["lastName"] ?? ""))}".trim()
+                                    "${((u["firstName"] ?? "") + " " + (u["lastName"] ?? ""))}".trim() + "${mssg.chatId}"
                                   ),
                                   subtitle: Text(mssg.content),
                                 );
@@ -280,6 +294,49 @@ class _MessagesState extends State<Messages> {
             ),
           );
         });
+  }
+
+  void onChatReceive(ChatModel chat) {
+
+    mm.Message mssg = mm.Message(
+      content: chat.content,
+      chatId: chat.chatId,
+      id: chat.id,
+      receiverId: chat.receiverId,
+      senderId: chat.senderId,
+      sentAt: chat.sentAt,
+      status: chat.status,
+      type: chat.type
+    );
+
+    int i = activeChats.indexWhere((el) {
+      List<String> ci = ["${chat.receiverId}", "${chat.senderId}"];
+      List<String> ei = ["${el.receiverId}", "${el.senderId}"];
+
+      ci.sort((a, b) => a.compareTo(b));
+      ei.sort((a, b) => a.compareTo(b));
+
+      print("$ci ===== $ei");
+
+      return ci.join("_") == ei.join("_");
+    });
+
+    print("########## Index is: $i ");
+    print("${chat.chatId}");
+
+    // if index is found
+    setState(() {
+      if(i >= 0) {
+        activeChats[i] = mssg;
+      } else {
+        activeChats.add(mssg);
+      }
+    });
+    
+
+    setState(() {
+      activeChats.sort((b, a) => a.sentAt.millisecondsSinceEpoch.compareTo(b.sentAt.millisecondsSinceEpoch));
+    });
   }
 
   Map itemDetails(mssg) {

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
@@ -11,14 +12,19 @@ import 'package:wemeet/src/models/MessageModel.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/values/values.dart';
 
+import 'package:wemeet/services/socket.dart';
+import 'package:wemeet/src/models/chat_model.dart';
+
 class ChatView extends StatefulWidget {
   final String token;
   final String peerId;
   final String peerName;
   final String peerAvatar;
+  final String chatId;
   ChatView(
       {Key key,
       this.token,
+      this.chatId,
       @required this.peerId,
       this.peerName,
       @required this.peerAvatar})
@@ -35,9 +41,15 @@ class _ChatViewState extends State<ChatView> {
   dynamic id;
   ScrollController _scrollController = new ScrollController();
 
+  SocketService socketService = SocketService();
+  
+
   readLocal() async {
     prefs = await SharedPreferences.getInstance();
-    id = prefs.getString('id') ?? '';
+    setState(() {
+      id = prefs.getString('id') ?? '';
+    });
+    // id = prefs.getString('id') ?? '';
     var ret = await getObject(id, widget.peerId);
     if (ret != null) messages = ret.messages;
     // removeObject(id, widget.peerId);
@@ -82,6 +94,12 @@ class _ChatViewState extends State<ChatView> {
     prefs.remove(_generateKey(userId, peerId));
   }
 
+  String get chatId {
+    List<int> ids = [int.tryParse(widget.peerId) ?? 0, int.tryParse(id) ?? 0];
+    ids.sort((a, b) => a.compareTo(b));
+    return widget.chatId ?? ids.join("_");
+  }
+
   @override
   void initState() {
     super.initState();
@@ -123,7 +141,7 @@ class _ChatViewState extends State<ChatView> {
               width: 8,
             ),
             Text(
-              widget.peerName,
+              widget.peerName + " ${widget.chatId} $chatId",
               style: TextStyle(
                 color: AppColors.accentText,
                 fontWeight: FontWeight.w400,
@@ -312,6 +330,16 @@ class _ChatViewState extends State<ChatView> {
     inputTextController.clear();
     if (content.trim() != '') {
       bloc.sendMessage(request, widget.token);
+      socketService.addChat(ChatModel(
+        id: null,
+        chatId: chatId,
+        content: content.trim(),
+        receiverId: int.tryParse(widget.peerId) ?? 999999,
+        senderId: int.tryParse(id) ?? 0,
+        sentAt: DateTime.now(),
+        status: 0,
+        type: request["type"]
+      ));
     } else {
       print('nothing to send');
       Fluttertoast.showToast(
