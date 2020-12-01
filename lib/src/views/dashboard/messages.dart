@@ -57,6 +57,12 @@ class _MessagesState extends State<Messages> {
     super.initState();
   }
 
+  @override
+  void dispose() { 
+    onChatMessage?.cancel();
+    super.dispose();
+  }
+
   String _generateKey(String userId, String key) {
     return '$userId/$key';
   }
@@ -284,7 +290,7 @@ class _MessagesState extends State<Messages> {
                                     backgroundImage: CachedNetworkImageProvider(u["profileImage"]),
                                   ),
                                   title: Text(
-                                    "${((u["firstName"] ?? "") + " " + (u["lastName"] ?? ""))}".trim() + "${mssg.chatId}"
+                                    "${((u["firstName"] ?? "") + " " + (u["lastName"] ?? ""))}".trim()
                                   ),
                                   subtitle: Text(mssg.content),
                                 );

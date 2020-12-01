@@ -42,6 +42,8 @@ class _ChatViewState extends State<ChatView> {
   ScrollController _scrollController = new ScrollController();
 
   SocketService socketService = SocketService();
+
+  StreamSubscription<ChatModel> onChatMessage;
   
 
   readLocal() async {
@@ -95,7 +97,7 @@ class _ChatViewState extends State<ChatView> {
   }
 
   String get chatId {
-    List<int> ids = [int.tryParse(widget.peerId) ?? 0, int.tryParse(id) ?? 0];
+    List<int> ids = [int.tryParse(widget.peerId ?? "") ?? 0, int.tryParse(id ?? "") ?? 0];
     ids.sort((a, b) => a.compareTo(b));
     return widget.chatId ?? ids.join("_");
   }
@@ -107,12 +109,63 @@ class _ChatViewState extends State<ChatView> {
     G.socketUtils.joinRoom('52_22');
     G.socketUtils.setOnChatMessageReceivedListener(onMessageReceived);
     bloc.getMessages(widget.peerId, widget.token);
+    onChatMessage = socketService?.onChatReceived?.listen(onChatReceive);
+  }
+
+  @override
+  void dispose() { 
+    onChatMessage?.cancel();
+    super.dispose();
   }
 
   onMessageReceived(data) {
     var message = Message.fromJson(data['message']);
     bloc.messageSink
         .add(ApiResponse.addMessage(JsonEncoder().convert(message)));
+  }
+
+  void onChatReceive(ChatModel chat) {
+
+    Message mssg = Message(
+      content: chat.content,
+      chatId: chat.chatId,
+      id: chat.id,
+      receiverId: chat.receiverId,
+      senderId: chat.senderId,
+      sentAt: chat.sentAt,
+      status: chat.status,
+      type: chat.type
+    );
+
+    int i = messages.indexWhere((el) {
+      List<String> ci = ["${chat.receiverId}", "${chat.senderId}"];
+      List<String> ei = ["${el.receiverId}", "${el.senderId}"];
+
+      ci.sort((a, b) => a.compareTo(b));
+      ei.sort((a, b) => a.compareTo(b));
+
+      String cid = ci.join("_");
+      String eld = ei.join("_");
+
+      // make sure it is the same chat id
+      if(cid != eld) {
+        return false;
+      }
+
+      // make sure same id doesn't exist
+      if(chat.id == el.id || chat.id == null) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // if index is not found
+    setState(() {
+      if(i >= 0) {
+        messages.add(mssg);
+      } 
+    });
   }
 
   @override
@@ -141,7 +194,7 @@ class _ChatViewState extends State<ChatView> {
               width: 8,
             ),
             Text(
-              widget.peerName + " ${widget.chatId} $chatId",
+              widget.peerName,
               style: TextStyle(
                 color: AppColors.accentText,
                 fontWeight: FontWeight.w400,
