@@ -250,39 +250,29 @@ class _MessagesState extends State<Messages> {
                           child: ListView.builder(
                               itemCount: activeChats.length,
                               itemBuilder: (context, index) {
+                                var mssg = activeChats[index];
+                                Map u = itemDetails(mssg);
+                                if(u.isEmpty) return SizedBox();
                                 return ListTile(
                                   onTap: () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ChatView(
-                                          token: messageToken,
-                                          // socket: socket,
-                                          peerAvatar:  getDetails(activeChats[index])[
-                                                    'profileImage'],
-                                          peerId:
-                                              getDetails(activeChats[index])[
-                                                    'id'].toString(),
-                                          peerName:  getDetails(activeChats[index])[
-                                                    'firstName'],
-                                        ),
-                                      )),
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ChatView(
+                                        token: messageToken,
+                                        // socket: socket,
+                                        peerAvatar: u["profileImage"],
+                                        peerId: u['id'].toString(),
+                                        peerName: u['firstName'],
+                                      ),
+                                    )),
                                   leading: CircleAvatar(
-                                    radius: 30,
-                                    backgroundImage:
-                                        getDetails(activeChats[index])[
-                                                    'profileImage'] !=
-                                                null
-                                            ? NetworkImage(
-                                                getDetails(activeChats[index])[
-                                                    'profileImage'])
-                                            : null,
+                                    radius: 30.0,
+                                    backgroundImage: CachedNetworkImageProvider(u["profileImage"]),
                                   ),
-                                  subtitle: Text(activeChats[index].content),
-                                  title: Text(getDetails(
-                                          activeChats[index])['firstName'] +
-                                      ' ' +
-                                      getDetails(
-                                          activeChats[index])['lastName']),
+                                  title: Text(
+                                    "${((u["firstName"] ?? "") + " " + (u["lastName"] ?? ""))}".trim()
+                                  ),
+                                  subtitle: Text(mssg.content),
                                 );
                               }));
                     }),
@@ -290,6 +280,10 @@ class _MessagesState extends State<Messages> {
             ),
           );
         });
+  }
+
+  Map itemDetails(mssg) {
+    return (matches ?? []).firstWhere((e) => e['id'] == mssg.receiverId || e['id'] == mssg.senderId, orElse: () => {});
   }
 
   dynamic getDetails(message) {
