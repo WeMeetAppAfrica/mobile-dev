@@ -37,6 +37,7 @@ class SocketService {
 
     print("joining room $room");
     _socket.emit("join", room);
+    _rooms.add(room);
   }
 
   StreamController<ChatModel> _chatController =
