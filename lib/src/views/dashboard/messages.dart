@@ -195,7 +195,7 @@ class _MessagesState extends State<Messages> {
                                           backgroundImage: matches[index]
                                                       ['profileImage'] !=
                                                   null
-                                              ? NetworkImage(matches[index]
+                                              ? CachedNetworkImageProvider(matches[index]
                                                   ['profileImage'])
                                               : null,
                                           child: matches[index]

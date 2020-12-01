@@ -29,7 +29,7 @@ class SocketService {
     }
 
     print("joining room $room");
-    _socket.emit("join", {"chatId": room});
+    _socket.emit("join", room);
   }
 
   StreamController<ChatModel> _chatController =
