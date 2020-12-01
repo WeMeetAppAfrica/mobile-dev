@@ -295,7 +295,7 @@ class _ChatViewState extends State<ChatView> {
               padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
               width: 200.0,
               decoration: BoxDecoration(
-                  color: AppColors.primaryElement,
+                  color: Color.fromRGBO(228, 228, 228, 1.0),
                   borderRadius: BorderRadius.circular(8.0)),
               margin: EdgeInsets.only(left: 10.0, top: 5),
             ),
