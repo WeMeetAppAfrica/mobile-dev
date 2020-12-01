@@ -110,6 +110,7 @@ class _ChatViewState extends State<ChatView> {
     G.socketUtils.setOnChatMessageReceivedListener(onMessageReceived);
     bloc.getMessages(widget.peerId, widget.token);
     onChatMessage = socketService?.onChatReceived?.listen(onChatReceive);
+    waitJoinRoom();
   }
 
   @override
@@ -122,6 +123,10 @@ class _ChatViewState extends State<ChatView> {
     var message = Message.fromJson(data['message']);
     bloc.messageSink
         .add(ApiResponse.addMessage(JsonEncoder().convert(message)));
+  }
+
+  void waitJoinRoom() {
+
   }
 
   void onChatReceive(ChatModel chat) {
