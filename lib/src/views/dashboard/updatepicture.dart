@@ -56,7 +56,6 @@ class _UpdatePhotosState extends State<UpdatePhotos> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _getUser();
   }

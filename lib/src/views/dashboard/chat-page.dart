@@ -54,7 +54,6 @@ class _ChatViewState extends State<ChatView> {
     }
   }
 
-  @override
   void saveObject(String userId, String peerId, object) async {
     final prefs = await SharedPreferences.getInstance();
     // 1
@@ -65,7 +64,6 @@ class _ChatViewState extends State<ChatView> {
     await prefs.setString(_generateKey(userId, peerId), string);
   }
 
-  @override
   Future<dynamic> getObject(String userId, String peerId) async {
     final prefs = await SharedPreferences.getInstance();
     // 3
@@ -78,7 +76,6 @@ class _ChatViewState extends State<ChatView> {
     return null;
   }
 
-  @override
   Future<void> removeObject(String userId, String peerId) async {
     final prefs = await SharedPreferences.getInstance();
     // 5
@@ -87,7 +84,6 @@ class _ChatViewState extends State<ChatView> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     readLocal();
     G.socketUtils.joinRoom('52_22');
@@ -105,6 +101,7 @@ class _ChatViewState extends State<ChatView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        brightness: Brightness.light,
         leading: IconButton(
           icon: Icon(FeatherIcons.chevronLeft),
           color: AppColors.accentText,

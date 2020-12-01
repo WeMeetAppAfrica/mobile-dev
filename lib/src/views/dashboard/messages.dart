@@ -38,7 +38,6 @@ class _MessagesState extends State<Messages> {
   List activeChats = [];
   @override
   void initState() {
-    // TODO: implement initState
     getUser();
     G.initSocket();
     initSocket();
@@ -49,7 +48,6 @@ class _MessagesState extends State<Messages> {
     return '$userId/$key';
   }
 
-  @override
   void saveObject(String userId, String key, Data object) async {
     final prefs = await SharedPreferences.getInstance();
     // 1
@@ -60,7 +58,6 @@ class _MessagesState extends State<Messages> {
     await prefs.setString(_generateKey(userId, key), string);
   }
 
-  @override
   Future<dynamic> getObject(String userId, String key) async {
     final prefs = await SharedPreferences.getInstance();
     // 3
@@ -82,7 +79,6 @@ class _MessagesState extends State<Messages> {
     return null;
   }
 
-  @override
   Future<void> removeObject(String userId, String key) async {
     final prefs = await SharedPreferences.getInstance();
     // 5
@@ -214,6 +210,7 @@ class _MessagesState extends State<Messages> {
                                   ),
                                 );
                               }
+                              return SizedBox(); // Solves widget return error
                             },
                             scrollDirection: Axis.horizontal,
                           ),

@@ -15,7 +15,14 @@ import 'package:wemeet/src/views/onboarding/screen1.dart';
 import 'package:wemeet/src/views/onboarding/screen2.dart';
 import 'package:wemeet/src/views/onboarding/screen3.dart';
 
-void main() {
+import 'package:wemeet/services/socket.dart';
+
+void main() async {
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  SocketService()..init();
+
   runApp(MyApp());
 }
 

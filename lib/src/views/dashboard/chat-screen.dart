@@ -823,6 +823,7 @@ class ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
+      onWillPop: null,
       child: Stack(
         children: <Widget>[
           Column(
