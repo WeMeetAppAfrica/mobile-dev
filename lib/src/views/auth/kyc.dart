@@ -56,6 +56,7 @@ class _KYCState extends State<KYC> {
 
   _setUser(user, token) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('id', user.id);
     prefs.setString('firstName', user.firstName);
     prefs.setString('lastName', user.lastName);
   }
@@ -134,14 +135,16 @@ class _KYCState extends State<KYC> {
                                       snapshot.data.data.data.gender)
                                     element.isSelected = true
                                 });
-                            maxDist = snapshot.data.data.data.swipeRadius
-                                            .toDouble() >
-                                        0 &&
-                                    snapshot.data.data.data.swipeRadius
-                                            .toDouble() <
-                                        101
-                                ? snapshot.data.data.data.swipeRadius.toDouble()
-                                : 1;
+                            if (snapshot.data.data.data.swipeRadius != null)
+                              maxDist = snapshot.data.data.data.swipeRadius
+                                              .toDouble() >
+                                          0 &&
+                                      snapshot.data.data.data.swipeRadius
+                                              .toDouble() <
+                                          101
+                                  ? snapshot.data.data.data.swipeRadius
+                                      .toDouble()
+                                  : 1;
                             selectedGender = snapshot.data.data.data.gender;
                             employStatus.forEach((element) => {
                                   if (element.buttonValue ==

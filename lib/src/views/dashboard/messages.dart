@@ -180,6 +180,7 @@ class _MessagesState extends State<Messages> {
                                       MaterialPageRoute(
                                         builder: (context) => ChatView(
                                           token: messageToken,
+                                          apiToken: widget.token,
                                           // socket: socket,
                                           peerAvatar: matches[index]
                                               ['profileImage'],
@@ -244,50 +245,54 @@ class _MessagesState extends State<Messages> {
                             print('sss');
                             print(snapshot.data.data.data);
                             activeChats = snapshot.data.data.data.messages;
-                            print(getDetails(activeChats[1]));
                             break;
                           default:
                         }
                       }
                       return Flexible(
-                          child: ListView.builder(
-                              itemCount: activeChats.length,
-                              itemBuilder: (context, index) {
-                                return ListTile(
-                                  onTap: () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ChatView(
-                                          token: messageToken,
-                                          // socket: socket,
-                                          peerAvatar:  getDetails(activeChats[index])[
-                                                    'profileImage'],
-                                          peerId:
-                                              getDetails(activeChats[index])[
-                                                    'id'].toString(),
-                                          peerName:  getDetails(activeChats[index])[
-                                                    'firstName'],
-                                        ),
-                                      )),
-                                  leading: CircleAvatar(
-                                    radius: 30,
-                                    backgroundImage:
-                                        getDetails(activeChats[index])[
+                          child: activeChats.length > 0
+                              ? ListView.builder(
+                                  itemCount: activeChats.length,
+                                  itemBuilder: (context, index) {
+                                    return ListTile(
+                                      onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ChatView(
+                                              token: messageToken,
+                                              // socket: socket,
+                                              peerAvatar: getDetails(
+                                                      activeChats[index])[
+                                                  'profileImage'],
+                                              peerId: getDetails(
+                                                      activeChats[index])['id']
+                                                  .toString(),
+                                              peerName: getDetails(
+                                                      activeChats[index])[
+                                                  'firstName'],
+                                            ),
+                                          )),
+                                      leading: CircleAvatar(
+                                        radius: 30,
+                                        backgroundImage: getDetails(
+                                                        activeChats[index])[
                                                     'profileImage'] !=
                                                 null
                                             ? NetworkImage(
                                                 getDetails(activeChats[index])[
                                                     'profileImage'])
                                             : null,
-                                  ),
-                                  subtitle: Text(activeChats[index].content),
-                                  title: Text(getDetails(
-                                          activeChats[index])['firstName'] +
-                                      ' ' +
-                                      getDetails(
-                                          activeChats[index])['lastName']),
-                                );
-                              }));
+                                      ),
+                                      subtitle:
+                                          Text(activeChats[index].content),
+                                      title: Text(getDetails(
+                                              activeChats[index])['firstName'] +
+                                          ' ' +
+                                          getDetails(
+                                              activeChats[index])['lastName']),
+                                    );
+                                  })
+                              : Container(child: Text('No active chats'),));
                     }),
               ],
             ),

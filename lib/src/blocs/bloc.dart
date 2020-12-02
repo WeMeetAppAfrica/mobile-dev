@@ -319,7 +319,7 @@ class Bloc {
     print('request');
     loginSink.add(ApiResponse.loading('Loading...'));
     try {
-      LoginModel user = await _userRepository.getEmailToken(token);
+      LoginModel user = await _userRepository.resendEmailToken(token);
       loginSink.add(ApiResponse.resendEmailToken(user));
     } catch (e) {
       loginSink.add(ApiResponse.error(e.toString()));
@@ -342,7 +342,7 @@ class Bloc {
 
   loginMessages(request, token) async {
     print('request');
-    print(token);
+    print(request);
     messageSink.add(ApiResponse.loading('Loading...'));
     try {
       MessageModel user = await _userRepository.loginMessages(request, token);

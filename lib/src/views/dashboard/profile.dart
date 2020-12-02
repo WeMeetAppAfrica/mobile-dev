@@ -15,6 +15,7 @@ import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/src/views/dashboard/blocked.dart';
 import 'package:wemeet/src/views/dashboard/chat-screen.dart';
+import 'package:wemeet/src/views/dashboard/payment.dart';
 import 'package:wemeet/src/views/dashboard/updateProfile.dart';
 import 'package:wemeet/src/views/dashboard/updatelocation.dart';
 import 'package:wemeet/src/views/dashboard/updatepassword.dart';
@@ -35,6 +36,7 @@ class _ProfilePageState extends State<ProfilePage>
   var items = List();
   String locationFilter;
   bool toggleLocation = true;
+  dynamic allowChangeLocation;
   SharedPreferences prefs;
   bool toggleProfile = false;
   bool toggleLoading = false;
@@ -144,7 +146,7 @@ class _ProfilePageState extends State<ProfilePage>
                     if (snapshot.hasData) {
                       switch (snapshot.data.status) {
                         case Status.LOADING:
-                          if (getObject(widget.token, 'profile') == null)
+                          if (details == null)
                             return Center(
                               child: Container(),
                             );
@@ -155,6 +157,7 @@ class _ProfilePageState extends State<ProfilePage>
                           saveObject(widget.token, 'profile', details);
                           toggleLocation = details.hideLocation;
                           toggleProfile = details.hideProfile;
+                          allowChangeLocation = details.type;
                           break;
                         case Status.ERROR:
                           bloc.profileSink.add(ApiResponse.idle('message'));
@@ -408,7 +411,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                                               .toLowerCase()))
                                                               .toList();
                                                           setState(() {
-                                                            items = list; 
+                                                            items = list;
                                                           });
                                                           // setState(() {
                                                           //   items.clear();
@@ -466,7 +469,8 @@ class _ProfilePageState extends State<ProfilePage>
                                                                         MaterialPageRoute(
                                                                           builder: (context) =>
                                                                               DetailPage(
-                                                                                from: 'MATCH',
+                                                                            from:
+                                                                                'MATCH',
                                                                             type:
                                                                                 Pro.Profile.fromJson(items[index]),
                                                                           ),
@@ -592,15 +596,22 @@ class _ProfilePageState extends State<ProfilePage>
                                                     ),
                                                     ListTile(
                                                       onTap: () {
-                                                        Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                              builder: (context) =>
-                                                                  UpdateLocation(
-                                                                token: widget
-                                                                    .token,
-                                                              ),
-                                                            ));
+                                                        print(
+                                                            allowChangeLocation);
+                                                        if (allowChangeLocation ==
+                                                            "FREE")
+                                                          _showUpgrade();
+                                                        else
+                                                          Navigator.push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                builder:
+                                                                    (context) =>
+                                                                        UpdateLocation(
+                                                                  token: widget
+                                                                      .token,
+                                                                ),
+                                                              ));
                                                       },
                                                       title: Text(
                                                           'Change Location'),
@@ -889,6 +900,55 @@ class _ProfilePageState extends State<ProfilePage>
                     }),
               ],
             );
+          },
+        );
+      },
+    );
+  }
+
+  _showUpgrade() async {
+    await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+                title: Text(
+                  'Upgrade',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Berkshire Swash',
+                    color: AppColors.secondaryElement,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 24,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.all(16.0),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'You are out of swipes for today.',
+                      textAlign: TextAlign.center,
+                    ),
+                    FlatButton(
+                      color: AppColors.secondaryElement,
+                      child: Text(
+                        'Subscribe',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () => {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Payment(
+                                token: widget.token,
+                              ),
+                            ))
+                      },
+                    )
+                  ],
+                ));
           },
         );
       },

@@ -6,12 +6,14 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tindercard/flutter_tindercard.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wemeet/src/SwipeAnimation/detail.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/blocs/swipe_bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
@@ -209,6 +211,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       lastName = prefs.getString('lastName') ?? '';
       profileImage = prefs.getString('profileImage') ?? '';
     });
+    FirebaseCrashlytics.instance.setUserIdentifier(id);
+
     print('object' + id);
   }
 
@@ -533,316 +537,544 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     //   locationFilter: locationFilter,
                     // ),
                     Center(
-                      child: StreamBuilder(
-                          stream: swipeBloc.swipeSugStream,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              switch (snapshot.data.status) {
-                                case Status.LOADING:
-                                  print('swipeSug');
-                                  print(swipeSug);
-                                  if (swipeSug == null)
-                                    return Container(
-                                      height: 410,
-                                      child: Center(
-                                          child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          CircularProgressIndicator(
-                                            backgroundColor:
-                                                AppColors.secondaryElement,
-                                          ),
-                                          SizedBox(
-                                            height: 10,
-                                          ),
-                                          Text('Finding new matches...')
-                                        ],
-                                      )),
-                                    );
-                                  break;
-                                case Status.ERROR:
-                                  print('eeerrr');
-                                  swipeBloc.swipeSugSink
-                                      .add(ApiResponse.idle('message '));
-                                  if (snapshot.data.message != 'null') {
-                                    print(snapshot.data.message);
-                                    try {
-                                      if (json.decode(snapshot.data.message)[
-                                              'responseCode'] ==
-                                          'INVALID_TOKEN') {
-                                        _logout();
-                                        print('expire');
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: StreamBuilder(
+                                stream: swipeBloc.swipeSugStream,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    switch (snapshot.data.status) {
+                                      case Status.LOADING:
+                                        print('swipeSug');
+                                        print(swipeSug);
+                                        if (swipeSug == null)
+                                          return Container(
+                                            height: 410,
+                                            child: Center(
+                                                child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                CircularProgressIndicator(
+                                                  backgroundColor: AppColors
+                                                      .secondaryElement,
+                                                ),
+                                                SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Text('Finding new matches...')
+                                              ],
+                                            )),
+                                          );
+                                        break;
+                                      case Status.ERROR:
+                                        print('eeerrr');
+                                        swipeBloc.swipeSugSink
+                                            .add(ApiResponse.idle('message '));
+                                        if (snapshot.data.message != 'null') {
+                                          print(snapshot.data.message);
+                                          try {
+                                            if (json.decode(snapshot.data
+                                                    .message)['responseCode'] ==
+                                                'INVALID_TOKEN') {
+                                              _logout();
+                                              print('expire');
+                                              myCallback(() {
+                                                Navigator.pushReplacement(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          Login(),
+                                                    ));
+                                              });
+                                            }
+                                          } on FormatException catch (e) {
+                                            print(snapshot.data.message);
+                                          }
+                                        }
+                                        return Container(
+                                          height: 410,
+                                          child: Center(
+                                              child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                  'Error finding new matches...'),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              FlatButton(
+                                                color:
+                                                    AppColors.secondaryElement,
+                                                child: Text(
+                                                  'Try Again',
+                                                  style: TextStyle(
+                                                      color: Colors.white),
+                                                ),
+                                                onPressed: () =>
+                                                    _getSwipeSuggestions(),
+                                              )
+                                            ],
+                                          )),
+                                        );
+                                        break;
+                                      case Status.DONE:
+                                        swipeBloc.swipeSugSink
+                                            .add(ApiResponse.idle('message '));
+                                        swipeSug = snapshot.data.data.data;
+                                        // saveObject(widget.token, 'swipeSug',
+                                        //     snapshot.data.data.data);
                                         myCallback(() {
-                                          Navigator.pushReplacement(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => Login(),
-                                              ));
+                                          setState(() {});
                                         });
-                                      }
-                                    } on FormatException catch (e) {
-                                      print(snapshot.data.message);
+                                        toSwipe = swipeSug.profiles.length;
+                                        swipesLeft =
+                                            snapshot.data.data.data.swipesLeft;
+                                        disableSwipe =
+                                            swipesLeft == 0 ? true : false;
+                                        print(swipesLeft);
+
+                                        break;
+                                      default:
                                     }
                                   }
-                                  return Container(
-                                    height: 410,
-                                    child: Center(
-                                        child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text('Error finding new matches...'),
-                                        SizedBox(
-                                          height: 10,
-                                        ),
-                                        FlatButton(
-                                          color: AppColors.secondaryElement,
-                                          child: Text(
-                                            'Try Again',
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ),
-                                          onPressed: () =>
-                                              _getSwipeSuggestions(),
-                                        )
-                                      ],
-                                    )),
-                                  );
-                                  break;
-                                case Status.DONE:
-                                  swipeBloc.swipeSugSink
-                                      .add(ApiResponse.idle('message '));
-                                  swipeSug = snapshot.data.data.data;
-                                  // saveObject(widget.token, 'swipeSug',
-                                  //     snapshot.data.data.data);
-
-                                  toSwipe = swipeSug.profiles.length;
-                                  swipesLeft =
-                                      snapshot.data.data.data.swipesLeft;
-                                  disableSwipe = swipesLeft == 0 ? true : false;
-                                  print(swipesLeft);
-
-                                  break;
-                                default:
-                              }
-                            }
-                            if (swipeSug != null) {
-                              return toSwipe > 0
-                                  ? Column(
-                                      children: [
-                                        Container(
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
-                                              0.6,
-                                          child: new TinderSwapCard(
-                                            swipeUp: false,
-                                            swipeDown: false,
-                                            orientation: AmassOrientation.TOP,
-                                            totalNum: swipeSug.profiles.length,
-                                            stackNum: 3,
-                                            swipeEdge: 1.0,
-                                            maxWidth: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.9,
-                                            maxHeight: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.9,
-                                            minWidth: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.8,
-                                            minHeight: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.8,
-                                            cardBuilder: (context, index) =>
-                                                InkWell(
-                                              onTapDown: (value) {
-                                                print(value);
-                                                if (swipesLeft == 0) {
-                                                  _showUpgrade();
-                                                }
-                                              },
-                                              onTap: () => {print(index)},
-                                              child: Card(
-                                                child: Stack(
-                                                  children: [
-                                                    Container(
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width *
-                                                              0.9,
-                                                      height:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width *
-                                                              0.9,
-                                                      child: CachedNetworkImage(
-                                                          placeholder:
-                                                              (context, url) =>
-                                                                  Center(
-                                                                    child:
-                                                                        CircularProgressIndicator(),
+                                  if (swipeSug != null) {
+                                    return toSwipe > 0
+                                        ? Column(
+                                            children: [
+                                              Container(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.6,
+                                                child: new TinderSwapCard(
+                                                  swipeUp: false,
+                                                  swipeDown: false,
+                                                  orientation:
+                                                      AmassOrientation.TOP,
+                                                  totalNum:
+                                                      swipeSug.profiles.length,
+                                                  stackNum: 3,
+                                                  swipeEdge: 1.0,
+                                                  maxWidth:
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width *
+                                                          0.9,
+                                                  maxHeight:
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width *
+                                                          0.9,
+                                                  minWidth:
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width *
+                                                          0.8,
+                                                  minHeight:
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width *
+                                                          0.8,
+                                                  cardBuilder:
+                                                      (context, index) =>
+                                                          InkWell(
+                                                    onTapDown: (value) {
+                                                      Navigator.of(context).push(
+                                                          new PageRouteBuilder(
+                                                        pageBuilder:
+                                                            (_, __, ___) =>
+                                                                new DetailPage(
+                                                          type: swipeSug
+                                                              .profiles[index],
+                                                          from: 'SWIPE',
+                                                          token: widget.token,
+                                                        ),
+                                                      ));
+                                                      print('swipesLeft');
+                                                      print(swipesLeft);
+                                                      if (swipesLeft == 0) {
+                                                        _showUpgrade();
+                                                      }
+                                                    },
+                                                    onTap: () => {print(index)},
+                                                    child: Card(
+                                                      child: Stack(
+                                                        children: [
+                                                          Container(
+                                                            width: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width *
+                                                                0.9,
+                                                            height: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width *
+                                                                0.9,
+                                                            child:
+                                                                CachedNetworkImage(
+                                                                    placeholder:
+                                                                        (context,
+                                                                                url) =>
+                                                                            Center(
+                                                                              child: CircularProgressIndicator(),
+                                                                            ),
+                                                                    imageUrl:
+                                                                        '${swipeSug.profiles[index].profileImage}',
+                                                                    fit: BoxFit
+                                                                        .cover,
+                                                                    errorWidget: (context,
+                                                                            url,
+                                                                            error) =>
+                                                                        Center(
+                                                                          child:
+                                                                              Text('Unable to load photo.'),
+                                                                        )),
+                                                          ),
+                                                          Container(
+                                                            width: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width *
+                                                                0.9,
+                                                            height: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width *
+                                                                0.9,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                                    gradient: LinearGradient(
+                                                                        begin: FractionalOffset
+                                                                            .topCenter,
+                                                                        end: FractionalOffset
+                                                                            .bottomCenter,
+                                                                        colors: [
+                                                                  Colors.black
+                                                                      .withOpacity(
+                                                                          0),
+                                                                  AppColors
+                                                                      .primaryElement
+                                                                      .withOpacity(
+                                                                          0.8),
+                                                                ],
+                                                                        stops: [
+                                                                  0.6,
+                                                                  1.0
+                                                                ])),
+                                                          ),
+                                                          Positioned(
+                                                            top: 15,
+                                                            right: 15,
+                                                            child: Align(
+                                                              alignment:
+                                                                  Alignment
+                                                                      .topCenter,
+                                                              child: Container(
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: Color
+                                                                      .fromARGB(
+                                                                          61,
+                                                                          0,
+                                                                          0,
+                                                                          0),
+                                                                  borderRadius:
+                                                                      BorderRadius.all(
+                                                                          Radius.circular(
+                                                                              16)),
+                                                                ),
+                                                                child:
+                                                                    Container(
+                                                                  margin:
+                                                                      EdgeInsets
+                                                                          .all(
+                                                                              7),
+                                                                  child: Text(
+                                                                    "${swipeSug.profiles[index].distanceInKm != 0 ? swipeSug.profiles[index].distanceInKm : 1}km away",
+                                                                    textAlign:
+                                                                        TextAlign
+                                                                            .center,
+                                                                    style:
+                                                                        TextStyle(
+                                                                      color: AppColors
+                                                                          .secondaryText,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w400,
+                                                                      fontSize:
+                                                                          12,
+                                                                    ),
                                                                   ),
-                                                          imageUrl:
-                                                              '${swipeSug.profiles[index].profileImage}',
-                                                          fit: BoxFit.cover,
-                                                          errorWidget: (context,
-                                                                  url, error) =>
-                                                              Center(
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Positioned(
+                                                            bottom: 31,
+                                                            child: Column(
+                                                              children: [
+                                                                Align(
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .topCenter,
+                                                                  child:
+                                                                      Container(
+                                                                    width: MediaQuery.of(context)
+                                                                            .size
+                                                                            .width *
+                                                                        0.9,
+                                                                    margin: EdgeInsets.only(
+                                                                        bottom:
+                                                                            6),
+                                                                    child: Text(
+                                                                      '${swipeSug.profiles[index].firstName} ${swipeSug.profiles[index].lastName}, ${swipeSug.profiles[index].age}',
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .center,
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontFamily:
+                                                                            'Berkshire Swash',
+                                                                        color: AppColors
+                                                                            .secondaryText,
+                                                                        fontWeight:
+                                                                            FontWeight.w400,
+                                                                        fontSize:
+                                                                            24,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                Container(
+                                                                  height: 40,
+                                                                  padding: EdgeInsets
+                                                                      .only(
+                                                                          left:
+                                                                              10,
+                                                                          right:
+                                                                              10),
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    color: Color
+                                                                        .fromARGB(
+                                                                            61,
+                                                                            255,
+                                                                            255,
+                                                                            255),
+                                                                    borderRadius:
+                                                                        Radii
+                                                                            .k8pxRadius,
+                                                                  ),
+                                                                  child: Row(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .center,
+                                                                    children: [
+                                                                      Container(
+                                                                        child:
+                                                                            Text(
+                                                                          '${swipeSug.profiles[index].workStatus}',
+                                                                          textAlign:
+                                                                              TextAlign.center,
+                                                                          style:
+                                                                              TextStyle(
+                                                                            color:
+                                                                                AppColors.secondaryText,
+                                                                            fontWeight:
+                                                                                FontWeight.w400,
+                                                                            fontSize:
+                                                                                16,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          if (swipeRight)
+                                                            Container(
+                                                              color: AppColors
+                                                                  .ternaryBackground
+                                                                  .withOpacity(
+                                                                      0.3),
+                                                              child: Center(
+                                                                child: Icon(
+                                                                    FeatherIcons
+                                                                        .heart),
+                                                              ),
+                                                            ),
+                                                          if (swipeLeft)
+                                                            Container(
+                                                              color: AppColors
+                                                                  .secondaryElement
+                                                                  .withOpacity(
+                                                                      0.3),
+                                                              child: Center(
                                                                 child: Icon(
                                                                     FeatherIcons
                                                                         .x),
-                                                              )),
-                                                    ),
-                                                    if (swipeRight)
-                                                      Container(
-                                                        color: AppColors
-                                                            .ternaryBackground
-                                                            .withOpacity(0.3),
-                                                        child: Center(
-                                                          child: Icon(
-                                                              FeatherIcons
-                                                                  .heart),
-                                                        ),
+                                                              ),
+                                                            )
+                                                        ],
                                                       ),
-                                                    if (swipeLeft)
-                                                      Container(
-                                                        color: AppColors
-                                                            .secondaryElement
-                                                            .withOpacity(0.3),
-                                                        child: Center(
-                                                          child: Icon(
-                                                              FeatherIcons.x),
-                                                        ),
-                                                      )
-                                                  ],
+                                                    ),
+                                                  ),
+                                                  cardController: controller =
+                                                      CardController(),
+                                                  swipeUpdateCallback:
+                                                      (DragUpdateDetails
+                                                              details,
+                                                          Alignment align) {
+                                                    swipesLeft == 0
+                                                        ? _showUpgrade()
+                                                        : null;
+                                                    print(swipesLeft);
+
+                                                    /// Get swiping card's alignment
+                                                    if (align.x < 0) {
+                                                      swipeLeft = true;
+                                                      swipeRight = false;
+                                                      //Card is swipeLeft swiping
+                                                    } else if (align.x > 0) {
+                                                      swipeRight = true;
+                                                      swipeLeft = false;
+                                                      //Card is RIGHT swiping
+                                                    }
+                                                  },
+                                                  swipeCompleteCallback:
+                                                      (CardSwipeOrientation
+                                                              orientation,
+                                                          int index) {
+                                                    /// Get orientation & index of swiped card!
+
+                                                    if (orientation !=
+                                                        CardSwipeOrientation
+                                                            .RECOVER) {
+                                                      setState(() {
+                                                        swipeLeft = false;
+                                                        swipeRight = false;
+                                                        toSwipe = toSwipe - 1;
+                                                        swipesLeft =
+                                                            swipesLeft - 1;
+                                                      });
+                                                    }
+                                                    print(orientation);
+
+                                                    if (orientation ==
+                                                        CardSwipeOrientation
+                                                            .LEFT) {
+                                                      print(swipeSug
+                                                          .profiles[index].id);
+                                                      dismissImg(swipeSug
+                                                          .profiles[index].id);
+                                                    }
+                                                    if (orientation ==
+                                                        CardSwipeOrientation
+                                                            .RIGHT) {
+                                                      print('right');
+                                                      addImg(swipeSug
+                                                          .profiles[index].id);
+                                                    }
+                                                  },
                                                 ),
                                               ),
-                                            ),
-                                            cardController: controller =
-                                                CardController(),
-                                            swipeUpdateCallback:
-                                                (DragUpdateDetails details,
-                                                    Alignment align) {
-                                              /// Get swiping card's alignment
-                                              if (align.x < 0) {
-                                                swipeLeft = true;
-                                                swipeRight = false;
-                                                //Card is swipeLeft swiping
-                                              } else if (align.x > 0) {
-                                                swipeRight = true;
-                                                swipeLeft = false;
-                                                //Card is RIGHT swiping
-                                              }
-                                            },
-                                            swipeCompleteCallback:
-                                                (CardSwipeOrientation
-                                                        orientation,
-                                                    int index) {
-                                              /// Get orientation & index of swiped card!
-
-                                              setState(() {
-                                                swipeLeft = false;
-                                                swipeRight = false;
-                                                toSwipe = toSwipe - 1;
-                                                swipesLeft = swipesLeft - 1;
-                                              });
-                                              print(orientation);
-
-                                              if (orientation ==
-                                                  CardSwipeOrientation.LEFT) {
-                                                print(swipeSug
-                                                    .profiles[index].id);
-                                                dismissImg(swipeSug
-                                                    .profiles[index].id);
-                                              }
-                                              if (orientation ==
-                                                  CardSwipeOrientation.RIGHT) {
-                                                print('right');
-                                                addImg(swipeSug
-                                                    .profiles[index].id);
-                                              }
-                                            },
-                                          ),
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            RawMaterialButton(
-                                              onPressed: () {
-                                                if (swipesLeft == 0) {
-                                                  _showUpgrade();
-                                                  return null;
-                                                }
-                                                controller.triggerLeft();
-                                              },
-                                              elevation: 2.0,
-                                              fillColor: Color.fromARGB(
-                                                  255, 142, 198, 63),
-                                              child: Icon(
-                                                FeatherIcons.x,
-                                                color: AppColors.secondaryText,
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  RawMaterialButton(
+                                                    onPressed: () {
+                                                      if (swipesLeft == 0) {
+                                                        _showUpgrade();
+                                                        return null;
+                                                      }
+                                                      controller.triggerLeft();
+                                                    },
+                                                    elevation: 2.0,
+                                                    fillColor: Color.fromARGB(
+                                                        255, 142, 198, 63),
+                                                    child: Icon(
+                                                      FeatherIcons.x,
+                                                      color: AppColors
+                                                          .secondaryText,
+                                                    ),
+                                                    padding:
+                                                        EdgeInsets.all(15.0),
+                                                    shape: CircleBorder(),
+                                                  ),
+                                                  RawMaterialButton(
+                                                    onPressed: () {
+                                                      if (swipesLeft == 0) {
+                                                        _showUpgrade();
+                                                        return null;
+                                                      }
+                                                      controller.triggerRight();
+                                                    },
+                                                    elevation: 2.0,
+                                                    fillColor: AppColors
+                                                        .secondaryElement,
+                                                    child: Icon(
+                                                      Icons.favorite,
+                                                      color: AppColors
+                                                          .secondaryText,
+                                                    ),
+                                                    padding:
+                                                        EdgeInsets.all(23.0),
+                                                    shape: CircleBorder(),
+                                                  ),
+                                                ],
                                               ),
-                                              padding: EdgeInsets.all(15.0),
-                                              shape: CircleBorder(),
-                                            ),
-                                            RawMaterialButton(
-                                              onPressed: () {
-                                                if (swipesLeft == 0) {
-                                                  _showUpgrade();
-                                                  return null;
-                                                }
-                                                controller.triggerRight();
-                                              },
-                                              elevation: 2.0,
-                                              fillColor:
-                                                  AppColors.secondaryElement,
-                                              child: Icon(
-                                                Icons.favorite,
-                                                color: AppColors.secondaryText,
-                                              ),
-                                              padding: EdgeInsets.all(23.0),
-                                              shape: CircleBorder(),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    )
-                                  : Container(
-                                      height: 410,
-                                      child: Center(
-                                          child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                              'Oops, we currently have no new matches for you.'),
-                                          SizedBox(
-                                            height: 10,
-                                          ),
-                                          FlatButton(
-                                              color: AppColors.secondaryElement,
-                                              child: Text(
-                                                'Try Again',
-                                                style: TextStyle(
-                                                    color: Colors.white),
-                                              ),
-                                              onPressed: () =>
-                                                  _getSwipeSuggestions())
-                                        ],
-                                      )),
-                                    );
-                            } else {
-                              return Center(child: CircularProgressIndicator());
-                            }
-                          }),
+                                            ],
+                                          )
+                                        : Container(
+                                            height: 410,
+                                            child: Center(
+                                                child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                    'Oops, we currently have no new matches for you.'),
+                                                SizedBox(
+                                                  height: 10,
+                                                ),
+                                                FlatButton(
+                                                    color: AppColors
+                                                        .secondaryElement,
+                                                    child: Text(
+                                                      'Try Again',
+                                                      style: TextStyle(
+                                                          color: Colors.white),
+                                                    ),
+                                                    onPressed: () =>
+                                                        _getSwipeSuggestions())
+                                              ],
+                                            )),
+                                          );
+                                  } else {
+                                    return Center(
+                                        child: CircularProgressIndicator());
+                                  }
+                                }),
+                          ),
+                          swipesLeft == 0
+                              ? GestureDetector(
+                                  onTap: () =>
+                                      {print(swipesLeft), _showUpgrade()},
+                                  onPanUpdate: (e) => _showUpgrade(),
+                                  child: Container(
+                                    color: Colors.transparent,
+                                  ),
+                                )
+                              : Container()
+                        ],
+                      ),
                     ),
 
                     Messages(
@@ -1326,154 +1558,161 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                         swipeBloc.swipeSink.add(ApiResponse.idle('message'));
                         return Container();
                       }
-                         return Scaffold(
-                  body: Container(
-                    color: Color.fromRGBO(245, 253, 237, 1),
-                    child: Center(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Spacer(),
-                          Text(
-                            'We have a match',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 36,
-                              fontFamily: 'Berkshire Swash',
-                              fontWeight: FontWeight.w400,
-                              color: Color.fromRGBO(142, 198, 63, 1),
-                            ),
-                          ),
-                          Spacer(),
-                          Container(
-                            height: MediaQuery.of(context).size.height * 0.4,
-                            child: Stack(
-                              alignment: Alignment.bottomCenter,
+                      return Scaffold(
+                        body: Container(
+                          color: Color.fromRGBO(245, 253, 237, 1),
+                          child: Center(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Positioned(
-                                  left: 50,
-                                  child: CircleAvatar(
-                                    backgroundColor: AppColors.secondaryElement,
-                                    radius: 105,
-                                    child: CircleAvatar(
-                                      radius: 100,
-                                      backgroundColor:
-                                          AppColors.secondaryElement,
-                                      backgroundImage: NetworkImage(
-                                        'https://via.placeholder.com/1080',
-                                      ),
-                                    ),
+                                Spacer(),
+                                Text(
+                                  'We have a match',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 36,
+                                    fontFamily: 'Berkshire Swash',
+                                    fontWeight: FontWeight.w400,
+                                    color: Color.fromRGBO(142, 198, 63, 1),
                                   ),
                                 ),
-                                Positioned(
-                                  top: 0,
-                                  right: 50,
-                                  child: CircleAvatar(
-                                    backgroundColor:
-                                        Color.fromRGBO(142, 198, 63, 1),
-                                    radius: 105,
-                                    child: CircleAvatar(
-                                      radius: 100,
-                                      backgroundColor:
-                                          Color.fromRGBO(142, 198, 63, 1),
-                                      backgroundImage: NetworkImage(
-                                        'https://via.placeholder.com/1080',
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 140,
-                                  left: 180,
-                                  child: CircleAvatar(
-                                    backgroundColor:
-                                        Color.fromRGBO(255, 255, 255, 1),
-                                    radius: 40,
-                                    child: CircleAvatar(
-                                      radius: 35,
-                                      child: Container(
-                                          decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              gradient: LinearGradient(
-                                                  colors: [
-                                                    AppColors.secondaryElement,
-                                                    Color.fromRGBO(
-                                                        142, 198, 63, 1),
-                                                  ],
-                                                  begin: Alignment.bottomLeft,
-                                                  end: Alignment.topRight)),
+                                Spacer(),
+                                Container(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.4,
+                                  child: Stack(
+                                    alignment: Alignment.bottomCenter,
+                                    children: [
+                                      Positioned(
+                                        left: 50,
+                                        child: CircleAvatar(
+                                          backgroundColor:
+                                              AppColors.secondaryElement,
+                                          radius: 105,
                                           child: CircleAvatar(
-                                      radius: 35,
-                                              child: Icon(FeatherIcons.heart),
-                                              backgroundColor:
-                                                  Colors.transparent)),
-                                    ),
+                                            radius: 100,
+                                            backgroundColor:
+                                                AppColors.secondaryElement,
+                                            backgroundImage: NetworkImage(
+                                              'https://via.placeholder.com/1080',
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        top: 0,
+                                        right: 50,
+                                        child: CircleAvatar(
+                                          backgroundColor:
+                                              Color.fromRGBO(142, 198, 63, 1),
+                                          radius: 105,
+                                          child: CircleAvatar(
+                                            radius: 100,
+                                            backgroundColor:
+                                                Color.fromRGBO(142, 198, 63, 1),
+                                            backgroundImage: NetworkImage(
+                                              'https://via.placeholder.com/1080',
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        top: 140,
+                                        left: 180,
+                                        child: CircleAvatar(
+                                          backgroundColor:
+                                              Color.fromRGBO(255, 255, 255, 1),
+                                          radius: 40,
+                                          child: CircleAvatar(
+                                            radius: 35,
+                                            child: Container(
+                                                decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    gradient: LinearGradient(
+                                                        colors: [
+                                                          AppColors
+                                                              .secondaryElement,
+                                                          Color.fromRGBO(
+                                                              142, 198, 63, 1),
+                                                        ],
+                                                        begin: Alignment
+                                                            .bottomLeft,
+                                                        end: Alignment
+                                                            .topRight)),
+                                                child: CircleAvatar(
+                                                    radius: 35,
+                                                    child: Icon(
+                                                        FeatherIcons.heart),
+                                                    backgroundColor:
+                                                        Colors.transparent)),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
+                                Spacer(),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0),
+                                  child: RaisedButton(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(18.0),
+                                      child: Text(
+                                        'Work My Magic',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      swipeBloc.swipeSink
+                                          .add(ApiResponse.idle('message'));
+                                      // Navigator.push(
+                                      //     context,
+                                      //     MaterialPageRoute(
+                                      //       builder: (context) => Chat(
+                                      //         peerAvatar:
+                                      //             swipee['profileImage'],
+                                      //         peerId: swipee['id'].toString(),
+                                      //         peerName: swipee['firstName'],
+                                      //       ),
+                                      //     ));
+                                    },
+                                    color: AppColors.secondaryElement,
+                                  ),
+                                ),
+                                SizedBox(height: 18),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0),
+                                  child: RaisedButton(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(18.0),
+                                      child: Text(
+                                        'Talk Later... Keep Swiping',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                    color: Color.fromRGBO(142, 198, 63, 1),
+                                    onPressed: () {
+                                      swipeBloc.swipeSink
+                                          .add(ApiResponse.idle('message'));
+                                    },
+                                  ),
+                                ),
+                                Spacer(),
                               ],
                             ),
                           ),
-                          Spacer(),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: RaisedButton(
-                              child: Padding(
-                                padding: const EdgeInsets.all(18.0),
-                                child: Text(
-                                  'Work My Magic',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                              onPressed: () {
-                                swipeBloc.swipeSink
-                                    .add(ApiResponse.idle('message'));
-                                // Navigator.push(
-                                //     context,
-                                //     MaterialPageRoute(
-                                //       builder: (context) => Chat(
-                                //         peerAvatar:
-                                //             swipee['profileImage'],
-                                //         peerId: swipee['id'].toString(),
-                                //         peerName: swipee['firstName'],
-                                //       ),
-                                //     ));
-                              },
-                              color: AppColors.secondaryElement,
-                            ),
-                          ),
-                          SizedBox(height: 18),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: RaisedButton(
-                              child: Padding(
-                                padding: const EdgeInsets.all(18.0),
-                                child: Text(
-                                  'Talk Later... Keep Swiping',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                              color: Color.fromRGBO(142, 198, 63, 1),
-                              onPressed: () {
-                                swipeBloc.swipeSink
-                                    .add(ApiResponse.idle('message'));
-                              },
-                            ),
-                          ),
-                          Spacer(),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-           
+                        ),
+                      );
+
                       break;
                     default:
                   }
                 }
-           return Container();  }),
+                return Container();
+              }),
         ],
       ),
     );

@@ -14,7 +14,7 @@ import 'package:wemeet/src/views/dashboard/sockio.dart';
 import 'package:wemeet/src/views/onboarding/screen1.dart';
 import 'package:wemeet/src/views/onboarding/screen2.dart';
 import 'package:wemeet/src/views/onboarding/screen3.dart';
-
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 void main() {
   runApp(MyApp());
 }
@@ -152,10 +152,12 @@ class _MyHomePageState extends State<MyHomePage> {
         _error = true;
       });
     }
+
   }
 
   @override
   void initState() {
+
     initializeFlutterFire();
     registerNotification();
     configLocalNotification();

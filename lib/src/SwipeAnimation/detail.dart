@@ -35,59 +35,17 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
   AppBarBehavior _appBarBehavior = AppBarBehavior.pinned;
 
   dismissImg(img) {
-    if (!disableSwipe) {
-      if (swipesLeft == -1) {
-        setState(() {
-          swipesLeft = -1;
-        });
-      } else {
-        setState(() {
-          disableSwipe = swipesLeft - 1 == 0 ? true : false;
-          swipesLeft = swipesLeft - 1;
-        });
-      }
-      print('UNLIKE');
-      var req = {"swipeeId": img.id, "type": "UNLIKE"};
-      print(req);
-      swipeBloc.swipe(req, widget.token);
-      setState(() {
-        data.remove(img);
-      });
-      print(selectedData);
-    } else {
-      _showDialog();
-    }
+    var req = {"swipeeId": img.id, "type": "UNLIKE"};
+    print(req);
+    swipeBloc.swipe(req, widget.token);
+    Navigator.of(context).pop();
   }
 
   addImg(img) {
-    print(disableSwipe);
-    if (!disableSwipe) {
-      if (swipesLeft == -1) {
-        setState(() {
-          swipesLeft = -1;
-        });
-      } else {
-        print('report');
-        print(swipesLeft);
-        print(disableSwipe);
-        setState(() {
-          disableSwipe = swipesLeft - 1 == 0 ? true : false;
-          swipesLeft = swipesLeft - 1;
-        });
-      }
-      print('LIKE $swipesLeft');
-      print(img.id);
-      var req = {"swipeeId": img.id, "type": "LIKE"};
-      print(req);
-      swipeBloc.swipe(req, widget.token);
-      setState(() {
-        data.remove(img);
-        selectedData.add(img);
-      });
-      print(selectedData);
-    } else {
-      _showDialog();
-    }
+    var req = {"swipeeId": img.id, "type": "LIKE"};
+    print(req);
+    swipeBloc.swipe(req, widget.token);
+    Navigator.of(context).pop();
   }
 
   void initState() {
@@ -243,7 +201,6 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                                         RawMaterialButton(
                                           onPressed: () {
                                             dismissImg(type);
-
                                           },
                                           elevation: 2.0,
                                           fillColor:

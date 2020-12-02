@@ -12,12 +12,14 @@ import 'package:wemeet/values/values.dart';
 
 class ChatView extends StatefulWidget {
   final String token;
+  final String apiToken;
   final String peerId;
   final String peerName;
   final String peerAvatar;
   ChatView(
       {Key key,
       this.token,
+      this.apiToken,
       @required this.peerId,
       this.peerName,
       @required this.peerAvatar})
@@ -31,6 +33,7 @@ class _ChatViewState extends State<ChatView> {
   SharedPreferences prefs;
   final TextEditingController inputTextController = TextEditingController();
   List messages = [];
+  String report = 'ABUSIVE';
   dynamic id;
   ScrollController _scrollController = new ScrollController();
 
@@ -103,6 +106,267 @@ class _ChatViewState extends State<ChatView> {
 
   @override
   Widget build(BuildContext context) {
+    _confirmReport() async {
+      await showDialog<String>(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: Text(
+                  'Report User',
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontFamily: 'Berkshire Swash',
+                    color: AppColors.secondaryElement,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 24,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.all(16.0),
+                content: Wrap(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text('Why are you reporting this user?'),
+                        Row(
+                          children: [
+                            new Radio(
+                              value: 'ABUSIVE',
+                              groupValue: report,
+                              onChanged: (val) {
+                                print("Radio $val");
+                                setState(() {
+                                  report = val;
+                                });
+                              },
+                            ),
+                            new Text(
+                              'Abusive',
+                              style: new TextStyle(fontSize: 16.0),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            new Radio(
+                              value: 'FAKE_PROFILE',
+                              groupValue: report,
+                              onChanged: (val) {
+                                print("Radio $val");
+                                setState(() {
+                                  report = val;
+                                });
+                              },
+                            ),
+                            new Text(
+                              'Fake Profile',
+                              style: new TextStyle(
+                                fontSize: 16.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            new Radio(
+                              value: 'HARRASEMENT',
+                              groupValue: report,
+                              onChanged: (val) {
+                                print("Radio $val");
+                                setState(() {
+                                  report = val;
+                                });
+                              },
+                            ),
+                            new Text(
+                              'Harrasement',
+                              style: new TextStyle(
+                                fontSize: 16.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            new Radio(
+                              value: 'OTHERS',
+                              groupValue: report,
+                              onChanged: (val) {
+                                print("Radio $val");
+                                setState(() {
+                                  report = val;
+                                });
+                              },
+                            ),
+                            new Text(
+                              'Others',
+                              style: new TextStyle(
+                                fontSize: 16.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                actions: <Widget>[
+                  FlatButton(
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: AppColors.primaryText),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  StreamBuilder(
+                      stream: bloc.userStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          switch (snapshot.data.status) {
+                            case Status.LOADING:
+                              return Center(
+                                child: Container(),
+                              );
+                              break;
+                            default:
+                          }
+                        }
+                        return FlatButton(
+                          onPressed: () {
+                            var request = {
+                              "type": report,
+                              "userId": widget.peerId
+                            };
+                            bloc.report(request, widget.apiToken);
+                          },
+                          color: AppColors.secondaryElement,
+                          padding: EdgeInsets.all(18),
+                          child: Text('Report'),
+                        );
+                      }),
+                ],
+              );
+            },
+          );
+        },
+      );
+    }
+
+    _confirmBlock() async {
+      await showDialog<String>(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: Text(
+                  'Report User',
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontFamily: 'Berkshire Swash',
+                    color: AppColors.secondaryElement,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 24,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.all(16.0),
+                content: Text('Are you sure you want to block this user?'),
+                actions: <Widget>[
+                  FlatButton(
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: AppColors.primaryText),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  StreamBuilder(
+                      stream: bloc.userStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          switch (snapshot.data.status) {
+                            case Status.LOADING:
+                              return Center(
+                                child: Container(),
+                              );
+                              break;
+                            default:
+                          }
+                        }
+                        return FlatButton(
+                          onPressed: () =>
+                              bloc.block(widget.peerId, widget.apiToken),
+                          color: AppColors.secondaryElement,
+                          padding: EdgeInsets.all(18),
+                          child: Text('Block'),
+                        );
+                      }),
+                ],
+              );
+            },
+          );
+        },
+      );
+    }
+
+    void _showBottom(context) {
+      showModalBottomSheet(
+          context: context,
+          builder: (BuildContext bc) {
+            return SafeArea(
+              child: Wrap(
+                children: [
+                  Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          'Select an option',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'Berkshire Swash',
+                            fontWeight: FontWeight.w400,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        child: new Wrap(
+                          children: <Widget>[
+                            new ListTile(
+                                trailing: new Icon(FeatherIcons.chevronRight),
+                                title: new Text('Block User'),
+                                onTap: () {
+                                  _confirmBlock();
+                                }),
+                            new ListTile(
+                              trailing: new Icon(FeatherIcons.chevronRight),
+                              title: new Text(
+                                'Report User',
+                                style: TextStyle(
+                                    color: AppColors.secondaryElement),
+                              ),
+                              onTap: () {
+                                _confirmReport();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          });
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -144,7 +408,7 @@ class _ChatViewState extends State<ChatView> {
             icon: Icon(FeatherIcons.flag),
             color: AppColors.accentText,
             onPressed: () {
-              // _showBottom(context);
+              _showBottom(context);
             },
           ),
         ],

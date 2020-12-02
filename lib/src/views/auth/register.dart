@@ -95,7 +95,6 @@ class _RegisterState extends State<Register> {
 
   @override
   Widget build(BuildContext context) {
-
     _getId().then((id) {
       deviceId = id;
       print(deviceId);
@@ -134,7 +133,8 @@ class _RegisterState extends State<Register> {
                   loading = false;
                   token = snapshot.data.data.data.tokenInfo.accessToken;
                   userData = snapshot.data.data.data;
-                  bloc.registerSink.add(ApiResponse.addFB('snap'));
+                  // bloc.registerSink.add(ApiResponse.addFB('snap'));
+                  bloc.getEmailToken(token);
                   Fluttertoast.showToast(
                       msg: 'Account created, sending activation code...');
                   break;

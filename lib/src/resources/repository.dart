@@ -73,6 +73,12 @@ class Repository {
     return LoginModel.fromJson(response);
   }
 
+  Future<LoginModel> resendEmailToken(token) async {
+    final response = await _helper.postOp('auth/resend-email', token);
+    print(response);
+    return LoginModel.fromJson(response);
+  }
+
   Future<LoginModel> getForgotPass(email) async {
     print('aaa');
     final response =
