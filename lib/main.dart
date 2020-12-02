@@ -11,11 +11,19 @@ import 'package:wemeet/src/views/auth/login.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:wemeet/src/views/dashboard/home.dart';
 import 'package:wemeet/src/views/dashboard/sockio.dart';
+import 'package:wemeet/services/socket.dart';
 import 'package:wemeet/src/views/onboarding/screen1.dart';
 import 'package:wemeet/src/views/onboarding/screen2.dart';
 import 'package:wemeet/src/views/onboarding/screen3.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-void main() {
+
+
+void main() async {
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  SocketService()..init();
+
   runApp(MyApp());
 }
 

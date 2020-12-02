@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -10,16 +12,21 @@ import 'package:wemeet/src/models/MessageModel.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/values/values.dart';
 
+import 'package:wemeet/services/socket.dart';
+import 'package:wemeet/src/models/chat_model.dart';
+
 class ChatView extends StatefulWidget {
   final String token;
   final String apiToken;
   final String peerId;
   final String peerName;
   final String peerAvatar;
+  final String chatId;
   ChatView(
       {Key key,
       this.token,
       this.apiToken,
+      this.chatId,
       @required this.peerId,
       this.peerName,
       @required this.peerAvatar})
@@ -37,9 +44,17 @@ class _ChatViewState extends State<ChatView> {
   dynamic id;
   ScrollController _scrollController = new ScrollController();
 
+  SocketService socketService = SocketService();
+
+  StreamSubscription<ChatModel> onChatMessage;
+  
+
   readLocal() async {
     prefs = await SharedPreferences.getInstance();
-    id = prefs.getString('id') ?? '';
+    setState(() {
+      id = prefs.getString('id') ?? '';
+    });
+    // id = prefs.getString('id') ?? '';
     var ret = await getObject(id, widget.peerId);
     if (ret != null) messages = ret.messages;
     // removeObject(id, widget.peerId);
@@ -57,18 +72,15 @@ class _ChatViewState extends State<ChatView> {
     }
   }
 
-  @override
   void saveObject(String userId, String peerId, object) async {
     final prefs = await SharedPreferences.getInstance();
     // 1
     final string = JsonEncoder().convert(object);
     // 2
-    print('string');
     print(string);
     await prefs.setString(_generateKey(userId, peerId), string);
   }
 
-  @override
   Future<dynamic> getObject(String userId, String peerId) async {
     final prefs = await SharedPreferences.getInstance();
     // 3
@@ -81,27 +93,87 @@ class _ChatViewState extends State<ChatView> {
     return null;
   }
 
-  @override
   Future<void> removeObject(String userId, String peerId) async {
     final prefs = await SharedPreferences.getInstance();
     // 5
     prefs.remove(_generateKey(userId, peerId));
   }
 
+  String get chatId {
+    List<int> ids = [int.tryParse(widget.peerId ?? "") ?? 0, int.tryParse(id ?? "") ?? 0];
+    ids.sort((a, b) => a.compareTo(b));
+    return widget.chatId ?? ids.join("_");
+  }
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     readLocal();
     G.socketUtils.joinRoom('52_22');
     G.socketUtils.setOnChatMessageReceivedListener(onMessageReceived);
     bloc.getMessages(widget.peerId, widget.token);
+    onChatMessage = socketService?.onChatReceived?.listen(onChatReceive);
+    waitJoinRoom();
+  }
+
+  @override
+  void dispose() { 
+    onChatMessage?.cancel();
+    super.dispose();
   }
 
   onMessageReceived(data) {
     var message = Message.fromJson(data['message']);
     bloc.messageSink
         .add(ApiResponse.addMessage(JsonEncoder().convert(message)));
+  }
+
+  void waitJoinRoom() {
+
+  }
+
+  void onChatReceive(ChatModel chat) {
+
+    Message mssg = Message(
+      content: chat.content,
+      chatId: chat.chatId,
+      id: chat.id,
+      receiverId: chat.receiverId,
+      senderId: chat.senderId,
+      sentAt: chat.sentAt,
+      status: chat.status,
+      type: chat.type
+    );
+
+    int i = messages.indexWhere((el) {
+      List<String> ci = ["${chat.receiverId}", "${chat.senderId}"];
+      List<String> ei = ["${el.receiverId}", "${el.senderId}"];
+
+      ci.sort((a, b) => a.compareTo(b));
+      ei.sort((a, b) => a.compareTo(b));
+
+      String cid = ci.join("_");
+      String eld = ei.join("_");
+
+      // make sure it is the same chat id
+      if(cid != eld) {
+        return false;
+      }
+
+      // make sure same id doesn't exist
+      if(chat.id == el.id || chat.id == null) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // if index is not found
+    setState(() {
+      if(i >= 0) {
+        messages.add(mssg);
+      } 
+    });
   }
 
   @override
@@ -368,7 +440,9 @@ class _ChatViewState extends State<ChatView> {
     }
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        brightness: Brightness.light,
         leading: IconButton(
           icon: Icon(FeatherIcons.chevronLeft),
           color: AppColors.accentText,
@@ -376,12 +450,12 @@ class _ChatViewState extends State<ChatView> {
         ),
         iconTheme: new IconThemeData(color: AppColors.primaryText),
         backgroundColor: Colors.white,
-        elevation: 0.0,
+        elevation: 1.0,
         title: Row(
           children: [
             CircleAvatar(
               backgroundImage: widget.peerAvatar != null
-                  ? NetworkImage(widget.peerAvatar)
+                  ? CachedNetworkImageProvider(widget.peerAvatar)
                   : null,
               child: widget.peerAvatar == null ? Text(widget.peerAvatar) : null,
             ),
@@ -508,7 +582,7 @@ class _ChatViewState extends State<ChatView> {
               padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
               width: 200.0,
               decoration: BoxDecoration(
-                  color: Color.fromRGBO(228, 228, 228, 1.0),
+                  color: Color.fromRGBO(247, 247, 247, 1.0),
                   borderRadius: BorderRadius.circular(8.0)),
               margin: EdgeInsets.only(bottom: 5.0, right: 10.0, top: 5),
             ),
@@ -543,7 +617,7 @@ class _ChatViewState extends State<ChatView> {
               padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
               width: 200.0,
               decoration: BoxDecoration(
-                  color: AppColors.primaryElement,
+                  color: Color.fromRGBO(228, 228, 228, 1.0),
                   borderRadius: BorderRadius.circular(8.0)),
               margin: EdgeInsets.only(left: 10.0, top: 5),
             ),
@@ -578,6 +652,16 @@ class _ChatViewState extends State<ChatView> {
     inputTextController.clear();
     if (content.trim() != '') {
       bloc.sendMessage(request, widget.token);
+      socketService.addChat(ChatModel(
+        id: null,
+        chatId: chatId,
+        content: content.trim(),
+        receiverId: int.tryParse(widget.peerId) ?? 999999,
+        senderId: int.tryParse(id) ?? 0,
+        sentAt: DateTime.now(),
+        status: 0,
+        type: request["type"]
+      ));
     } else {
       print('nothing to send');
       Fluttertoast.showToast(

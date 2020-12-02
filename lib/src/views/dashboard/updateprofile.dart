@@ -45,7 +45,6 @@ class _UpdateProfileState extends State<UpdateProfile> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     gender.add(new RadioModel(false, 'Guy', 'MALE'));
     gender.add(new RadioModel(false, 'Lady', 'FEMALE'));
