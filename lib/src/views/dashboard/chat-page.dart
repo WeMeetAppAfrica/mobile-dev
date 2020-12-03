@@ -153,9 +153,11 @@ class _ChatViewState extends State<ChatView> {
       chats = mL.reversed.toList();
     });
 
-    if(chats != null && chats.length > 0) {
-      _indexScrollController.scrollToIndex(0, preferPosition: AutoScrollPosition.end, duration: Duration(seconds: 2));
-    }
+    _scrollToBottom(checkPosition: true);
+
+    // if(chats != null && chats.length > 0) {
+    //   _indexScrollController.scrollToIndex(0, preferPosition: AutoScrollPosition.end, duration: Duration(seconds: 2));
+    // }
   }
 
   onMessageReceived(data) {
@@ -746,6 +748,11 @@ class _ChatViewState extends State<ChatView> {
   }
 
   void _scrollToBottom({bool delay = false, bool checkPosition = false}) async {
+
+    if(!_indexScrollController.hasClients) {
+      return;
+    }
+
     if (checkPosition) {
       double pos = _indexScrollController.position.pixels;
       double max = _indexScrollController.position.maxScrollExtent;
