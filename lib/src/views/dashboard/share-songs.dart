@@ -72,6 +72,7 @@ class _ShareSongsState extends State<ShareSongs> {
       appBar: AppBar(
         iconTheme: new IconThemeData(color: AppColors.primaryText),
         backgroundColor: Colors.white,
+        brightness: Brightness.light,
         elevation: 0.0,
         title: Text(
           'Share Song',
@@ -181,7 +182,7 @@ class _ShareSongsState extends State<ShareSongs> {
                 default:
               }
             }
-            return Container();
+            return SizedBox();
           }),
     );
   }

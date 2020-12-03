@@ -50,9 +50,8 @@ class _ChatViewState extends State<ChatView> {
   dynamic id;
 
   // ScrollController _scrollController = new ScrollController();
-  AutoScrollController _indexScrollController = AutoScrollController(
-    axis: Axis.vertical
-  );
+  AutoScrollController _indexScrollController =
+      AutoScrollController(axis: Axis.vertical);
 
   SocketService socketService = SocketService();
 
@@ -127,7 +126,6 @@ class _ChatViewState extends State<ChatView> {
     waitJoinRoom();
 
     chatsSub = bloc.messageStream.listen(onMessagesReceived);
-
   }
 
   @override
@@ -138,17 +136,17 @@ class _ChatViewState extends State<ChatView> {
   }
 
   void onMessagesReceived(data) async {
-    if(!mounted) {
+    if (!mounted) {
       return;
     }
 
-    if(data.data == null) {
+    if (data.data == null) {
       return;
     }
 
     final List mL = data.data.data.messages;
 
-    if(mL == null) {
+    if (mL == null) {
       return;
     }
 
@@ -626,131 +624,102 @@ class _ChatViewState extends State<ChatView> {
   }
 
   Widget buildChatList() {
-    if(chats == null) {
+    if (chats == null) {
       return Center(child: CircularProgressIndicator());
     }
 
     return ListView.builder(
-      itemCount: chats.length,
-      reverse: true,
-      controller: _indexScrollController,
-      itemBuilder: (context, index) =>
-        AutoScrollTag(
-          key: ValueKey(index), 
-          controller: _indexScrollController, 
-          index: index, 
-          child: buildItem(chats[index]),
-          // highlightColor: Colors.black.withOpacity(0.1),
-        )
-          // buildItem(messages[index]),
-    );
+        itemCount: chats.length,
+        reverse: true,
+        controller: _indexScrollController,
+        itemBuilder: (context, index) => AutoScrollTag(
+              key: ValueKey(index),
+              controller: _indexScrollController,
+              index: index,
+              child: buildItem(chats[index]),
+              // highlightColor: Colors.black.withOpacity(0.1),
+            )
+        // buildItem(messages[index]),
+        );
   }
 
-  Widget buildItem(Message message) {
-    if (message.senderId.toString() == id) {
-      // Right (my message)
+  Widget buildContent(Message message, [bool me = false]) {
+    if (message.type == "TEXT") {
       return Container(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        child: Wrap(
           children: [
-            message.type == 'TEXT'
-                ? Container(
-                    child: Text(
-                      message.content,
-                      style: TextStyle(color: AppColors.primaryText),
-                    ),
-                    padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-                    width: 200.0,
-                    decoration: BoxDecoration(
-                        color: Color.fromRGBO(247, 247, 247, 1.0),
-                        borderRadius: BorderRadius.circular(8.0)),
-                    margin: EdgeInsets.only(bottom: 5.0, right: 10.0, top: 5),
-                  )
-                : message.type == "MEDIA"
-                    ? Container(
-                        padding: EdgeInsets.only(right: 20),
-                        decoration: BoxDecoration(
-                            color: AppColors.secondaryElement,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(20))),
-                        height: 135,
-                        width: MediaQuery.of(context).size.width * 0.75,
-                        child: PlayerWidget(
-                          url: 'https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3',
-                        ),
-                        margin: EdgeInsets.only(left: 10.0, top: 5),
-                      )
-                    : Container(),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Container(
-                padding: EdgeInsets.only(right: 20),
-                child: Text(
-                  message.chatDate,
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                      color: AppColors.accentText,
-                      fontSize: 12.0,
-                      fontStyle: FontStyle.italic),
-                ),
-                margin: EdgeInsets.only(bottom: 5.0),
-              ),
+            Text(
+              message.content,
+              style: TextStyle(color: AppColors.primaryText),
             ),
           ],
         ),
-      );
-    } else {
-      // Left (peer message)
-      return Container(
-        child: Column(
-          children: <Widget>[
-            message.type == "TEXT"
-                ? Container(
-                    child: Text(
-                      message.content,
-                      style: TextStyle(color: AppColors.primaryText),
-                    ),
-                    padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-                    width: 200.0,
-                    decoration: BoxDecoration(
-                        color: Color.fromRGBO(228, 228, 228, 1.0),
-                        borderRadius: BorderRadius.circular(8.0)),
-                    margin: EdgeInsets.only(left: 10.0, top: 5),
-                  )
-                : message.type == "MEDIA"
-                    ? Container(
-                        padding: EdgeInsets.only(right: 20),
-                        decoration: BoxDecoration(
-                            color: AppColors.secondaryElement,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(20))),
-                        height: 135,
-                        width: MediaQuery.of(context).size.width * 0.75,
-                        child: PlayerWidget(
-                          url: message.content,
-                          artwork: message.content,
-                        ),
-                        margin: EdgeInsets.only(left: 10.0, top: 5),
-                      )
-                    : Container(),
-
-            // Time
-            Container(
-              child: Text(
-                message.chatDate,
-                style: TextStyle(
-                    color: AppColors.accentText,
-                    fontSize: 12.0,
-                    fontStyle: FontStyle.italic),
-              ),
-              margin: EdgeInsets.only(left: 50.0, top: 5.0, bottom: 5.0),
-            )
-          ],
-          crossAxisAlignment: CrossAxisAlignment.start,
-        ),
-        margin: EdgeInsets.only(bottom: 10.0),
+        padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+        decoration: BoxDecoration(
+            color: me
+                ? Color.fromRGBO(247, 247, 247, 1.0)
+                : Color.fromRGBO(228, 228, 228, 1.0),
+            borderRadius: BorderRadius.circular(8.0)),
       );
     }
+
+    if (message.type == "MEDIA") {
+      return Container(
+        padding: EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+            color: AppColors.secondaryElement,
+            borderRadius: BorderRadius.all(Radius.circular(20))),
+        height: 135,
+        width: MediaQuery.of(context).size.width * 0.75,
+        child: PlayerWidget(
+          url:
+              'https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3',
+        ),
+        margin: EdgeInsets.only(left: 10.0, top: 5),
+      );
+    }
+
+    return SizedBox();
+  }
+
+  Widget buildItem(Message mssg) {
+    final bool me = mssg.senderId.toString() == id;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      margin: EdgeInsets.only(top: 5.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment:
+            me ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Stack(
+            alignment: me ? Alignment.centerRight : Alignment.centerLeft,
+            children: [
+              Container(
+                constraints: BoxConstraints(minWidth: 150.0, maxWidth: 350.0),
+                child: Column(
+                  crossAxisAlignment:
+                      me ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  children: [
+                    buildContent(mssg, me),
+                    SizedBox(height: 5.0),
+                    Text(
+                      mssg.chatDate,
+                      textAlign: TextAlign.end,
+                      style: TextStyle(
+                          color: AppColors.accentText,
+                          fontSize: 12.0,
+                          fontStyle: FontStyle.italic),
+                    )
+                  ],
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    );
   }
 
   void onSendMessage(String content) {
@@ -785,8 +754,7 @@ class _ChatViewState extends State<ChatView> {
   }
 
   void _scrollToBottom({bool delay = false, bool checkPosition = false}) async {
-
-    if(!_indexScrollController.hasClients) {
+    if (!_indexScrollController.hasClients) {
       return;
     }
 
@@ -803,10 +771,11 @@ class _ChatViewState extends State<ChatView> {
       await Future.delayed(Duration(seconds: 1));
     }
 
-    if(chats != null) {
-      _indexScrollController.scrollToIndex(0, preferPosition: AutoScrollPosition.end, duration: Duration(seconds: 2));
+    if (chats != null) {
+      _indexScrollController.scrollToIndex(0,
+          preferPosition: AutoScrollPosition.end,
+          duration: Duration(seconds: 2));
     }
-  
   }
 
   Widget buildInput() {
