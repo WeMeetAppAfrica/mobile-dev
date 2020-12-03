@@ -49,6 +49,9 @@ dependencies:
   bubble: ^1.1.9+1
   device_info: ^0.4.2+7
   permission_handler: ^5.0.1+1
+  date_format: ^1.0.9
+  scoped_model: ^1.1.0
+  scroll_to_index: ^1.0.6
 
 
   flutter:

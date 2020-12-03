@@ -8,6 +8,8 @@ class ChatModel {
   final String chatId;
   final int status;
 
+  bool withBubble = false;
+
   ChatModel({
     this.id,
     this.content,

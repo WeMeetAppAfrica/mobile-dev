@@ -39,7 +39,6 @@ class _ShareSongsState extends State<ShareSongs> {
   String profileImage;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     readLocal();
     bloc.getMusic(widget.token);

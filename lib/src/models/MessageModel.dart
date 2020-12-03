@@ -3,6 +3,7 @@
 //     final messageModel = messageModelFromJson(jsonString);
 
 import 'dart:convert';
+import 'package:date_format/date_format.dart';
 
 MessageModel messageModelFromJson(String str) => MessageModel.fromJson(json.decode(str));
 
@@ -73,6 +74,8 @@ class Message {
     String chatId;
     int status;
 
+    bool withBubble = false;
+
     factory Message.fromJson(Map<String, dynamic> json) => Message(
         id: json["id"] == null ? null : json["id"],
         content: json["content"] == null ? null : json["content"],
@@ -94,5 +97,15 @@ class Message {
         "chat_id": chatId == null ? null : chatId,
         "status": status == null ? null : status,
     };
+
+    String get fDate {
+
+      return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
+
+    }
+
+    int get timestamp {
+      return sentAt.microsecondsSinceEpoch;
+    }
 }
 

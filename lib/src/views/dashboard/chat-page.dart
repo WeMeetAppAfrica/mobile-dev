@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +12,8 @@ import 'package:wemeet/src/chat/Global.dart';
 import 'package:wemeet/src/models/MessageModel.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/values/values.dart';
+
+import 'package:wemeet/src/views/dashboard/share-songs.dart';
 
 import 'package:wemeet/services/socket.dart';
 import 'package:wemeet/src/models/chat_model.dart';
@@ -42,26 +45,28 @@ class _ChatViewState extends State<ChatView> {
   List messages = [];
   String report = 'ABUSIVE';
   dynamic id;
-  ScrollController _scrollController = new ScrollController();
+
+  // ScrollController _scrollController = new ScrollController();
+  AutoScrollController _indexScrollController = AutoScrollController(
+    axis: Axis.vertical
+  );
 
   SocketService socketService = SocketService();
 
   StreamSubscription<ChatModel> onChatMessage;
-  
+  StreamSubscription chatsSub;
+
+  List<Message> chats;
 
   readLocal() async {
     prefs = await SharedPreferences.getInstance();
-    setState(() {
-      id = prefs.getString('id') ?? '';
-    });
+    id = prefs.getString('id') ?? '';
+
     // id = prefs.getString('id') ?? '';
     var ret = await getObject(id, widget.peerId);
     if (ret != null) messages = ret.messages;
     // removeObject(id, widget.peerId);
     setState(() {});
-
-    print('prin');
-    print(messages);
   }
 
   String _generateKey(String userId, String peerId) {
@@ -100,7 +105,10 @@ class _ChatViewState extends State<ChatView> {
   }
 
   String get chatId {
-    List<int> ids = [int.tryParse(widget.peerId ?? "") ?? 0, int.tryParse(id ?? "") ?? 0];
+    List<int> ids = [
+      int.tryParse(widget.peerId ?? "") ?? 0,
+      int.tryParse(id ?? "") ?? 0
+    ];
     ids.sort((a, b) => a.compareTo(b));
     return widget.chatId ?? ids.join("_");
   }
@@ -109,17 +117,45 @@ class _ChatViewState extends State<ChatView> {
   void initState() {
     super.initState();
     readLocal();
-    G.socketUtils.joinRoom('52_22');
+    // G.socketUtils.joinRoom('52_22');
     G.socketUtils.setOnChatMessageReceivedListener(onMessageReceived);
     bloc.getMessages(widget.peerId, widget.token);
     onChatMessage = socketService?.onChatReceived?.listen(onChatReceive);
     waitJoinRoom();
+
+    chatsSub = bloc.messageStream.listen(onMessagesReceived);
+
   }
 
   @override
-  void dispose() { 
+  void dispose() {
     onChatMessage?.cancel();
+    chatsSub?.cancel();
     super.dispose();
+  }
+
+  void onMessagesReceived(data) async {
+    if(!mounted) {
+      return;
+    }
+
+    if(data.data == null) {
+      return;
+    }
+
+    final List mL = data.data.data.messages;
+
+    if(mL == null) {
+      return;
+    }
+
+    setState(() {
+      chats = mL.reversed.toList();
+    });
+
+    if(chats != null && chats.length > 0) {
+      _indexScrollController.scrollToIndex(0, preferPosition: AutoScrollPosition.end, duration: Duration(seconds: 2));
+    }
   }
 
   onMessageReceived(data) {
@@ -128,446 +164,483 @@ class _ChatViewState extends State<ChatView> {
         .add(ApiResponse.addMessage(JsonEncoder().convert(message)));
   }
 
-  void waitJoinRoom() {
+  List<String> get messageIds {
+    return (chats ?? []).map((e) => "${e.id}").toList();
+  }
 
+  void waitJoinRoom() {
+    Timer(Duration(seconds: 2), () {
+      socketService.join(chatId);
+
+      socketService.setRoom(chatId);
+    });
   }
 
   void onChatReceive(ChatModel chat) {
-
     Message mssg = Message(
-      content: chat.content,
-      chatId: chat.chatId,
-      id: chat.id,
-      receiverId: chat.receiverId,
-      senderId: chat.senderId,
-      sentAt: chat.sentAt,
-      status: chat.status,
-      type: chat.type
-    );
+        content: chat.content,
+        chatId: chat.chatId,
+        id: chat.id,
+        receiverId: chat.receiverId,
+        senderId: chat.senderId,
+        sentAt: chat.sentAt,
+        status: chat.status,
+        type: chat.type);
 
-    int i = messages.indexWhere((el) {
-      List<String> ci = ["${chat.receiverId}", "${chat.senderId}"];
-      List<String> ei = ["${el.receiverId}", "${el.senderId}"];
-
-      ci.sort((a, b) => a.compareTo(b));
-      ei.sort((a, b) => a.compareTo(b));
-
-      String cid = ci.join("_");
-      String eld = ei.join("_");
-
-      // make sure it is the same chat id
-      if(cid != eld) {
-        return false;
-      }
-
-      // make sure same id doesn't exist
-      if(chat.id == el.id || chat.id == null) {
-        return false;
-      }
-
-      return true;
-    });
-
-    // if index is not found
-    setState(() {
-      if(i >= 0) {
-        messages.add(mssg);
-      } 
-    });
+    if (chat.id != null && !messageIds.contains("${chat.id}")) {
+      setState(() {
+        chats.insert(0, mssg);
+        // messages.add(mssg);
+      });
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    _confirmReport() async {
-      await showDialog<String>(
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(
-            builder: (context, setState) {
-              return AlertDialog(
-                title: Text(
-                  'Report User',
-                  textAlign: TextAlign.left,
-                  style: TextStyle(
-                    fontFamily: 'Berkshire Swash',
-                    color: AppColors.secondaryElement,
-                    fontWeight: FontWeight.w400,
-                    fontSize: 24,
-                  ),
+  _confirmReport() async {
+    await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                'Report User',
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontFamily: 'Berkshire Swash',
+                  color: AppColors.secondaryElement,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 24,
                 ),
-                contentPadding: const EdgeInsets.all(16.0),
-                content: Wrap(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text('Why are you reporting this user?'),
-                        Row(
-                          children: [
-                            new Radio(
-                              value: 'ABUSIVE',
-                              groupValue: report,
-                              onChanged: (val) {
-                                print("Radio $val");
-                                setState(() {
-                                  report = val;
-                                });
-                              },
-                            ),
-                            new Text(
-                              'Abusive',
-                              style: new TextStyle(fontSize: 16.0),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            new Radio(
-                              value: 'FAKE_PROFILE',
-                              groupValue: report,
-                              onChanged: (val) {
-                                print("Radio $val");
-                                setState(() {
-                                  report = val;
-                                });
-                              },
-                            ),
-                            new Text(
-                              'Fake Profile',
-                              style: new TextStyle(
-                                fontSize: 16.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            new Radio(
-                              value: 'HARRASEMENT',
-                              groupValue: report,
-                              onChanged: (val) {
-                                print("Radio $val");
-                                setState(() {
-                                  report = val;
-                                });
-                              },
-                            ),
-                            new Text(
-                              'Harrasement',
-                              style: new TextStyle(
-                                fontSize: 16.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            new Radio(
-                              value: 'OTHERS',
-                              groupValue: report,
-                              onChanged: (val) {
-                                print("Radio $val");
-                                setState(() {
-                                  report = val;
-                                });
-                              },
-                            ),
-                            new Text(
-                              'Others',
-                              style: new TextStyle(
-                                fontSize: 16.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                actions: <Widget>[
-                  FlatButton(
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(color: AppColors.primaryText),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                  StreamBuilder(
-                      stream: bloc.userStream,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          switch (snapshot.data.status) {
-                            case Status.LOADING:
-                              return Center(
-                                child: Container(),
-                              );
-                              break;
-                            default:
-                          }
-                        }
-                        return FlatButton(
-                          onPressed: () {
-                            var request = {
-                              "type": report,
-                              "userId": widget.peerId
-                            };
-                            bloc.report(request, widget.apiToken);
-                          },
-                          color: AppColors.secondaryElement,
-                          padding: EdgeInsets.all(18),
-                          child: Text('Report'),
-                        );
-                      }),
-                ],
-              );
-            },
-          );
-        },
-      );
-    }
-
-    _confirmBlock() async {
-      await showDialog<String>(
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(
-            builder: (context, setState) {
-              return AlertDialog(
-                title: Text(
-                  'Report User',
-                  textAlign: TextAlign.left,
-                  style: TextStyle(
-                    fontFamily: 'Berkshire Swash',
-                    color: AppColors.secondaryElement,
-                    fontWeight: FontWeight.w400,
-                    fontSize: 24,
-                  ),
-                ),
-                contentPadding: const EdgeInsets.all(16.0),
-                content: Text('Are you sure you want to block this user?'),
-                actions: <Widget>[
-                  FlatButton(
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(color: AppColors.primaryText),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                  StreamBuilder(
-                      stream: bloc.userStream,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          switch (snapshot.data.status) {
-                            case Status.LOADING:
-                              return Center(
-                                child: Container(),
-                              );
-                              break;
-                            default:
-                          }
-                        }
-                        return FlatButton(
-                          onPressed: () =>
-                              bloc.block(widget.peerId, widget.apiToken),
-                          color: AppColors.secondaryElement,
-                          padding: EdgeInsets.all(18),
-                          child: Text('Block'),
-                        );
-                      }),
-                ],
-              );
-            },
-          );
-        },
-      );
-    }
-
-    void _showBottom(context) {
-      showModalBottomSheet(
-          context: context,
-          builder: (BuildContext bc) {
-            return SafeArea(
-              child: Wrap(
+              ),
+              contentPadding: const EdgeInsets.all(16.0),
+              content: Wrap(
                 children: [
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          'Select an option',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: 'Berkshire Swash',
-                            fontWeight: FontWeight.w400,
-                            fontSize: 20,
+                      Text('Why are you reporting this user?'),
+                      Row(
+                        children: [
+                          new Radio(
+                            value: 'ABUSIVE',
+                            groupValue: report,
+                            onChanged: (val) {
+                              print("Radio $val");
+                              setState(() {
+                                report = val;
+                              });
+                            },
                           ),
-                        ),
+                          new Text(
+                            'Abusive',
+                            style: new TextStyle(fontSize: 16.0),
+                          ),
+                        ],
                       ),
-                      Container(
-                        child: new Wrap(
-                          children: <Widget>[
-                            new ListTile(
-                                trailing: new Icon(FeatherIcons.chevronRight),
-                                title: new Text('Block User'),
-                                onTap: () {
-                                  _confirmBlock();
-                                }),
-                            new ListTile(
-                              trailing: new Icon(FeatherIcons.chevronRight),
-                              title: new Text(
-                                'Report User',
-                                style: TextStyle(
-                                    color: AppColors.secondaryElement),
-                              ),
-                              onTap: () {
-                                _confirmReport();
-                              },
+                      Row(
+                        children: [
+                          new Radio(
+                            value: 'FAKE_PROFILE',
+                            groupValue: report,
+                            onChanged: (val) {
+                              print("Radio $val");
+                              setState(() {
+                                report = val;
+                              });
+                            },
+                          ),
+                          new Text(
+                            'Fake Profile',
+                            style: new TextStyle(
+                              fontSize: 16.0,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          new Radio(
+                            value: 'HARRASEMENT',
+                            groupValue: report,
+                            onChanged: (val) {
+                              print("Radio $val");
+                              setState(() {
+                                report = val;
+                              });
+                            },
+                          ),
+                          new Text(
+                            'Harrasement',
+                            style: new TextStyle(
+                              fontSize: 16.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          new Radio(
+                            value: 'OTHERS',
+                            groupValue: report,
+                            onChanged: (val) {
+                              print("Radio $val");
+                              setState(() {
+                                report = val;
+                              });
+                            },
+                          ),
+                          new Text(
+                            'Others',
+                            style: new TextStyle(
+                              fontSize: 16.0,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ],
               ),
-            );
-          });
-    }
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        brightness: Brightness.light,
-        leading: IconButton(
-          icon: Icon(FeatherIcons.chevronLeft),
-          color: AppColors.accentText,
-          onPressed: () => Navigator.pop(context),
-        ),
-        iconTheme: new IconThemeData(color: AppColors.primaryText),
-        backgroundColor: Colors.white,
-        elevation: 1.0,
-        title: Row(
-          children: [
-            CircleAvatar(
-              backgroundImage: widget.peerAvatar != null
-                  ? CachedNetworkImageProvider(widget.peerAvatar)
-                  : null,
-              child: widget.peerAvatar == null ? Text(widget.peerAvatar) : null,
-            ),
-            SizedBox(
-              width: 8,
-            ),
-            Text(
-              widget.peerName,
-              style: TextStyle(
-                color: AppColors.accentText,
-                fontWeight: FontWeight.w400,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(FeatherIcons.music),
-            color: AppColors.accentText,
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: Icon(FeatherIcons.flag),
-            color: AppColors.accentText,
-            onPressed: () {
-              _showBottom(context);
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Flexible(
-            child: Container(
-                child: StreamBuilder(
-                    stream: bloc.messageStream,
+              actions: <Widget>[
+                FlatButton(
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.primaryText),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                StreamBuilder(
+                    stream: bloc.userStream,
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         switch (snapshot.data.status) {
                           case Status.LOADING:
-                            if (messages.length < 1) {
-                              return Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            } else {
-                              if (_scrollController.hasClients)
-                                _scrollController.jumpTo(
-                                  _scrollController.position.maxScrollExtent,
-                                );
-                            }
-
-                            break;
-                          case Status.ADDMESSAGE:
-                            print('snapshot.d');
-                            print(Message.fromJson(
-                                JsonDecoder().convert(snapshot.data.message)));
-                            messages.add(Message.fromJson(
-                                JsonDecoder().convert(snapshot.data.message)));
-                            if (_scrollController.hasClients)
-                              _scrollController.animateTo(
-                                _scrollController.position.maxScrollExtent +
-                                    100,
-                                curve: Curves.easeOut,
-                                duration: const Duration(milliseconds: 300),
-                              );
-                            break;
-                          case Status.SENDMESSAGE:
-                            bloc.messageSink.add(ApiResponse.idle('message'));
-                            messages.add(snapshot.data.data.data.message);
-                            if (_scrollController.hasClients)
-                              _scrollController.animateTo(
-                                _scrollController.position.maxScrollExtent +
-                                    100,
-                                curve: Curves.easeOut,
-                                duration: const Duration(milliseconds: 300),
-                              );
-
-                            saveObject(id, widget.peerId,
-                                {"messages": messages, "message": null});
-                            break;
-                          case Status.GETMESSAGES:
-                            bloc.messageSink.add(ApiResponse.idle('message'));
-                            messages = snapshot.data.data.data.messages;
-                            saveObject(
-                                id, widget.peerId, snapshot.data.data.data);
-                            if (_scrollController.hasClients)
-                              _scrollController.animateTo(
-                                _scrollController.position.maxScrollExtent,
-                                curve: Curves.easeOut,
-                                duration: const Duration(milliseconds: 300),
-                              );
+                            return Center(
+                              child: Container(),
+                            );
                             break;
                           default:
                         }
                       }
-                      return ListView.builder(
-                        itemCount: messages.length,
-                        reverse: false,
-                        controller: _scrollController,
-                        itemBuilder: (context, index) =>
-                            buildItem(messages[index]),
+                      return FlatButton(
+                        onPressed: () {
+                          var request = {
+                            "type": report,
+                            "userId": widget.peerId
+                          };
+                          bloc.report(request, widget.apiToken);
+                        },
+                        color: AppColors.secondaryElement,
+                        padding: EdgeInsets.all(18),
+                        child: Text('Report'),
                       );
-                    })),
+                    }),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  _confirmBlock() async {
+    await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                'Report User',
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontFamily: 'Berkshire Swash',
+                  color: AppColors.secondaryElement,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 24,
+                ),
+              ),
+              contentPadding: const EdgeInsets.all(16.0),
+              content: Text('Are you sure you want to block this user?'),
+              actions: <Widget>[
+                FlatButton(
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.primaryText),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                StreamBuilder(
+                    stream: bloc.userStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        switch (snapshot.data.status) {
+                          case Status.LOADING:
+                            return Center(
+                              child: Container(),
+                            );
+                            break;
+                          default:
+                        }
+                      }
+                      return FlatButton(
+                        onPressed: () =>
+                            bloc.block(widget.peerId, widget.apiToken),
+                        color: AppColors.secondaryElement,
+                        padding: EdgeInsets.all(18),
+                        child: Text('Block'),
+                      );
+                    }),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showBottom(context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return SafeArea(
+            child: Wrap(
+              children: [
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'Select an option',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Berkshire Swash',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      child: new Wrap(
+                        children: <Widget>[
+                          new ListTile(
+                              trailing: new Icon(FeatherIcons.chevronRight),
+                              title: new Text('Block User'),
+                              onTap: () {
+                                _confirmBlock();
+                              }),
+                          new ListTile(
+                            trailing: new Icon(FeatherIcons.chevronRight),
+                            title: new Text(
+                              'Report User',
+                              style:
+                                  TextStyle(color: AppColors.secondaryElement),
+                            ),
+                            onTap: () {
+                              _confirmReport();
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: () async {
+        socketService.setRoom(null);
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          brightness: Brightness.light,
+          leading: IconButton(
+            icon: Icon(FeatherIcons.chevronLeft),
+            color: AppColors.accentText,
+            onPressed: () => Navigator.pop(context),
           ),
-          buildInput()
-        ],
+          iconTheme: new IconThemeData(color: AppColors.primaryText),
+          backgroundColor: Colors.white,
+          elevation: 1.0,
+          title: Row(
+            children: [
+              CircleAvatar(
+                backgroundImage: widget.peerAvatar != null
+                    ? CachedNetworkImageProvider(widget.peerAvatar)
+                    : null,
+                child:
+                    widget.peerAvatar == null ? Text(widget.peerAvatar) : null,
+              ),
+              SizedBox(
+                width: 8,
+              ),
+              Text(
+                widget.peerName,
+                style: TextStyle(
+                  color: AppColors.accentText,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(FeatherIcons.music),
+              color: AppColors.accentText,
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ShareSongs(
+                        peerName: widget.peerName,
+                        peerAvatar: widget.peerAvatar,
+                        token: widget.token,
+                        peerId: widget.peerId,
+                      ),
+                    ));
+              },
+            ),
+            IconButton(
+              icon: Icon(FeatherIcons.flag),
+              color: AppColors.accentText,
+              onPressed: () {
+                _showBottom(context);
+              },
+            ),
+          ],
+        ),
+        /*body: Column(
+          children: [
+            Flexible(
+              child: Container(
+                  child: StreamBuilder(
+                      stream: bloc.messageStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          switch (snapshot.data.status) {
+                            case Status.LOADING:
+                              if (messages.length < 1) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              } else {
+                                if (_scrollController.hasClients)
+                                  _scrollController.jumpTo(
+                                    _scrollController.position.maxScrollExtent,
+                                  );
+                              }
+
+                              break;
+                            case Status.ADDMESSAGE:
+                              print('snapshot.d');
+                              print(Message.fromJson(JsonDecoder()
+                                  .convert(snapshot.data.message)));
+                              messages.add(Message.fromJson(JsonDecoder()
+                                  .convert(snapshot.data.message)));
+                              if (_scrollController.hasClients)
+                                _scrollController.animateTo(
+                                  _scrollController.position.maxScrollExtent +
+                                      100,
+                                  curve: Curves.easeOut,
+                                  duration: const Duration(milliseconds: 300),
+                                );
+                              break;
+                            case Status.SENDMESSAGE:
+                              bloc.messageSink.add(ApiResponse.idle('message'));
+                              messages.add(snapshot.data.data.data.message);
+                              if (_scrollController.hasClients)
+                                _scrollController.animateTo(
+                                  _scrollController.position.maxScrollExtent +
+                                      100,
+                                  curve: Curves.easeOut,
+                                  duration: const Duration(milliseconds: 300),
+                                );
+
+                              saveObject(id, widget.peerId,
+                                  {"messages": messages, "message": null});
+                              break;
+                            case Status.GETMESSAGES:
+                              bloc.messageSink.add(ApiResponse.idle('message'));
+                              messages = snapshot.data.data.data.messages;
+                              saveObject(
+                                  id, widget.peerId, snapshot.data.data.data);
+                              if (_scrollController.hasClients)
+                                _scrollController.animateTo(
+                                  _scrollController.position.maxScrollExtent,
+                                  curve: Curves.easeOut,
+                                  duration: const Duration(milliseconds: 300),
+                                );
+                              break;
+                            default:
+                          }
+                        }
+                        return ListView.builder(
+                          itemCount: messages.length,
+                          reverse: false,
+                          controller: _scrollController,
+                          itemBuilder: (context, index) =>
+                            AutoScrollTag(
+                              key: ValueKey(index), 
+                              controller: _indexScrollController, 
+                              index: index, 
+                              child: buildItem(messages[index]),
+                              // highlightColor: Colors.black.withOpacity(0.1),
+                            )
+                              // buildItem(messages[index]),
+                        );
+                      })),
+            ),
+            buildInput()
+          ],
+        ),*/
+        body: Column(
+          children: [
+            Expanded(
+              child: buildChatList(),
+            ),
+            buildInput()
+          ],
+        ),
       ),
     );
   }
 
-  Widget buildItem(dynamic message) {
+  Widget buildChatList() {
+    if(chats == null) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    return ListView.builder(
+      itemCount: chats.length,
+      reverse: true,
+      controller: _indexScrollController,
+      itemBuilder: (context, index) =>
+        AutoScrollTag(
+          key: ValueKey(index), 
+          controller: _indexScrollController, 
+          index: index, 
+          child: buildItem(chats[index]),
+          // highlightColor: Colors.black.withOpacity(0.1),
+        )
+          // buildItem(messages[index]),
+    );
+  }
+
+  Widget buildItem(Message message) {
     if (message.senderId.toString() == id) {
       // Right (my message)
       return Container(
@@ -652,16 +725,17 @@ class _ChatViewState extends State<ChatView> {
     inputTextController.clear();
     if (content.trim() != '') {
       bloc.sendMessage(request, widget.token);
-      socketService.addChat(ChatModel(
-        id: null,
-        chatId: chatId,
-        content: content.trim(),
-        receiverId: int.tryParse(widget.peerId) ?? 999999,
-        senderId: int.tryParse(id) ?? 0,
-        sentAt: DateTime.now(),
-        status: 0,
-        type: request["type"]
-      ));
+      // socketService.addChat(ChatModel(
+      //   id: null,
+      //   chatId: chatId,
+      //   content: content.trim(),
+      //   receiverId: int.tryParse(widget.peerId) ?? 999999,
+      //   senderId: int.tryParse(id) ?? 0,
+      //   sentAt: DateTime.now(),
+      //   status: 0,
+      //   type: request["type"]
+      // ));
+      _scrollToBottom(delay: true);
     } else {
       print('nothing to send');
       Fluttertoast.showToast(
@@ -669,6 +743,26 @@ class _ChatViewState extends State<ChatView> {
           backgroundColor: Colors.black,
           textColor: Colors.red);
     }
+  }
+
+  void _scrollToBottom({bool delay = false, bool checkPosition = false}) async {
+    if (checkPosition) {
+      double pos = _indexScrollController.position.pixels;
+      double max = _indexScrollController.position.maxScrollExtent;
+
+      if ((max - pos) > 50.0) {
+        return;
+      }
+    }
+
+    if (delay) {
+      await Future.delayed(Duration(seconds: 1));
+    }
+
+    if(chats != null) {
+      _indexScrollController.scrollToIndex(0, preferPosition: AutoScrollPosition.end, duration: Duration(seconds: 2));
+    }
+  
   }
 
   Widget buildInput() {

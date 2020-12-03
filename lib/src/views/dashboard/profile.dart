@@ -15,6 +15,7 @@ import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/src/views/dashboard/blocked.dart';
 import 'package:wemeet/src/views/dashboard/chat-screen.dart';
+import 'package:wemeet/src/views/dashboard/chat-page.dart';
 import 'package:wemeet/src/views/dashboard/payment.dart';
 import 'package:wemeet/src/views/dashboard/updateProfile.dart';
 import 'package:wemeet/src/views/dashboard/updatelocation.dart';
@@ -502,7 +503,8 @@ class _ProfilePageState extends State<ProfilePage>
                                                                           Navigator.push(
                                                                               context,
                                                                               MaterialPageRoute(
-                                                                                builder: (context) => Chat(
+                                                                                builder: (context) => ChatView(
+                                                                                  token: widget.token,
                                                                                   peerAvatar: items[index]['profileImage'],
                                                                                   peerId: items[index]['id'].toString(),
                                                                                   peerName: items[index]['firstName'],

@@ -16,6 +16,9 @@ class SocketService {
 
   Socket _socket;
 
+  String _currentRoom;
+  String get room => _currentRoom;
+
   // Joined rooms
   List<String> _rooms = [];
   
@@ -36,19 +39,30 @@ class SocketService {
     }
 
     print("joining room $room");
-    _socket.emit("join", room);
+    _socket.emit("join", {"chatId": room});
     _rooms.add(room);
   }
 
+  // new chat stream controller
   StreamController<ChatModel> _chatController =
       StreamController<ChatModel>.broadcast();
   Stream<ChatModel> get onChatReceived =>
       _chatController.stream;
 
+  // Active chat stream controller
+  StreamController<String> _roomController =
+      StreamController<String>.broadcast();
+  Stream<String> get onRoomChanged =>
+      _roomController.stream;
+
   void addChat(ChatModel val) {
     _chatController.add(val);
   }
 
+  void setRoom(String val) {
+    _currentRoom = val;
+    _roomController.add(val);
+  }
 
   void _connect() async {
     print("...connecting");
@@ -58,8 +72,25 @@ class SocketService {
         'transports': ['websocket'],
       }
     );
-    _socket.onConnect((data) => print("socket is connected..."));
-    _socket.onDisconnect((data) => print("socket is disconnected..."));
+    _socket.onConnect((data) {
+      print("##### Socket is connected");
+      print("##### With $data");
+
+      // Subscribe to new message
+      _socket.on('new message', (data) {
+        print("Received $data");
+        Map mssg = data["message"];
+        if(mssg == null || mssg.isEmpty) {
+          return;
+        }
+        _chatController.add(ChatModel.fromMap(mssg));
+      });
+
+    });
+    _socket.onDisconnect((data){
+      print("socket is disconnected...");
+      _rooms.clear();
+    });
     _socket.on('fromServer', (_) => print(_));
 
     // set chat message listener
