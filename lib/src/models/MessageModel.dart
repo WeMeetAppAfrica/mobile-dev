@@ -100,8 +100,31 @@ class Message {
 
     String get fDate {
 
+      DateTime now = DateTime.now();
+
+      // check if today
+      if(now.year == sentAt.year && now.month == sentAt.month && now.day == sentAt.day) {
+        return formatDate(sentAt, [nn, ':', ss, ' ', am]);
+      } 
+
       return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
 
+    }
+
+    String get chatDate {
+      DateTime now = DateTime.now();
+
+      // check if today
+      if(now.year == sentAt.year && now.month == sentAt.month && now.day == sentAt.day) {
+        return formatDate(sentAt, [nn, ':', ss, ' ', am]);
+      } 
+
+      // check if yesterday
+      if(now.year == sentAt.year && now.month == sentAt.month && now.day == (sentAt.day + 1)) {
+        return formatDate(sentAt, ["Yesterday at ", nn, ':', ss, ' ', am]);
+      }
+
+      return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
     }
 
     int get timestamp {

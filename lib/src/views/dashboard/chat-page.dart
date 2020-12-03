@@ -666,7 +666,7 @@ class _ChatViewState extends State<ChatView> {
               child: Container(
                 padding: EdgeInsets.only(right: 20),
                 child: Text(
-                  message.sentAt.toString(),
+                  message.chatDate,
                   textAlign: TextAlign.right,
                   style: TextStyle(
                       color: AppColors.accentText,
@@ -700,7 +700,7 @@ class _ChatViewState extends State<ChatView> {
             // Time
             Container(
               child: Text(
-                message.sentAt.toString(),
+                message.chatDate,
                 style: TextStyle(
                     color: AppColors.accentText,
                     fontSize: 12.0,

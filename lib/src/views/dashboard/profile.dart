@@ -503,7 +503,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                                           Navigator.push(
                                                                               context,
                                                                               MaterialPageRoute(
-                                                                                builder: (context) => ChatView(
+                                                                                builder: (context) => Chat(
                                                                                   token: widget.token,
                                                                                   peerAvatar: items[index]['profileImage'],
                                                                                   peerId: items[index]['id'].toString(),
