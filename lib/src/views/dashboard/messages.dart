@@ -168,6 +168,16 @@ class _MessagesState extends State<Messages> {
         ));
   }
 
+  Widget modelChats() {
+    return ScopedModelDescendant<AppModel>(
+      builder: (context, child, m){
+        return Text(
+          "${m.chatList}"
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScopedModelDescendant<AppModel>(builder: (context, child, m) {
@@ -350,13 +360,13 @@ class _MessagesState extends State<Messages> {
                                           "${((u["firstName"] ?? "") + " " + (u["lastName"] ?? ""))}"
                                               .trim()),
                                       subtitle: Text(
-                                        (mssg.type == "AUDIO")
+                                        (mssg.type == "MEDIA")
                                             ? "audio..."
                                             : mssg.content,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                            fontStyle: (mssg.type == "AUDIO")
+                                            fontStyle: (mssg.type == "MEDIA")
                                                 ? FontStyle.italic
                                                 : FontStyle.normal),
                                       ),
@@ -462,15 +472,19 @@ class _MessagesState extends State<Messages> {
           .compareTo(b.sentAt.millisecondsSinceEpoch));
     });
 
-    processChatList();
+    processChatList(chat);
   }
 
-  void processChatList() {
+  void processChatList(ChatModel chat) {
     Map cL = model.chatList;
+
+    if(chat.senderId == user.id) {
+      cL[chat.chatId] = chat.timestamp;
+    }
 
     activeChats.forEach((el) {
       if(cL.containsKey(el.chatId)) {
-        cL[el.chatId] = el.timestamp;
+        // cL[el.chatId] = el.timestamp;
       } else {
         cL[el.chatId] = el.timestamp - 20;
       }
@@ -491,6 +505,7 @@ class _MessagesState extends State<Messages> {
     
 
     cl.forEach((el) { 
+
       // make sure there is no bubble if user sent the last message
       if(el.senderId == user.id) {
         el.withBubble = false;
@@ -507,6 +522,7 @@ class _MessagesState extends State<Messages> {
   }
 
   Map itemDetails(mssg) {
+    socketService.join(mssg.chatId);
     return (matches ?? []).firstWhere(
         (e) => e['id'] == mssg.receiverId || e['id'] == mssg.senderId,
         orElse: () => {});

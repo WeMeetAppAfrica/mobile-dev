@@ -43,6 +43,21 @@ class SocketService {
     _rooms.add(room);
   }
 
+  void joinRooms(List val) {
+    // check if connection is initialiazed
+    if(_socket == null || val == null) {
+      _connect();
+    }
+
+    val.forEach((room) {
+      if(_rooms.contains(room)) {
+        return;
+      }
+      _socket.emit("join", {"chatId": room});
+      _rooms.add(room);
+    });
+  }
+
   // new chat stream controller
   StreamController<ChatModel> _chatController =
       StreamController<ChatModel>.broadcast();
@@ -68,9 +83,12 @@ class SocketService {
     print("...connecting");
     _socket = io(
       'https://dev.wemeet.africa/api/messaging-service/socket',
-      <String, dynamic>{
-        'transports': ['websocket'],
-      }
+      OptionBuilder()
+        .setTransports(['websocket'])
+        .build()
+      // <String, dynamic>{
+      //   'transports': ['websocket'],
+      // }
     );
     _socket.onConnect((data) {
       print("##### Socket is connected");
