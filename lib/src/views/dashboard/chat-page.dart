@@ -10,6 +10,8 @@ import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/chat/Global.dart';
 import 'package:wemeet/src/models/MessageModel.dart';
 import 'package:wemeet/src/resources/api_response.dart';
+import 'package:wemeet/src/views/dashboard/player_widget.dart';
+import 'package:wemeet/src/views/dashboard/share-songs.dart';
 import 'package:wemeet/values/values.dart';
 
 import 'package:wemeet/services/socket.dart';
@@ -47,7 +49,6 @@ class _ChatViewState extends State<ChatView> {
   SocketService socketService = SocketService();
 
   StreamSubscription<ChatModel> onChatMessage;
-  
 
   readLocal() async {
     prefs = await SharedPreferences.getInstance();
@@ -100,7 +101,10 @@ class _ChatViewState extends State<ChatView> {
   }
 
   String get chatId {
-    List<int> ids = [int.tryParse(widget.peerId ?? "") ?? 0, int.tryParse(id ?? "") ?? 0];
+    List<int> ids = [
+      int.tryParse(widget.peerId ?? "") ?? 0,
+      int.tryParse(id ?? "") ?? 0
+    ];
     ids.sort((a, b) => a.compareTo(b));
     return widget.chatId ?? ids.join("_");
   }
@@ -117,7 +121,7 @@ class _ChatViewState extends State<ChatView> {
   }
 
   @override
-  void dispose() { 
+  void dispose() {
     onChatMessage?.cancel();
     super.dispose();
   }
@@ -128,22 +132,18 @@ class _ChatViewState extends State<ChatView> {
         .add(ApiResponse.addMessage(JsonEncoder().convert(message)));
   }
 
-  void waitJoinRoom() {
-
-  }
+  void waitJoinRoom() {}
 
   void onChatReceive(ChatModel chat) {
-
     Message mssg = Message(
-      content: chat.content,
-      chatId: chat.chatId,
-      id: chat.id,
-      receiverId: chat.receiverId,
-      senderId: chat.senderId,
-      sentAt: chat.sentAt,
-      status: chat.status,
-      type: chat.type
-    );
+        content: chat.content,
+        chatId: chat.chatId,
+        id: chat.id,
+        receiverId: chat.receiverId,
+        senderId: chat.senderId,
+        sentAt: chat.sentAt,
+        status: chat.status,
+        type: chat.type);
 
     int i = messages.indexWhere((el) {
       List<String> ci = ["${chat.receiverId}", "${chat.senderId}"];
@@ -156,12 +156,12 @@ class _ChatViewState extends State<ChatView> {
       String eld = ei.join("_");
 
       // make sure it is the same chat id
-      if(cid != eld) {
+      if (cid != eld) {
         return false;
       }
 
       // make sure same id doesn't exist
-      if(chat.id == el.id || chat.id == null) {
+      if (chat.id == el.id || chat.id == null) {
         return false;
       }
 
@@ -170,9 +170,9 @@ class _ChatViewState extends State<ChatView> {
 
     // if index is not found
     setState(() {
-      if(i >= 0) {
+      if (i >= 0) {
         messages.add(mssg);
-      } 
+      }
     });
   }
 
@@ -476,7 +476,19 @@ class _ChatViewState extends State<ChatView> {
           IconButton(
             icon: Icon(FeatherIcons.music),
             color: AppColors.accentText,
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ShareSongs(
+                      peerName: widget.peerName,
+                      peerAvatar: widget.peerAvatar,
+                      token: widget.token,
+                      apiToken: widget.apiToken,
+                      peerId: widget.peerId,
+                    ),
+                  ));
+            },
           ),
           IconButton(
             icon: Icon(FeatherIcons.flag),
@@ -574,18 +586,34 @@ class _ChatViewState extends State<ChatView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Container(
-              child: Text(
-                message.content,
-                style: TextStyle(color: AppColors.primaryText),
-              ),
-              padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-              width: 200.0,
-              decoration: BoxDecoration(
-                  color: Color.fromRGBO(247, 247, 247, 1.0),
-                  borderRadius: BorderRadius.circular(8.0)),
-              margin: EdgeInsets.only(bottom: 5.0, right: 10.0, top: 5),
-            ),
+            message.type == 'TEXT'
+                ? Container(
+                    child: Text(
+                      message.content,
+                      style: TextStyle(color: AppColors.primaryText),
+                    ),
+                    padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+                    width: 200.0,
+                    decoration: BoxDecoration(
+                        color: Color.fromRGBO(247, 247, 247, 1.0),
+                        borderRadius: BorderRadius.circular(8.0)),
+                    margin: EdgeInsets.only(bottom: 5.0, right: 10.0, top: 5),
+                  )
+                : message.type == "MEDIA"
+                    ? Container(
+                        padding: EdgeInsets.only(right: 20),
+                        decoration: BoxDecoration(
+                            color: AppColors.secondaryElement,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(20))),
+                        height: 135,
+                        width: MediaQuery.of(context).size.width * 0.75,
+                        child: PlayerWidget(
+                          url: 'https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3',
+                        ),
+                        margin: EdgeInsets.only(left: 10.0, top: 5),
+                      )
+                    : Container(),
             Align(
               alignment: Alignment.bottomRight,
               child: Container(
@@ -609,18 +637,35 @@ class _ChatViewState extends State<ChatView> {
       return Container(
         child: Column(
           children: <Widget>[
-            Container(
-              child: Text(
-                message.content,
-                style: TextStyle(color: AppColors.primaryText),
-              ),
-              padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-              width: 200.0,
-              decoration: BoxDecoration(
-                  color: Color.fromRGBO(228, 228, 228, 1.0),
-                  borderRadius: BorderRadius.circular(8.0)),
-              margin: EdgeInsets.only(left: 10.0, top: 5),
-            ),
+            message.type == "TEXT"
+                ? Container(
+                    child: Text(
+                      message.content,
+                      style: TextStyle(color: AppColors.primaryText),
+                    ),
+                    padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+                    width: 200.0,
+                    decoration: BoxDecoration(
+                        color: Color.fromRGBO(228, 228, 228, 1.0),
+                        borderRadius: BorderRadius.circular(8.0)),
+                    margin: EdgeInsets.only(left: 10.0, top: 5),
+                  )
+                : message.type == "MEDIA"
+                    ? Container(
+                        padding: EdgeInsets.only(right: 20),
+                        decoration: BoxDecoration(
+                            color: AppColors.secondaryElement,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(20))),
+                        height: 135,
+                        width: MediaQuery.of(context).size.width * 0.75,
+                        child: PlayerWidget(
+                          url: message.content,
+                          artwork: message.content,
+                        ),
+                        margin: EdgeInsets.only(left: 10.0, top: 5),
+                      )
+                    : Container(),
 
             // Time
             Container(
@@ -653,15 +698,14 @@ class _ChatViewState extends State<ChatView> {
     if (content.trim() != '') {
       bloc.sendMessage(request, widget.token);
       socketService.addChat(ChatModel(
-        id: null,
-        chatId: chatId,
-        content: content.trim(),
-        receiverId: int.tryParse(widget.peerId) ?? 999999,
-        senderId: int.tryParse(id) ?? 0,
-        sentAt: DateTime.now(),
-        status: 0,
-        type: request["type"]
-      ));
+          id: null,
+          chatId: chatId,
+          content: content.trim(),
+          receiverId: int.tryParse(widget.peerId) ?? 999999,
+          senderId: int.tryParse(id) ?? 0,
+          sentAt: DateTime.now(),
+          status: 0,
+          type: request["type"]));
     } else {
       print('nothing to send');
       Fluttertoast.showToast(

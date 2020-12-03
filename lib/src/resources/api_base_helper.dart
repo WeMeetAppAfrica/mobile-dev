@@ -25,7 +25,10 @@ class ApiBaseHelper {
           "Authorization": 'Bearer ' + token
         },
       );
+      print('response');
+      print(response.body);
       responseJson = _returnResponse(response);
+      print(responseJson);
     } on SocketException {
       Fluttertoast.showToast(msg: 'No Internet connection');
       throw FetchDataException('No Internet connection');

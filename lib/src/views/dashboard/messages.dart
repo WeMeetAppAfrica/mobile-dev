@@ -58,7 +58,7 @@ class _MessagesState extends State<Messages> {
   }
 
   @override
-  void dispose() { 
+  void dispose() {
     onChatMessage?.cancel();
     super.dispose();
   }
@@ -215,8 +215,9 @@ class _MessagesState extends State<Messages> {
                                           backgroundImage: matches[index]
                                                       ['profileImage'] !=
                                                   null
-                                              ? CachedNetworkImageProvider(matches[index]
-                                                  ['profileImage'])
+                                              ? CachedNetworkImageProvider(
+                                                  matches[index]
+                                                      ['profileImage'])
                                               : null,
                                           child: matches[index]
                                                       ['profileImage'] ==
@@ -236,9 +237,7 @@ class _MessagesState extends State<Messages> {
                           ),
                         );
                       }
-                      return Container(
-                        height: 100,
-                      );
+                      return Container();
                     }),
                 StreamBuilder(
                     stream: bloc.messageStream,
@@ -266,35 +265,42 @@ class _MessagesState extends State<Messages> {
                         }
                       }
                       return Flexible(
-                          child: ListView.builder(
-                              itemCount: activeChats.length,
-                              itemBuilder: (context, index) {
-                                var mssg = activeChats[index];
-                                Map u = itemDetails(mssg);
-                                if(u.isEmpty) return SizedBox();
-                                return ListTile(
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ChatView(
-                                        token: messageToken,
-                                        // socket: socket,
-                                        chatId: mssg.chatId,
-                                        peerAvatar: u["profileImage"],
-                                        peerId: u['id'].toString(),
-                                        peerName: u['firstName'],
+                          child: activeChats.length > 0
+                              ? ListView.builder(
+                                  itemCount: activeChats.length,
+                                  itemBuilder: (context, index) {
+                                    var mssg = activeChats[index];
+                                    Map u = itemDetails(mssg);
+                                    if (u.isEmpty) return SizedBox();
+                                    return ListTile(
+                                      onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ChatView(
+                                              token: messageToken,
+                                              // socket: socket,
+                                              apiToken: widget.token,
+                                              chatId: mssg.chatId,
+                                              peerAvatar: u["profileImage"],
+                                              peerId: u['id'].toString(),
+                                              peerName: u['firstName'],
+                                            ),
+                                          )),
+                                      leading: CircleAvatar(
+                                        radius: 30.0,
+                                        backgroundImage:
+                                            CachedNetworkImageProvider(
+                                                u["profileImage"]),
                                       ),
-                                    )),
-                                  leading: CircleAvatar(
-                                    radius: 30.0,
-                                    backgroundImage: CachedNetworkImageProvider(u["profileImage"]),
-                                  ),
-                                  title: Text(
-                                    "${((u["firstName"] ?? "") + " " + (u["lastName"] ?? ""))}".trim()
-                                  ),
-                                  subtitle: Text(mssg.content),
-                                );
-                              }));
+                                      title: Text(
+                                          "${((u["firstName"] ?? "") + " " + (u["lastName"] ?? ""))}"
+                                              .trim()),
+                                      subtitle: Text(mssg.content),
+                                    );
+                                  })
+                              : Center(
+                                  child: Text('No Active Chats'),
+                                ));
                     }),
               ],
             ),
@@ -303,17 +309,15 @@ class _MessagesState extends State<Messages> {
   }
 
   void onChatReceive(ChatModel chat) {
-
     mm.Message mssg = mm.Message(
-      content: chat.content,
-      chatId: chat.chatId,
-      id: chat.id,
-      receiverId: chat.receiverId,
-      senderId: chat.senderId,
-      sentAt: chat.sentAt,
-      status: chat.status,
-      type: chat.type
-    );
+        content: chat.content,
+        chatId: chat.chatId,
+        id: chat.id,
+        receiverId: chat.receiverId,
+        senderId: chat.senderId,
+        sentAt: chat.sentAt,
+        status: chat.status,
+        type: chat.type);
 
     int i = activeChats.indexWhere((el) {
       List<String> ci = ["${chat.receiverId}", "${chat.senderId}"];
@@ -332,21 +336,23 @@ class _MessagesState extends State<Messages> {
 
     // if index is found
     setState(() {
-      if(i >= 0) {
+      if (i >= 0) {
         activeChats[i] = mssg;
       } else {
         activeChats.add(mssg);
       }
     });
-    
 
     setState(() {
-      activeChats.sort((b, a) => a.sentAt.millisecondsSinceEpoch.compareTo(b.sentAt.millisecondsSinceEpoch));
+      activeChats.sort((b, a) => a.sentAt.millisecondsSinceEpoch
+          .compareTo(b.sentAt.millisecondsSinceEpoch));
     });
   }
 
   Map itemDetails(mssg) {
-    return (matches ?? []).firstWhere((e) => e['id'] == mssg.receiverId || e['id'] == mssg.senderId, orElse: () => {});
+    return (matches ?? []).firstWhere(
+        (e) => e['id'] == mssg.receiverId || e['id'] == mssg.senderId,
+        orElse: () => {});
   }
 
   dynamic getDetails(message) {

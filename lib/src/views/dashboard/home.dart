@@ -298,9 +298,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                       ),
                                     ),
                                     Opacity(
-                                      opacity: 0.56,
+                                      opacity: .6,
                                       child: Text(
-                                        workStatus,
+                                        '$workStatus',
                                         textAlign: TextAlign.left,
                                         style: TextStyle(
                                           color: AppColors.primaryText,

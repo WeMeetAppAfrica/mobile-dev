@@ -10,12 +10,14 @@ import 'package:wemeet/values/values.dart';
 
 class ShareSongs extends StatefulWidget {
   final token;
+  final apiToken;
   final peerId;
   final peerName;
   final peerAvatar;
   ShareSongs(
       {Key key,
       this.token,
+      this.apiToken,
       @required this.peerId,
       @required this.peerName,
       @required this.peerAvatar})
@@ -42,7 +44,7 @@ class _ShareSongsState extends State<ShareSongs> {
     // TODO: implement initState
     super.initState();
     readLocal();
-    bloc.getMusic(widget.token);
+    bloc.getMusic(widget.apiToken);
   }
 
   readLocal() async {
@@ -54,10 +56,11 @@ class _ShareSongsState extends State<ShareSongs> {
     firstName = prefs.getString('firstName') ?? '';
     profileImage = prefs.getString('profileImage') ?? '';
     print(id);
+    print('id');
     if (id.hashCode <= peerId.hashCode) {
-      groupChatId = '$id-$peerId';
+      groupChatId = '${id}_$peerId';
     } else {
-      groupChatId = '$peerId-$id';
+      groupChatId = '${peerId}_$id';
     }
   }
 
@@ -84,13 +87,15 @@ class _ShareSongsState extends State<ShareSongs> {
             if (snapshot.hasData) {
               switch (snapshot.data.status) {
                 case Status.LOADING:
+                  print('load load');
                   return Center(
-                    child: Container(),
+                    child: CircularProgressIndicator(),
                   );
                   break;
 
                 case Status.DONE:
                   songs = snapshot.data.data.data.content;
+                  print('send media');
                   return StreamBuilder(
                       stream: bloc.messageStream,
                       builder: (context, snapshot) {
@@ -98,7 +103,7 @@ class _ShareSongsState extends State<ShareSongs> {
                           switch (snapshot.data.status) {
                             case Status.LOADING:
                               return Center(
-                                child: Container(),
+                                child: CircularProgressIndicator(),
                               );
                               break;
 
@@ -106,14 +111,12 @@ class _ShareSongsState extends State<ShareSongs> {
                               print('done oo');
                               print(groupChatId);
                               bloc.messageSink.add(ApiResponse.idle('message'));
-                              
 
                               break;
                             default:
                           }
                         }
                         return Container(
-                          height: 300,
                           child: ListView.builder(
                               scrollDirection: Axis.vertical,
                               itemCount: songs.length,
