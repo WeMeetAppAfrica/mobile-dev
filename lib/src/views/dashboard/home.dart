@@ -32,6 +32,10 @@ import 'package:wemeet/src/views/dashboard/profile.dart';
 import 'package:wemeet/src/views/dashboard/swipe.dart';
 import 'package:wemeet/values/values.dart';
 
+// ### my code
+import 'package:wemeet/providers/data.dart';
+import 'package:wemeet/models/user.dart';
+
 enum PlayerState { stopped, playing, paused }
 enum PlayingRouteState { speakers, earpiece }
 
@@ -172,11 +176,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   @override
   void initState() {
-    // TODO: implement initState
     _getUser();
     bloc.getMusic(widget.token);
     _getSwipeSuggestions();
     super.initState();
+
+    DataProvider()..setToken(widget.token);
 
     title = 'Meet Someone';
     leading = IconButton(
@@ -211,6 +216,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       lastName = prefs.getString('lastName') ?? '';
       profileImage = prefs.getString('profileImage') ?? '';
     });
+
+    DataProvider().setUser(UserModel(
+      id: int.parse(id),
+      firstName: firstName,
+      lastName: lastName,
+      profileImage: profileImage,
+    ));
+
     FirebaseCrashlytics.instance.setUserIdentifier(id);
 
     print('object' + id);
