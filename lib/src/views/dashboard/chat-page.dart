@@ -7,10 +7,13 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/chat/Global.dart';
 import 'package:wemeet/src/models/MessageModel.dart';
 import 'package:wemeet/src/resources/api_response.dart';
+import 'package:wemeet/src/views/dashboard/player_widget.dart';
+import 'package:wemeet/src/views/dashboard/share-songs.dart';
 import 'package:wemeet/values/values.dart';
 
 import 'package:wemeet/src/views/dashboard/share-songs.dart';
@@ -508,9 +511,10 @@ class _ChatViewState extends State<ChatView> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => ShareSongs(
+                        apiToken: widget.apiToken,
                         peerName: widget.peerName,
                         peerAvatar: widget.peerAvatar,
-                        token: widget.token,
+                        token: DataProvider().messageToken,
                         peerId: widget.peerId,
                       ),
                     ));
@@ -649,18 +653,34 @@ class _ChatViewState extends State<ChatView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Container(
-              child: Text(
-                message.content,
-                style: TextStyle(color: AppColors.primaryText),
-              ),
-              padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-              width: 200.0,
-              decoration: BoxDecoration(
-                  color: Color.fromRGBO(247, 247, 247, 1.0),
-                  borderRadius: BorderRadius.circular(8.0)),
-              margin: EdgeInsets.only(bottom: 5.0, right: 10.0, top: 5),
-            ),
+            message.type == 'TEXT'
+                ? Container(
+                    child: Text(
+                      message.content,
+                      style: TextStyle(color: AppColors.primaryText),
+                    ),
+                    padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+                    width: 200.0,
+                    decoration: BoxDecoration(
+                        color: Color.fromRGBO(247, 247, 247, 1.0),
+                        borderRadius: BorderRadius.circular(8.0)),
+                    margin: EdgeInsets.only(bottom: 5.0, right: 10.0, top: 5),
+                  )
+                : message.type == "MEDIA"
+                    ? Container(
+                        padding: EdgeInsets.only(right: 20),
+                        decoration: BoxDecoration(
+                            color: AppColors.secondaryElement,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(20))),
+                        height: 135,
+                        width: MediaQuery.of(context).size.width * 0.75,
+                        child: PlayerWidget(
+                          url: 'https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3',
+                        ),
+                        margin: EdgeInsets.only(left: 10.0, top: 5),
+                      )
+                    : Container(),
             Align(
               alignment: Alignment.bottomRight,
               child: Container(
@@ -684,18 +704,35 @@ class _ChatViewState extends State<ChatView> {
       return Container(
         child: Column(
           children: <Widget>[
-            Container(
-              child: Text(
-                message.content,
-                style: TextStyle(color: AppColors.primaryText),
-              ),
-              padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-              width: 200.0,
-              decoration: BoxDecoration(
-                  color: Color.fromRGBO(228, 228, 228, 1.0),
-                  borderRadius: BorderRadius.circular(8.0)),
-              margin: EdgeInsets.only(left: 10.0, top: 5),
-            ),
+            message.type == "TEXT"
+                ? Container(
+                    child: Text(
+                      message.content,
+                      style: TextStyle(color: AppColors.primaryText),
+                    ),
+                    padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+                    width: 200.0,
+                    decoration: BoxDecoration(
+                        color: Color.fromRGBO(228, 228, 228, 1.0),
+                        borderRadius: BorderRadius.circular(8.0)),
+                    margin: EdgeInsets.only(left: 10.0, top: 5),
+                  )
+                : message.type == "MEDIA"
+                    ? Container(
+                        padding: EdgeInsets.only(right: 20),
+                        decoration: BoxDecoration(
+                            color: AppColors.secondaryElement,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(20))),
+                        height: 135,
+                        width: MediaQuery.of(context).size.width * 0.75,
+                        child: PlayerWidget(
+                          url: message.content,
+                          artwork: message.content,
+                        ),
+                        margin: EdgeInsets.only(left: 10.0, top: 5),
+                      )
+                    : Container(),
 
             // Time
             Container(

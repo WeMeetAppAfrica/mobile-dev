@@ -22,6 +22,7 @@ import 'package:wemeet/src/views/dashboard/advanced.dart';
 import 'package:wemeet/src/views/dashboard/audioplayertask.dart';
 import 'package:wemeet/src/views/dashboard/bgaudio.dart';
 import 'package:wemeet/src/views/dashboard/bgaudioplayer.dart';
+import 'package:wemeet/src/views/dashboard/chat-page.dart';
 import 'package:wemeet/src/views/dashboard/chat-screen.dart';
 import 'package:wemeet/src/views/dashboard/messages.dart';
 import 'package:wemeet/src/views/dashboard/music.dart';
@@ -96,6 +97,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   String locationFilter = 'true';
   int flag = 0;
   int swipesLeft = 0;
+  String messageToken;
   bool disableSwipe = false;
   List<Widget> actions;
   Widget leading;
@@ -216,6 +218,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       lastName = prefs.getString('lastName') ?? '';
       profileImage = prefs.getString('profileImage') ?? '';
     });
+    bloc.loginMessages({"userId": id}, widget.token);
 
     DataProvider().setUser(UserModel(
       id: int.parse(id),
@@ -236,6 +239,30 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       onWillPop: () async => false,
       child: Stack(
         children: [
+          StreamBuilder(
+            stream: bloc.messageStream,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                switch (snapshot.data.status) {
+                  case Status.LOGINMESSAGES:
+                    bloc.messageSink.add(ApiResponse.idle('message'));
+                    print(snapshot.data.data.data.accessToken);
+                    messageToken = snapshot.data.data.data.accessToken;
+                    DataProvider()
+                        .setMessageToken(snapshot.data.data.data.accessToken);
+                    // setMessageToken(snapshot.data.data.data.accessToken);
+                    break;
+
+                  case Status.ERROR:
+                    bloc.loginMessages({"userId": id}, widget.token);
+                    // Fluttertoast.showToast(msg: 'An error occured');
+                    break;
+                  default:
+                }
+              }
+              return Container();
+            },
+          ),
           Scaffold(
             key: _scaffoldKey,
             drawer: ClipRRect(
@@ -311,9 +338,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                       ),
                                     ),
                                     Opacity(
-                                      opacity: 0.56,
+                                      opacity: .6,
                                       child: Text(
-                                        workStatus,
+                                        '$workStatus',
                                         textAlign: TextAlign.left,
                                         style: TextStyle(
                                           color: AppColors.primaryText,
@@ -731,13 +758,17 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                                             child:
                                                                 CachedNetworkImage(
                                                                     placeholder:
-                                                                        (context,
-                                                                                url) =>
+                                                                        (context, url) =>
                                                                             Center(
                                                                               child: CircularProgressIndicator(),
                                                                             ),
-                                                                    imageUrl:
-                                                                        '${swipeSug.profiles[index].profileImage}',
+                                                                    imageUrl: swipeSug.profiles[index].profileImage !=
+                                                                            null
+                                                                        ? swipeSug
+                                                                            .profiles[
+                                                                                index]
+                                                                            .profileImage
+                                                                        : 'https://via.placeholder.com/1080?text=No+Photo',
                                                                     fit: BoxFit
                                                                         .cover,
                                                                     errorWidget: (context,
@@ -1609,7 +1640,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                             backgroundColor:
                                                 AppColors.secondaryElement,
                                             backgroundImage: NetworkImage(
-                                              'https://via.placeholder.com/1080',
+                                              swipee['profileImage'] != null
+                                                  ? swipee['profileImage']
+                                                  : 'https://via.placeholder.com/1080?text=No+Photo',
                                             ),
                                           ),
                                         ),
@@ -1626,7 +1659,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                             backgroundColor:
                                                 Color.fromRGBO(142, 198, 63, 1),
                                             backgroundImage: NetworkImage(
-                                              'https://via.placeholder.com/1080',
+                                              profileImage != null
+                                                  ? profileImage
+                                                  : 'https://via.placeholder.com/1080?text=No+Photo',
                                             ),
                                           ),
                                         ),
@@ -1681,16 +1716,18 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                     onPressed: () {
                                       swipeBloc.swipeSink
                                           .add(ApiResponse.idle('message'));
-                                      // Navigator.push(
-                                      //     context,
-                                      //     MaterialPageRoute(
-                                      //       builder: (context) => Chat(
-                                      //         peerAvatar:
-                                      //             swipee['profileImage'],
-                                      //         peerId: swipee['id'].toString(),
-                                      //         peerName: swipee['firstName'],
-                                      //       ),
-                                      //     ));
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ChatView(
+                                              apiToken: widget.token,
+                                              token: messageToken,
+                                              peerAvatar:
+                                                  swipee['profileImage'],
+                                              peerId: swipee['id'].toString(),
+                                              peerName: swipee['firstName'],
+                                            ),
+                                          ));
                                     },
                                     color: AppColors.secondaryElement,
                                   ),

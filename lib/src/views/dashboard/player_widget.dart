@@ -121,14 +121,14 @@ class _PlayerWidgetState extends State<PlayerWidget> {
                     icon: Icon(Icons.stop),
                     color: Colors.white,
                   ),
-                  IconButton(
-                    onPressed: _earpieceOrSpeakersToggle,
-                    iconSize: 30.0,
-                    icon: _isPlayingThroughEarpiece
-                        ? Icon(Icons.volume_up)
-                        : Icon(Icons.hearing),
-                    color: Colors.white,
-                  ),
+                  // IconButton(
+                  //   onPressed: _earpieceOrSpeakersToggle,
+                  //   iconSize: 30.0,
+                  //   icon: _isPlayingThroughEarpiece
+                  //       ? Icon(Icons.volume_up)
+                  //       : Icon(Icons.hearing),
+                  //   color: Colors.white,
+                  // ),
                 ],
               ),
               Column(

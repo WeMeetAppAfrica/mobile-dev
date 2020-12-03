@@ -155,7 +155,7 @@ class _LoginState extends State<Login> {
                   login();
                   token = snapshot.data.data.data.tokenInfo.accessToken;
                   if (snapshot.data.data.data.user.active) {
-                    print('to push $pushToken');
+                    print('to push ${snapshot.data.data.data.user.type}');
                     _setUser(snapshot.data.data.data.user,
                         snapshot.data.data.data.tokenInfo.accessToken);
                     if (snapshot.data.data.data.user.profileImage == null) {

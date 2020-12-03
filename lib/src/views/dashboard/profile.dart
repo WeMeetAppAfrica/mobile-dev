@@ -5,15 +5,18 @@ import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/SwipeAnimation/detail.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/blocs/swipe_bloc.dart';
+import 'package:wemeet/src/chat/Global.dart';
 import 'package:wemeet/src/models/profilemodel.dart';
 import 'package:wemeet/src/models/swipesuggestions.dart' as Pro;
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/src/views/dashboard/blocked.dart';
+import 'package:wemeet/src/views/dashboard/chat-page.dart';
 import 'package:wemeet/src/views/dashboard/chat-screen.dart';
 import 'package:wemeet/src/views/dashboard/chat-page.dart';
 import 'package:wemeet/src/views/dashboard/payment.dart';
@@ -46,12 +49,16 @@ class _ProfilePageState extends State<ProfilePage>
   _ProfilePageState({this.type});
   double _appBarHeight = 500.0;
   AppBarBehavior _appBarBehavior = AppBarBehavior.pinned;
+  String messageToken;
 
   void initState() {
     super.initState();
     _getUser();
+    G.initSocket();
+    initSocket();
     getObject(widget.token, 'profile');
     bloc.getProfile(widget.token);
+    getMessageToken();
     print('details $details');
     swipeBloc.getMatches(widget.token);
   }
@@ -69,6 +76,25 @@ class _ProfilePageState extends State<ProfilePage>
     print('string');
     print(string);
     await prefs.setString(_generateKey(userId, key), string);
+  }
+
+  setMessageToken(val) async {
+    prefs = await SharedPreferences.getInstance();
+    prefs.setString('messageToken', val);
+    setState(() {
+      messageToken = val;
+    });
+  }
+
+  getMessageToken() async {
+    prefs = await SharedPreferences.getInstance();
+    var id = prefs.getString('id');
+    if (prefs.getString('messageToken') != null)
+      setState(() {
+        messageToken = prefs.getString('messageToken');
+      });
+    else
+      bloc.loginMessages({"userId": id}, widget.token);
   }
 
   @override
@@ -122,6 +148,16 @@ class _ProfilePageState extends State<ProfilePage>
     prefs.setString('locationFilter', locationFilter);
   }
 
+  initSocket() async {
+    await G.socketUtils.initSocket();
+
+    G.socketUtils.setConnectListener(onConnect);
+  }
+
+  onConnect(data) {
+    print('Connected $data');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Theme(
@@ -149,7 +185,7 @@ class _ProfilePageState extends State<ProfilePage>
                         case Status.LOADING:
                           if (details == null)
                             return Center(
-                              child: Container(),
+                              child: CircularProgressIndicator(),
                             );
                           break;
                         case Status.GETPROFILE:
@@ -338,7 +374,8 @@ class _ProfilePageState extends State<ProfilePage>
                                                       snapshot.data.status) {
                                                     case Status.LOADING:
                                                       return Center(
-                                                        child: Container(),
+                                                        child:
+                                                            CircularProgressIndicator(),
                                                       );
                                                       break;
                                                     case Status.DONE:
@@ -458,77 +495,59 @@ class _ProfilePageState extends State<ProfilePage>
                                                                 320,
                                                             child: ListView
                                                                 .builder(
-                                                              itemCount:
-                                                                  items.length,
-                                                              itemBuilder:
-                                                                  (context,
-                                                                      index) {
-                                                                return ListTile(
-                                                                  onTap: () {
-                                                                    Navigator.push(
-                                                                        context,
-                                                                        MaterialPageRoute(
-                                                                          builder: (context) =>
-                                                                              DetailPage(
-                                                                            from:
-                                                                                'MATCH',
-                                                                            type:
-                                                                                Pro.Profile.fromJson(items[index]),
-                                                                          ),
-                                                                        ));
-                                                                  },
-                                                                  leading:
-                                                                      CachedNetworkImage(
-                                                                    fit: BoxFit
-                                                                        .cover,
-                                                                    height: 48,
-                                                                    width: 48,
-                                                                    imageUrl:
-                                                                        '${items[index]['profileImage']}',
-                                                                  ),
-                                                                  title: Text(
-                                                                      '${items[index]['firstName']} ${items[index]['lastName']}'),
-                                                                  trailing:
-                                                                      Wrap(
-                                                                    spacing:
-                                                                        12, // space between two icons
-                                                                    children: <
-                                                                        Widget>[
-                                                                      IconButton(
-                                                                        icon: Icon(
-                                                                            FeatherIcons.messageSquare),
-                                                                        onPressed:
-                                                                            () =>
-                                                                                {
+                                                                    itemCount: items
+                                                                        .length,
+                                                                    itemBuilder:
+                                                                        (context,
+                                                                            index) {
+                                                                      return ListTile(
+                                                                        onTap:
+                                                                            () {
                                                                           Navigator.push(
                                                                               context,
                                                                               MaterialPageRoute(
-                                                                                builder: (context) => Chat(
-                                                                                  token: widget.token,
-                                                                                  peerAvatar: items[index]['profileImage'],
-                                                                                  peerId: items[index]['id'].toString(),
-                                                                                  peerName: items[index]['firstName'],
+                                                                                builder: (context) => DetailPage(
+                                                                                  from: 'MATCH',
+                                                                                  type: Pro.Profile.fromJson(items[index]),
                                                                                 ),
-                                                                              ))
+                                                                              ));
                                                                         },
-                                                                      ), // icon-1
-                                                                      IconButton(
-                                                                        icon: Icon(
-                                                                            FeatherIcons.trash),
-                                                                        onPressed:
-                                                                            () =>
-                                                                                {
-                                                                          bloc.block(
-                                                                              items[index]['id'].toString(),
-                                                                              widget.token),
-                                                                        },
-                                                                      ), // icon-2
-                                                                    ],
-                                                                  ),
-                                                                );
-                                                              },
-                                                            ),
-                                                          )
+                                                                        leading:
+                                                                            CachedNetworkImage(
+                                                                          fit: BoxFit
+                                                                              .cover,
+                                                                          height:
+                                                                              48,
+                                                                          width:
+                                                                              48,
+                                                                          imageUrl:
+                                                                              '${items[index]['profileImage']}',
+                                                                        ),
+                                                                        title: Text(
+                                                                            '${items[index]['firstName']} ${items[index]['lastName']}'),
+                                                                        trailing: Wrap(
+                                                                            spacing:
+                                                                                12, // space between two icons
+                                                                            children: <Widget>[
+                                                                              IconButton(
+                                                                                icon: Icon(FeatherIcons.messageSquare),
+                                                                                onPressed: () => {
+                                                                                  Navigator.push(
+                                                                                      context,
+                                                                                      MaterialPageRoute(
+                                                                                        builder: (context) => ChatView(
+                                                                                          apiToken: widget.token,
+                                                                                          token: DataProvider().messageToken,
+                                                                                          peerAvatar: items[index]['profileImage'],
+                                                                                          peerId: items[index]['id'].toString(),
+                                                                                          peerName: items[index]['firstName'],
+                                                                                        ),
+                                                                                      ))
+                                                                                },
+                                                                              )
+                                                                            ]),
+                                                                      );
+                                                                    }))
                                                         : Container(
                                                             height: 200,
                                                             child: Center(
@@ -875,7 +894,7 @@ class _ProfilePageState extends State<ProfilePage>
                         switch (snapshot.data.status) {
                           case Status.LOADING:
                             return Center(
-                              child: Container(),
+                              child: CircularProgressIndicator(),
                             );
                             break;
                           case Status.SELFDELETE:

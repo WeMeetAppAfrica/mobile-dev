@@ -21,8 +21,9 @@ import 'package:wemeet/values/values.dart';
 
 class Picture extends StatefulWidget {
   final kyc;
+  final workStatus;
   final token;
-  Picture({Key key, this.kyc, this.token}) : super(key: key);
+  Picture({Key key, this.kyc, this.workStatus, this.token}) : super(key: key);
 
   @override
   _PictureState createState() => _PictureState();
@@ -101,6 +102,7 @@ class _PictureState extends State<Picture> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('passKYC', true);
     prefs.setString('profileImage', profileImage);
+    prefs.setString('workStatus', widget.workStatus);
   }
 
   @override

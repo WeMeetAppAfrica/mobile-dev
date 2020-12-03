@@ -287,6 +287,7 @@ class Bloc {
     musicSink.add(ApiResponse.loading('Loading...'));
     try {
       MusicModel user = await _userRepository.getMusicList(token);
+      print('user');
       print(user);
       musicSink.add(ApiResponse.done(user));
     } catch (e) {

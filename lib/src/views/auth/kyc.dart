@@ -56,7 +56,7 @@ class _KYCState extends State<KYC> {
 
   _setUser(user, token) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('id', user.id);
+    prefs.setString('id', user.id.toString());
     prefs.setString('firstName', user.firstName);
     prefs.setString('lastName', user.lastName);
   }
@@ -182,6 +182,7 @@ class _KYCState extends State<KYC> {
                                 MaterialPageRoute(
                                   builder: (context) => Picture(
                                     token: token,
+                                    workStatus: selectedEmploy
                                   ),
                                 ),
                               );
