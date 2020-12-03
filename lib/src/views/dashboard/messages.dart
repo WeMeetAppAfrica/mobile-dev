@@ -507,6 +507,7 @@ class _MessagesState extends State<Messages> {
   }
 
   Map itemDetails(mssg) {
+    socketService.join(mssg.chatId);
     return (matches ?? []).firstWhere(
         (e) => e['id'] == mssg.receiverId || e['id'] == mssg.senderId,
         orElse: () => {});
