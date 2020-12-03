@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
+import 'package:wemeet/src/views/auth/picture.dart';
 import 'package:wemeet/values/values.dart';
 
 class ShareSongs extends StatefulWidget {
@@ -44,6 +45,8 @@ class _ShareSongsState extends State<ShareSongs> {
     super.initState();
     readLocal();
     bloc.getMusic(widget.apiToken);
+    print('widget.apiToken');
+    print(widget.apiToken);
   }
 
   readLocal() async {
@@ -110,7 +113,9 @@ class _ShareSongsState extends State<ShareSongs> {
                               print('done oo');
                               print(groupChatId);
                               bloc.messageSink.add(ApiResponse.idle('message'));
-
+                              myCallback(() {
+                                Navigator.pop(context);
+                              });
                               break;
                             default:
                           }

@@ -5,6 +5,7 @@ import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/SwipeAnimation/detail.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/blocs/swipe_bloc.dart';
@@ -184,7 +185,7 @@ class _ProfilePageState extends State<ProfilePage>
                         case Status.LOADING:
                           if (details == null)
                             return Center(
-                              child: Container(),
+                              child: CircularProgressIndicator(),
                             );
                           break;
                         case Status.GETPROFILE:
@@ -373,7 +374,8 @@ class _ProfilePageState extends State<ProfilePage>
                                                       snapshot.data.status) {
                                                     case Status.LOADING:
                                                       return Center(
-                                                        child: Container(),
+                                                        child:
+                                                            CircularProgressIndicator(),
                                                       );
                                                       break;
                                                     case Status.DONE:
@@ -533,8 +535,9 @@ class _ProfilePageState extends State<ProfilePage>
                                                                                   Navigator.push(
                                                                                       context,
                                                                                       MaterialPageRoute(
-                                                                                        builder: (context) => Chat(
-                                                                                          token: widget.token,
+                                                                                        builder: (context) => ChatView(
+                                                                                          apiToken: widget.token,
+                                                                                          token: DataProvider().messageToken,
                                                                                           peerAvatar: items[index]['profileImage'],
                                                                                           peerId: items[index]['id'].toString(),
                                                                                           peerName: items[index]['firstName'],
@@ -891,7 +894,7 @@ class _ProfilePageState extends State<ProfilePage>
                         switch (snapshot.data.status) {
                           case Status.LOADING:
                             return Center(
-                              child: Container(),
+                              child: CircularProgressIndicator(),
                             );
                             break;
                           case Status.SELFDELETE:

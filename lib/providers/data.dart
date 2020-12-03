@@ -21,6 +21,15 @@ class DataProvider {
     print("### setting token: $t");
   }
 
+  String _messageToken;
+  String get messageToken => _messageToken;
+
+  void setMessageToken(String t){
+    print(t);
+    _messageToken = t;
+    print("### setting message token: $t");
+  }
+
   // User
   UserModel _user;
   UserModel get user => _user;

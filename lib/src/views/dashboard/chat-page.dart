@@ -7,6 +7,7 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/chat/Global.dart';
 import 'package:wemeet/src/models/MessageModel.dart';
@@ -510,9 +511,10 @@ class _ChatViewState extends State<ChatView> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => ShareSongs(
+                        apiToken: widget.apiToken,
                         peerName: widget.peerName,
                         peerAvatar: widget.peerAvatar,
-                        token: widget.token,
+                        token: DataProvider().messageToken,
                         peerId: widget.peerId,
                       ),
                     ));
