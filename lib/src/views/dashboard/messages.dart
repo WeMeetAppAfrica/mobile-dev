@@ -360,13 +360,13 @@ class _MessagesState extends State<Messages> {
                                           "${((u["firstName"] ?? "") + " " + (u["lastName"] ?? ""))}"
                                               .trim()),
                                       subtitle: Text(
-                                        (mssg.type == "AUDIO")
+                                        (mssg.type == "MEDIA")
                                             ? "audio..."
                                             : mssg.content,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                            fontStyle: (mssg.type == "AUDIO")
+                                            fontStyle: (mssg.type == "MEDIA")
                                                 ? FontStyle.italic
                                                 : FontStyle.normal),
                                       ),
