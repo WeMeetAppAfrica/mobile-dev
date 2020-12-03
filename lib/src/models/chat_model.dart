@@ -33,4 +33,8 @@ class ChatModel {
       chatId: data["chat_id"] ?? ""
     );
   }
+
+  int get timestamp {
+      return sentAt.microsecondsSinceEpoch;
+    }
 }
