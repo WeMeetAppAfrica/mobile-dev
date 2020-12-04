@@ -212,6 +212,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   _getUser() async {
     prefs = await SharedPreferences.getInstance();
+    
     setState(() {
       id = prefs.getString('id') ?? '';
       firstName = prefs.getString('firstName') ?? '';
@@ -235,9 +236,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     print('object' + id);
   }
 
+  Widget buildBody() {
+
+  }
+
   @override
   Widget build(BuildContext context) {
     CardController controller; //Use this to trigger swap.
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Stack(

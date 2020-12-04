@@ -97,7 +97,6 @@ class UserModel {
       "type": type,
       "minAge": minAge,
       "maxAge": maxAge
-
     });
     return entry;
   }

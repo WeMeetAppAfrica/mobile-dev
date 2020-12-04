@@ -19,8 +19,11 @@ import 'package:wemeet/src/views/dashboard/home.dart';
 
 import 'package:wemeet/values/values.dart';
 
+import 'package:wemeet/models/app.dart';
+
 class Login extends StatefulWidget {
-  Login({Key key}) : super(key: key);
+  final AppModel model;
+  Login({Key key, this.model}) : super(key: key);
 
   @override
   _LoginState createState() => _LoginState();
@@ -39,11 +42,15 @@ class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
   LatLng _center;
   Position currentLocation;
+
+  AppModel model;
+
   @override
   void initState() {
     super.initState();
+
+    model = widget.model;
     // initPlatformState();
-    print('asd');
     _getCurrentLocation();
     _getDevice();
   }
@@ -112,6 +119,12 @@ class _LoginState extends State<Login> {
   }
 
   _setUser(user, token) async {
+
+    // set model user data
+    model.setUserMap(user.jsonData);
+    model.setToken(token);
+
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('accessToken', token);
     prefs.setString('id', user.id.toString());

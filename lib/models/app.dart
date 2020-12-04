@@ -23,6 +23,9 @@ class _MainModel extends Model {
   // API Token
   String _token = "";
 
+  // First launch
+  String _firstLaunch = "yes";
+
   // User model
   UserModel _user;
 

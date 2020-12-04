@@ -14,7 +14,9 @@ import 'package:wemeet/src/views/dashboard/home.dart';
 import 'package:wemeet/src/views/onboarding/screen1.dart';
 import 'package:wemeet/src/views/onboarding/screen2.dart';
 import 'package:wemeet/src/views/onboarding/screen3.dart';
+
 import 'package:wemeet/pages/home.dart';
+import 'package:wemeet/pages/start.dart';
 
 import 'package:wemeet/models/app.dart';
 
@@ -25,6 +27,16 @@ class MyApp extends StatelessWidget {
   final AppModel model;
 
   const MyApp({Key key, this.model}) : super(key: key); 
+
+  Map<String, WidgetBuilder> _buildRoutes() {
+    final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
+      "/": (context) => StartPage(model: model),
+      "/home": (context) => HomePage(model: model,),
+      "/login": (context) => Login(model: model,),
+    };
+
+    return routes;
+  }
 
   // This widget is the root of your application.
   @override
@@ -45,7 +57,8 @@ class MyApp extends StatelessWidget {
             elevation: 0.0
           )
         ),
-        home: MyHomePage(title: 'WeMeet - Swipe'),
+        // home: MyHomePage(title: 'WeMeet - Swipe'),
+        routes: _buildRoutes(),
       ),
     );
   }
@@ -211,8 +224,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: token != null
           ? passKYC
-              // ? HomePage(token: token) 
-              ? Home(token: token)
+              ? HomePage(token: token) 
+              // ? Home(token: token)
               : KYC()
           : passWalkthrough
               ? Login()

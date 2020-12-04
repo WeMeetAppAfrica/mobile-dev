@@ -101,6 +101,7 @@ class User {
         this.suspended,
         this.type,
         this.name,
+        this.jsonData
     });
 
     int id;
@@ -119,6 +120,8 @@ class User {
     String type;
     String name;
 
+    Map jsonData = {};
+
     factory User.fromJson(Map<String, dynamic> json) => User(
         id: json["id"] == null ? null : json["id"],
         firstName: json["firstName"] == null ? null : json["firstName"],
@@ -135,6 +138,7 @@ class User {
         suspended: json["suspended"] == null ? null : json["suspended"],
         type: json["type"] == null ? null : json["type"],
         name: json["name"] == null ? null : json["name"],
+        jsonData: json
     );
 
     Map<String, dynamic> toJson() => {
