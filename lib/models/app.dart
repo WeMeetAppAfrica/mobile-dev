@@ -51,13 +51,16 @@ class _MainModel extends Model {
     var chatList = _localStorage["@chat_list"] ?? "{}";
     _chatList = jsonDecode(chatList);
 
+    // get and set firsttime
+    _firstLaunch = _localStorage["@first_launch"] ?? "yes";
+
     // Notify all listeners
     notifyListeners();
 
   }
 
   void _internalSaveData() async{
-    await _prefs.setString("storage", jsonEncode(_localStorage));
+    await _prefs.setString("store", jsonEncode(_localStorage));
   }
 
 }
@@ -66,6 +69,7 @@ mixin _UserData on _MainModel {
 
   UserModel get user => _user;
   String get token => _token;
+  String get firstLaunch => _firstLaunch;
 
   // Set the user model
   void setUserModel(UserModel val){
@@ -94,10 +98,19 @@ mixin _UserData on _MainModel {
     _internalSaveData();
   }
 
+  void setFirstLaunch(String val) {
+    _firstLaunch = val;
+    _localStorage['@first_launch'] = val;
+    notifyListeners();
+    _internalSaveData();
+  }
+
   void logOut() async {
     _token = null;
     _user = null;
-    _localStorage = {};
+    _localStorage = {
+      "@first_launch": _firstLaunch
+    };
     _dataProvider.setToken(null);
     _dataProvider.setUser(_user);
     notifyListeners();

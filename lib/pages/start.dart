@@ -38,18 +38,40 @@ class _StartPageState extends State<StartPage> {
 
   void created() async {
 
+    setState(() {
+      isLoading = true;
+    });
+
     // if there is no token go to login
     if(model.token == null || model.token.isEmpty) {
+
+      // if first launch got to walkthrough
+      if(model.firstLaunch == "yes") {
+        model.setFirstLaunch("no");
+        routeTo("/on-boarding");
+        return;
+      } 
+
       routeTo("/login");
+      return;
+      
+    }
+
+    // if user is not verified
+    if(user.profileImage == null) {
+      routeTo("kyc");
       return;
     }
 
+    routeTo("/home");
+    return;
+
   }
 
-  void routeTo(String route, [bool delay = false]) async {
+  void routeTo(String route, [bool delay = true]) async {
 
     if(delay) {
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(Duration(seconds: 2));
     }
 
     Navigator.of(context).pushNamedAndRemoveUntil(route, (route) => false);
@@ -74,8 +96,9 @@ class _StartPageState extends State<StartPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-
+        brightness: Brightness.dark,
       ),
+      backgroundColor: Colors.white,
       body: buildBody(),
     );
   }

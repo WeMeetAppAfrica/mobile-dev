@@ -17,6 +17,7 @@ import 'package:wemeet/src/views/onboarding/screen3.dart';
 
 import 'package:wemeet/pages/home.dart';
 import 'package:wemeet/pages/start.dart';
+import 'package:wemeet/pages/onboarding.dart';
 
 import 'package:wemeet/models/app.dart';
 
@@ -31,8 +32,10 @@ class MyApp extends StatelessWidget {
   Map<String, WidgetBuilder> _buildRoutes() {
     final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
       "/": (context) => StartPage(model: model),
+      "/on-boarding": (context) => OnBoardingPage(),
       "/home": (context) => HomePage(model: model,),
       "/login": (context) => Login(model: model,),
+      "/kyc": (context) => KYC(),
     };
 
     return routes;

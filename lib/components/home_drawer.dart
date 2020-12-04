@@ -119,7 +119,6 @@ class HomeDrawer extends StatelessWidget {
               width: 64, 
               height: 64.0,
               decoration: BoxDecoration(
-                color: Colors.red,
                 borderRadius: BorderRadius.circular(10.0),
                 image: DecorationImage(
                   image: (user.profileImage == null) ? Image.asset("assets/images/profile_avatar.png") : CachedNetworkImageProvider(user.profileImage),

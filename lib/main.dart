@@ -24,16 +24,16 @@ void main() async {
   // initialize AppModel
   AppModel model = AppModel();
 
-  var data = prefs.getString("app");
+  var data = prefs.getString("store");
   if(data != null){
     var t = jsonDecode(data);
     model.init(t, prefs);
   } else {
-    await prefs.setString("app", "{}");
+    await prefs.setString("store", "{}");
     model.init({}, prefs);
   }
 
-  SocketService()..init();
+  // SocketService()..init();
 
   runApp(MyApp(model: model));
 }

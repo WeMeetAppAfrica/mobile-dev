@@ -176,15 +176,25 @@ class _LoginState extends State<Login> {
                           msg: 'Please complete your profile');
                     }
                     myCallback(() {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              snapshot.data.data.data.user.profileImage == null
-                                  ? KYC()
-                                  : Home(token: token),
-                        ),
+
+                      if(snapshot.data.data.data.user.profileImage == null) {
+
+                      }
+
+                      Navigator.of(context).pushReplacementNamed(
+                        snapshot.data.data.data.user.profileImage == null ? "/kyc" : "/home"
                       );
+
+
+                      // Navigator.pushReplacement(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) =>
+                      //         snapshot.data.data.data.user.profileImage == null
+                      //             ? KYC()
+                      //             : Home(token: token),
+                      //   ),
+                      // );
                     });
                   } else {
                     bloc.getLoginEmailToken(token);
@@ -362,9 +372,9 @@ class _LoginState extends State<Login> {
                                         final data = {
                                           "deviceId": pushToken,
                                           "email": emailController.text,
-                                          "latitude": _currentPosition.latitude,
+                                          "latitude": _currentPosition?.latitude,
                                           "longitude":
-                                              _currentPosition.longitude,
+                                              _currentPosition?.longitude,
                                           "password": passwordController.text,
                                         };
                                         print('login data');
