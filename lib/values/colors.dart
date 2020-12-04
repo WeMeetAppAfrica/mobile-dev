@@ -19,4 +19,6 @@ class AppColors {
   static const Color primaryText = Color.fromARGB(255, 38, 5, 16);
   static const Color secondaryText = Color.fromARGB(255, 255, 255, 255);
   static const Color accentText = Color.fromARGB(255, 131, 131, 131);
+
+  static const Color sendButton = Color.fromRGBO(141, 198, 63, 1.0);
 }

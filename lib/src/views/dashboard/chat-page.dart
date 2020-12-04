@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
@@ -15,8 +16,6 @@ import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/dashboard/player_widget.dart';
 import 'package:wemeet/src/views/dashboard/share-songs.dart';
 import 'package:wemeet/values/values.dart';
-
-import 'package:wemeet/src/views/dashboard/share-songs.dart';
 
 import 'package:wemeet/services/socket.dart';
 import 'package:wemeet/src/models/chat_model.dart';
@@ -45,6 +44,7 @@ class ChatView extends StatefulWidget {
 class _ChatViewState extends State<ChatView> {
   SharedPreferences prefs;
   final TextEditingController inputTextController = TextEditingController();
+  FocusNode _inputFocus = FocusNode();
   List messages = [];
   String report = 'ABUSIVE';
   dynamic id;
@@ -616,9 +616,12 @@ class _ChatViewState extends State<ChatView> {
             Expanded(
               child: buildChatList(),
             ),
-            buildInput()
+            // buildInput()
+            bottomBarInput()
           ],
         ),
+        // body: buildChatList(),
+        // bottomNavigationBar: bottomBarInput(),
       ),
     );
   }
@@ -629,18 +632,18 @@ class _ChatViewState extends State<ChatView> {
     }
 
     return ListView.builder(
-        itemCount: chats.length,
-        reverse: true,
-        controller: _indexScrollController,
-        itemBuilder: (context, index) => AutoScrollTag(
-              key: ValueKey(index),
-              controller: _indexScrollController,
-              index: index,
-              child: buildItem(chats[index], index),
-              // highlightColor: Colors.black.withOpacity(0.1),
-            )
-        // buildItem(messages[index]),
-        );
+      itemCount: chats.length,
+      reverse: true,
+      controller: _indexScrollController,
+      itemBuilder: (context, index) => AutoScrollTag(
+            key: ValueKey(index),
+            controller: _indexScrollController,
+            index: index,
+            child: buildItem(chats[index], index),
+            // highlightColor: Colors.black.withOpacity(0.1),
+          ),
+      padding: EdgeInsets.only(bottom: 20.0),
+    );
   }
 
   Widget buildContent(Message message, bool me, bool showT) {
@@ -866,6 +869,78 @@ class _ChatViewState extends State<ChatView> {
     }
 
     return false;
+  }
+
+  Widget bottomBarInput() {
+    return GestureDetector(
+      onVerticalDragEnd: (details) {
+        if(details.primaryVelocity > 0) {
+          if(_inputFocus.hasFocus) {
+            FocusScope.of(context).requestFocus(FocusNode());
+          }
+        } 
+      },
+      child: Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom + 25.0,
+          top: 15.0,
+          left: 15.0,
+          right: 15.0
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 5,
+              blurRadius: 7,
+              offset: Offset(0, 3), // changes position of shadow
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            Expanded(
+              child: TextField(
+                onSubmitted: (value) {
+                  onSendMessage(inputTextController.text);
+                },
+                focusNode: _inputFocus,
+                controller: inputTextController,
+                keyboardType: TextInputType.multiline,
+                maxLength: 1000,
+                maxLines: null,
+                decoration: InputDecoration(
+                  counterText: "",
+                  hintText: 'Say something nice',
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+            SizedBox(width: 10.0),
+            GestureDetector(
+              onTap: () => onSendMessage(inputTextController.text),
+              child: Container(
+                width: 35.0,
+                height: 35.0,
+                padding: EdgeInsets.fromLTRB(5.0, 0.0, 0.0, 5.0),
+                margin: EdgeInsets.only(bottom: 5.0),
+                decoration: BoxDecoration(
+                  color: AppColors.sendButton,
+                  borderRadius: BorderRadius.circular(4.0)
+                ),
+                child: Transform.rotate(
+                  angle: -(math.pi) / 4,
+                  origin: Offset(0.0, 0.0),
+                  child: Icon(Icons.send, color: Colors.white)
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget buildInput() {
