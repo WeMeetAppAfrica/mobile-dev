@@ -18,10 +18,9 @@ import 'package:wemeet/src/views/onboarding/screen3.dart';
 import 'package:wemeet/models/app.dart';
 
 class MyApp extends StatelessWidget {
-
   final AppModel model;
 
-  const MyApp({Key key, this.model}) : super(key: key); 
+  const MyApp({Key key, this.model}) : super(key: key);
 
   // This widget is the root of your application.
   @override
@@ -106,7 +105,16 @@ class _MyHomePageState extends State<MyHomePage> {
       print('onLaunch: $message');
       return;
     });
-
+    firebaseMessaging.onTokenRefresh.listen((token) async {
+      final prefs = await SharedPreferences.getInstance();
+      final String firebaseTokenPrefKey = 'pushToken';
+      final String currentToken = prefs.getString(firebaseTokenPrefKey);
+      if (currentToken != token) {
+        print('token refresh: ' + token);
+        // add code here to do something with the updated token
+        _setDevice(token);
+      }
+    });
     firebaseMessaging.getToken().then((token) {
       print('tokemn: $token');
 
@@ -158,12 +166,10 @@ class _MyHomePageState extends State<MyHomePage> {
         _error = true;
       });
     }
-
   }
 
   @override
   void initState() {
-
     initializeFlutterFire();
     registerNotification();
     configLocalNotification();
