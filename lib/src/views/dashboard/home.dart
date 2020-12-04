@@ -34,8 +34,10 @@ import 'package:wemeet/src/views/dashboard/swipe.dart';
 import 'package:wemeet/values/values.dart';
 
 // ### my code
+import 'package:wemeet/components/home_drawer.dart';
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/models/user.dart';
+
 
 enum PlayerState { stopped, playing, paused }
 enum PlayingRouteState { speakers, earpiece }
@@ -225,6 +227,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       firstName: firstName,
       lastName: lastName,
       profileImage: profileImage,
+      workStatus: workStatus
     ));
 
     FirebaseCrashlytics.instance.setUserIdentifier(id);
@@ -265,230 +268,231 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           ),
           Scaffold(
             key: _scaffoldKey,
-            drawer: ClipRRect(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(32.0),
-              ),
-              child: Drawer(
-                // Add a ListView to the drawer. This ensures the user can scroll
-                // through the options in the drawer if there isn't enough vertical
-                // space to fit everything.
-                child: Container(
-                  color: Colors.white,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      DrawerHeader(
-                        decoration: BoxDecoration(color: Colors.white),
-                        child: Container(
-                          width: 133,
-                          height: 133,
-                          margin: EdgeInsets.only(left: 16),
-                          child: firstName != null
-                              ? Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    InkWell(
-                                      onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => ProfilePage(
-                                                token: widget.token,
-                                              ),
-                                            ));
-                                      },
-                                      child: Container(
-                                        width: 64,
-                                        height: 64,
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(16),
-                                          child: CachedNetworkImage(
-                                            fit: BoxFit.cover,
-                                            imageUrl: profileImage != null
-                                                ? profileImage
-                                                : 'https://via.placeholder.com/1080?text=No+Photo',
-                                            placeholder: (context, url) => Center(
-                                                child:
-                                                    CircularProgressIndicator()),
-                                            errorWidget:
-                                                (context, url, error) =>
-                                                    Icon(Icons.error),
-                                          ),
-                                        ),
-                                        decoration: new BoxDecoration(
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(16)),
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.only(
-                                          left: 1, top: 14, right: 6),
-                                      child: Text(
-                                        '$firstName $lastName',
-                                        textAlign: TextAlign.left,
-                                        style: TextStyle(
-                                          fontFamily: 'Berkshire Swash',
-                                          color: AppColors.primaryText,
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                    Opacity(
-                                      opacity: .6,
-                                      child: Text(
-                                        '$workStatus',
-                                        textAlign: TextAlign.left,
-                                        style: TextStyle(
-                                          color: AppColors.primaryText,
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : Container(),
-                        ),
-                      ),
-                      ListTile(
-                        title: Row(
-                          children: [
-                            Icon(FeatherIcons.home),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text('Home'),
-                          ],
-                        ),
-                        onTap: () {
-                          // Update the state of the app.
-                          // ...
-                        },
-                      ),
-                      ListTile(
-                        title: Row(
-                          children: [
-                            Icon(FeatherIcons.user),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text('Profile'),
-                          ],
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProfilePage(
-                                  token: widget.token,
-                                ),
-                              ));
-                        },
-                      ),
-                      ListTile(
-                        title: Row(
-                          children: [
-                            Icon(FeatherIcons.music),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text('Playlist'),
-                          ],
-                        ),
-                        onTap: () => {
-                          Navigator.pop(context),
-                          _controller.animateToPage(
-                            2,
-                            duration: Duration(milliseconds: 300),
-                            curve: Curves.linear,
-                          )
-                        },
-                      ),
-                      ListTile(
-                        title: Row(
-                          children: [
-                            Icon(FeatherIcons.creditCard),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text('Subscription'),
-                          ],
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Payment(
-                                  token: widget.token,
-                                ),
-                              ));
-                          // Update the state of the app.
-                          // ...
-                        },
-                      ),
-                      Spacer(),
-                      ListTile(
-                          title: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Icon(FeatherIcons.file),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Text('Privacy Policy'),
-                            ],
-                          ),
-                          onTap: () {
-                            _launchPrivacy();
-                          }),
-                      ListTile(
-                        title: Row(
-                          children: [
-                            Icon(FeatherIcons.file),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text('Terms of Use'),
-                          ],
-                        ),
-                        onTap: () {
-                          _launchTerms();
-                        },
-                      ),
-                      Spacer(),
-                      ListTile(
-                        title: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(FeatherIcons.logOut),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text('Logout'),
-                          ],
-                        ),
-                        onTap: () {
-                          _logout();
-                          Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Login(),
-                              ),
-                              (Route<dynamic> route) => false);
-                          // Update the state of the app.
-                          // ...
-                        },
-                      ),
-                      Spacer(),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            drawer: HomeDrawer(),
+            // drawer: ClipRRect(
+            //   borderRadius: BorderRadius.vertical(
+            //     top: Radius.circular(32.0),
+            //   ),
+            //   child: Drawer(
+            //     // Add a ListView to the drawer. This ensures the user can scroll
+            //     // through the options in the drawer if there isn't enough vertical
+            //     // space to fit everything.
+            //     child: Container(
+            //       color: Colors.white,
+            //       child: Column(
+            //         crossAxisAlignment: CrossAxisAlignment.start,
+            //         children: <Widget>[
+            //           DrawerHeader(
+            //             decoration: BoxDecoration(color: Colors.white),
+            //             child: Container(
+            //               width: 133,
+            //               height: 133,
+            //               margin: EdgeInsets.only(left: 16),
+            //               child: firstName != null
+            //                   ? Column(
+            //                       crossAxisAlignment: CrossAxisAlignment.start,
+            //                       children: [
+            //                         InkWell(
+            //                           onTap: () {
+            //                             Navigator.push(
+            //                                 context,
+            //                                 MaterialPageRoute(
+            //                                   builder: (context) => ProfilePage(
+            //                                     token: widget.token,
+            //                                   ),
+            //                                 ));
+            //                           },
+            //                           child: Container(
+            //                             width: 64,
+            //                             height: 64,
+            //                             child: ClipRRect(
+            //                               borderRadius:
+            //                                   BorderRadius.circular(16),
+            //                               child: CachedNetworkImage(
+            //                                 fit: BoxFit.cover,
+            //                                 imageUrl: profileImage != null
+            //                                     ? profileImage
+            //                                     : 'https://via.placeholder.com/1080?text=No+Photo',
+            //                                 placeholder: (context, url) => Center(
+            //                                     child:
+            //                                         CircularProgressIndicator()),
+            //                                 errorWidget:
+            //                                     (context, url, error) =>
+            //                                         Icon(Icons.error),
+            //                               ),
+            //                             ),
+            //                             decoration: new BoxDecoration(
+            //                               borderRadius: BorderRadius.all(
+            //                                   Radius.circular(16)),
+            //                             ),
+            //                           ),
+            //                         ),
+            //                         Container(
+            //                           margin: EdgeInsets.only(
+            //                               left: 1, top: 14, right: 6),
+            //                           child: Text(
+            //                             '$firstName $lastName',
+            //                             textAlign: TextAlign.left,
+            //                             style: TextStyle(
+            //                               fontFamily: 'Berkshire Swash',
+            //                               color: AppColors.primaryText,
+            //                               fontWeight: FontWeight.w400,
+            //                               fontSize: 18,
+            //                             ),
+            //                           ),
+            //                         ),
+            //                         Opacity(
+            //                           opacity: .6,
+            //                           child: Text(
+            //                             '$workStatus',
+            //                             textAlign: TextAlign.left,
+            //                             style: TextStyle(
+            //                               color: AppColors.primaryText,
+            //                               fontWeight: FontWeight.w400,
+            //                               fontSize: 14,
+            //                             ),
+            //                           ),
+            //                         ),
+            //                       ],
+            //                     )
+            //                   : Container(),
+            //             ),
+            //           ),
+            //           ListTile(
+            //             title: Row(
+            //               children: [
+            //                 Icon(FeatherIcons.home),
+            //                 SizedBox(
+            //                   width: 10,
+            //                 ),
+            //                 Text('Home'),
+            //               ],
+            //             ),
+            //             onTap: () {
+            //               // Update the state of the app.
+            //               // ...
+            //             },
+            //           ),
+            //           ListTile(
+            //             title: Row(
+            //               children: [
+            //                 Icon(FeatherIcons.user),
+            //                 SizedBox(
+            //                   width: 10,
+            //                 ),
+            //                 Text('Profile'),
+            //               ],
+            //             ),
+            //             onTap: () {
+            //               Navigator.push(
+            //                   context,
+            //                   MaterialPageRoute(
+            //                     builder: (context) => ProfilePage(
+            //                       token: widget.token,
+            //                     ),
+            //                   ));
+            //             },
+            //           ),
+            //           ListTile(
+            //             title: Row(
+            //               children: [
+            //                 Icon(FeatherIcons.music),
+            //                 SizedBox(
+            //                   width: 10,
+            //                 ),
+            //                 Text('Playlist'),
+            //               ],
+            //             ),
+            //             onTap: () => {
+            //               Navigator.pop(context),
+            //               _controller.animateToPage(
+            //                 2,
+            //                 duration: Duration(milliseconds: 300),
+            //                 curve: Curves.linear,
+            //               )
+            //             },
+            //           ),
+            //           ListTile(
+            //             title: Row(
+            //               children: [
+            //                 Icon(FeatherIcons.creditCard),
+            //                 SizedBox(
+            //                   width: 10,
+            //                 ),
+            //                 Text('Subscription'),
+            //               ],
+            //             ),
+            //             onTap: () {
+            //               Navigator.push(
+            //                   context,
+            //                   MaterialPageRoute(
+            //                     builder: (context) => Payment(
+            //                       token: widget.token,
+            //                     ),
+            //                   ));
+            //               // Update the state of the app.
+            //               // ...
+            //             },
+            //           ),
+            //           Spacer(),
+            //           ListTile(
+            //               title: Row(
+            //                 crossAxisAlignment: CrossAxisAlignment.center,
+            //                 children: [
+            //                   Icon(FeatherIcons.file),
+            //                   SizedBox(
+            //                     width: 10,
+            //                   ),
+            //                   Text('Privacy Policy'),
+            //                 ],
+            //               ),
+            //               onTap: () {
+            //                 _launchPrivacy();
+            //               }),
+            //           ListTile(
+            //             title: Row(
+            //               children: [
+            //                 Icon(FeatherIcons.file),
+            //                 SizedBox(
+            //                   width: 10,
+            //                 ),
+            //                 Text('Terms of Use'),
+            //               ],
+            //             ),
+            //             onTap: () {
+            //               _launchTerms();
+            //             },
+            //           ),
+            //           Spacer(),
+            //           ListTile(
+            //             title: Row(
+            //               crossAxisAlignment: CrossAxisAlignment.center,
+            //               children: [
+            //                 Icon(FeatherIcons.logOut),
+            //                 SizedBox(
+            //                   width: 10,
+            //                 ),
+            //                 Text('Logout'),
+            //               ],
+            //             ),
+            //             onTap: () {
+            //               _logout();
+            //               Navigator.pushAndRemoveUntil(
+            //                   context,
+            //                   MaterialPageRoute(
+            //                     builder: (context) => Login(),
+            //                   ),
+            //                   (Route<dynamic> route) => false);
+            //               // Update the state of the app.
+            //               // ...
+            //             },
+            //           ),
+            //           Spacer(),
+            //         ],
+            //       ),
+            //     ),
+            //   ),
+            // ),
             appBar: AppBar(
               iconTheme: new IconThemeData(color: AppColors.primaryText),
               backgroundColor: Colors.white,

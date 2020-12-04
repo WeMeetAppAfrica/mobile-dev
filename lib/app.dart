@@ -211,8 +211,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: token != null
           ? passKYC
-              ? HomePage(token: token) 
-              // ? Home(token: token)
+              // ? HomePage(token: token) 
+              ? Home(token: token)
               : KYC()
           : passWalkthrough
               ? Login()

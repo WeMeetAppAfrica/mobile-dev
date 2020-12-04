@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:scoped_model/scoped_model.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:wemeet/models/user.dart';
+import 'package:wemeet/models/app.dart';
 
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
@@ -20,6 +22,7 @@ class HomeDrawer extends StatelessWidget {
 
   final UserModel user = DataProvider().user;
   final String token = DataProvider().token;
+  static AppModel model;
 
   static BuildContext ctx;
 
@@ -55,7 +58,9 @@ class HomeDrawer extends StatelessWidget {
       MaterialPageRoute(
         builder: (context) => Login(),
       ),
-      (Route<dynamic> route) => false);
+      (Route<dynamic> route) => false).then((value){
+        model.logOut();
+      });
   }
 
 
@@ -92,29 +97,6 @@ class HomeDrawer extends StatelessWidget {
         ],
       ),
     );
-
-    return ListTile(
-      title: Container(
-        alignment: Alignment.centerLeft,
-        child: Container(
-          padding: EdgeInsets.symmetric(),
-          decoration: BoxDecoration(
-            color: AppColors.secondaryElement
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(icon),
-              SizedBox(
-                width: 15.0,
-              ),
-              Text(title),
-            ],
-          ),
-        ),
-      ),
-      onTap: callback,
-    );
   }
 
   Widget buildUser() {
@@ -127,7 +109,8 @@ class HomeDrawer extends StatelessWidget {
         // mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InkWell(
+          SizedBox(height: 10.0),
+          GestureDetector(
             onTap: () {
               Navigator.push(
                 ctx,
@@ -137,23 +120,20 @@ class HomeDrawer extends StatelessWidget {
                   ),
                 ));
             },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16.0),
-              child: Container(
-                margin: EdgeInsets.only(bottom: 10.0, top: 5),
-                child: CachedNetworkImage(
-                  imageUrl: user.profileImage,
-                  width: 64.0,
-                  height: 64.0,
-                  placeholder: (context, _){
-                    return Image.asset("assets/images/profile_avatar.png", fit: BoxFit.cover);
-                  },
-                  fit: BoxFit.cover,
-                ),
+            child: Container(
+              width: 64, 
+              height: 64.0,
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(10.0),
+                image: DecorationImage(
+                  image: (user.profileImage == null) ? Image.asset("assets/images/profile_avatar.png") : CachedNetworkImageProvider(user.profileImage),
+                  fit: BoxFit.cover
+                )
               ),
             ),
           ),
-          SizedBox(height: 5.0),
+          SizedBox(height: 10.0),
           Text(
             user.fullName,
             textAlign: TextAlign.left,
@@ -180,31 +160,37 @@ class HomeDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ctx = context;
-    return ClipRRect(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(32.0),
-      ),
-      child: Container(
-        color: Colors.white,
-        width: 250.0,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            user != null ? buildUser() : null,
-            SizedBox(height: 20.0),
-            buildItem("Home", FeatherIcons.home, (){Navigator.pop(context);}),
-            buildItem("Profile", FeatherIcons.user, () => gotoPage(ProfilePage(token: token,))),
-            buildItem("Playlist", FeatherIcons.music, () => gotoPage(Playlist(token: token,))),
-            buildItem("Subscription", FeatherIcons.creditCard, () => gotoPage(Payment(token: token,))),
-            Spacer(),
-            buildItem("Privacy Policy", FeatherIcons.file, () => gotoUrl("https://wemeet.africa/privacypolicy.pdf")),
-            buildItem("Terms of Use", FeatherIcons.file, () => gotoUrl("https://wemeet.africa/termsandconditions.pdf")),
-            Spacer(),
-            buildItem("Logout", FeatherIcons.logOut, logOut),
-            Spacer(),
-          ].where((e) => e != null).toList()
-        ),
-      ),
+    return ScopedModelDescendant<AppModel>(
+      builder: (context, child, m) {
+        model = m;
+        return ClipRRect(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(32.0),
+          ),
+          child: Container(
+            color: Colors.white,
+            width: 300.0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                user != null ? buildUser() : null,
+                SizedBox(height: 20.0),
+                buildItem("Home", FeatherIcons.home, (){Navigator.pop(context);}),
+                buildItem("Profile", FeatherIcons.user, () => gotoPage(ProfilePage(token: token,))),
+                buildItem("Playlist", FeatherIcons.music, () => gotoPage(Playlist(token: token,))),
+                buildItem("Subscription", FeatherIcons.creditCard, () => gotoPage(Payment(token: token,))),
+                Spacer(),
+                buildItem("Privacy Policy", FeatherIcons.file, () => gotoUrl("https://wemeet.africa/privacypolicy.pdf")),
+                buildItem("Terms of Use", FeatherIcons.file, () => gotoUrl("https://wemeet.africa/termsandconditions.pdf")),
+                Spacer(),
+                buildItem("Logout", FeatherIcons.logOut, logOut),
+                Spacer(),
+              ].where((e) => e != null).toList()
+            ),
+          ),
+        );
+      }
     );
+    
   }
 }

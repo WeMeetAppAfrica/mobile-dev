@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -14,6 +15,8 @@ import 'package:wemeet/src/views/dashboard/audioplayertask.dart';
 import 'package:wemeet/src/views/dashboard/bgaudioplayer.dart';
 import 'package:wemeet/src/views/dashboard/musicplayer.dart';
 import 'package:wemeet/values/values.dart';
+
+import 'package:wemeet/src/models/musicmodel.dart' as mm;
 
 enum PlayerState { stopped, playing, paused }
 enum PlayingRouteState { speakers, earpiece }
@@ -32,10 +35,14 @@ class Playlist extends StatefulWidget {
 }
 
 class _PlaylistState extends State<Playlist> {
+
   List featured = [];
   List songs = [];
   bool allowSend = true;
   TextEditingController descController = TextEditingController();
+
+  List items = [];
+
   @override
   void initState() {
     super.initState();
@@ -47,53 +54,265 @@ class _PlaylistState extends State<Playlist> {
     super.dispose();
   }
 
-  Widget buildBody() {
+  Widget buildTop() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        children: [
+          Text(
+            "Today's Playlist",
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontFamily: 'Berkshire Swash',
+              color: AppColors.primaryText,
+              fontWeight: FontWeight.w400,
+              fontSize: 32,
+            ),
+          ),
+          Spacer(),
+          IconButton(
+            onPressed: () => {_showDialog()},
+            color: AppColors.secondaryElement,
+            icon: Icon(FeatherIcons.plus),
+          )
+        ],
+      ),
+    );
+  }
 
+  Widget buildSongRequests() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            "Music Requests",
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontWeight: FontWeight.w400,
+              fontSize: 17,
+            ),
+          ),
+        ),
+        SizedBox(height: 10.0),
+        SizedBox(
+          height: 300.0,
+          child: ListView.builder(
+            itemBuilder: (context, index) {
+              mm.Content item = items[index];
+              return Card(
+                clipBehavior: Clip.antiAliasWithSaveLayer,
+                shape: RoundedRectangleBorder(
+                  borderRadius: Radii.k8pxRadius,
+                ),
+                margin: EdgeInsets.only(right: 16.0),
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: CachedNetworkImage(
+                        imageUrl: item.artworkUrl,
+                        placeholder: (context, _) => Container(
+                          color: Colors.black12
+                        )
+                      ),
+                    ),
+                    Container(
+                      height: 300,
+                      width: 220,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        gradient: LinearGradient(
+                          begin: FractionalOffset.topCenter,
+                          end: FractionalOffset.bottomCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.2),
+                            Colors.black.withOpacity(0.9),
+                          ],
+                        )
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 18.0,
+                      left: 0.0, 
+                      right: 0.0,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.title,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: AppColors.secondaryText,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  Text(
+                                    item.artist,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: AppColors.secondaryText
+                                          .withOpacity(0.8),
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ]
+                              )
+                            )
+                          ]
+                        )
+                      )
+                    )
+                  ]
+                )
+              );
+            },
+            itemCount: items.length,
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: 15.0),
+          )
+        ),
+      ]
+    );
+  } 
+
+  Widget buildPlaylist() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            "Daily Playlist",
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontWeight: FontWeight.w400,
+              fontSize: 17,
+            ),
+          ),
+        ),
+        SizedBox(height: 10.0),
+        Column(
+          children: items.map((item) {
+            return ListTile(
+              leading: Icon(
+                FeatherIcons.music,
+                color: AppColors.secondaryElement,
+              ),
+              trailing: ClipOval(
+                child: Material(
+                  color: AppColors.secondaryElement, // button color
+                  child: InkWell(
+                    child: SizedBox(
+                      width: 56,
+                      height: 56,
+                      child: SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: Icon(
+                            FeatherIcons.play,
+                            color: Colors.white,
+                          )),
+                    ),
+                    onTap: () {
+                      // AudioService.stop();
+                      // _changeQueue(songs[index].songUrl);
+                      // List orderSong = [];
+                      // for (int i = 0; i < songs.length; i++) {
+                      //   if (index <= i) {
+                      //     orderSong.add(songs[i]);
+                      //   }
+                      // }
+                      // bloc.musicSink
+                      //     .add(ApiResponse.play(orderSong));
+                      // setState(() {
+                      //   _currentPlay = index;
+                      //   _queue = songs;
+                      //   url = _queue[index].songUrl;
+                      //   songs.forEach((element) {
+                      //     element.isPlaying = false;
+                      //   });
+                      //   songs[index].isPlaying = true;
+                      // });
+                      // _play();
+                    },
+                  ),
+                ),
+              ),
+              title: Text(item.title),
+              subtitle: Text(item.artist),
+            );
+          }).toList()
+        ),
+      ]
+    );
+  } 
+
+  Widget songsStream() {
+    return StreamBuilder(
+      stream: bloc.musicStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          switch (snapshot.data.status) {
+            case Status.LOADING:
+              return Center(
+                child: Container(),
+              );
+              break;
+            case Status.DONE:
+              items = snapshot.data.data.data.content;
+              break;
+            case Status.ERROR:
+            return SizedBox();
+              break;
+            default:
+          }
+        }
+        return Column(
+          children: [
+            buildSongRequests(),
+            SizedBox(height: 25.0),
+            buildPlaylist()
+          ]
+        );
+      }
+    );
+  }
+
+  Widget buildBody() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 16.0),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            buildTop(),
+            SizedBox(height: 20.0),
+            songsStream()
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(),
+      body: buildBody(),
       /*body: Container(
         color: Colors.white,
         child: ListView(
           padding: EdgeInsets.all(16),
           children: [
-            Row(
-              children: [
-                Text(
-                  "Today's Playlist",
-                  textAlign: TextAlign.left,
-                  style: TextStyle(
-                    fontFamily: 'Berkshire Swash',
-                    color: AppColors.primaryText,
-                    fontWeight: FontWeight.w400,
-                    fontSize: 32,
-                  ),
-                ),
-                Spacer(),
-                IconButton(
-                  onPressed: () => {_showDialog()},
-                  color: AppColors.secondaryElement,
-                  icon: Icon(FeatherIcons.plus),
-                )
-              ],
-            ),
-            SizedBox(
-              height: 18,
-            ),
-            Text(
-              "Music Requests",
-              textAlign: TextAlign.left,
-              style: TextStyle(
-                fontWeight: FontWeight.w400,
-                fontSize: 20,
-              ),
-            ),
-            SizedBox(
-              height: 18,
-            ),
             StreamBuilder(
                 stream: bloc.musicStream,
                 builder: (context, snapshot) {
