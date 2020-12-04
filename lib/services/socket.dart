@@ -15,6 +15,7 @@ class SocketService {
   }
 
   Socket _socket;
+  bool _alive = false;
 
   String _currentRoom;
   String get room => _currentRoom;
@@ -45,7 +46,7 @@ class SocketService {
 
   void joinRooms(List val) {
     // check if connection is initialiazed
-    if(_socket == null || val == null) {
+    if(_socket == null || val == null || val.isEmpty){
       _connect();
     }
 
@@ -86,13 +87,17 @@ class SocketService {
       OptionBuilder()
         .setTransports(['websocket'])
         .build()
-      // <String, dynamic>{
-      //   'transports': ['websocket'],
-      // }
     );
+
+    // Socket on connection
     _socket.onConnect((data) {
       print("##### Socket is connected");
-      print("##### With $data");
+
+      // make the socket alive
+      _alive = true;
+
+      // join rooms
+      joinRooms(_rooms ?? []);
 
       // Subscribe to new message
       _socket.on('new message', (data) {
@@ -105,10 +110,14 @@ class SocketService {
       });
 
     });
+
+    // Socket on disconnect
     _socket.onDisconnect((data){
       print("socket is disconnected...");
+      _alive = false;
       _rooms.clear();
     });
+
     _socket.on('fromServer', (_) => print(_));
 
     // set chat message listener
