@@ -45,7 +45,7 @@ class SocketService {
 
   void joinRooms(List val) {
     // check if connection is initialiazed
-    if(_socket == null || val == null) {
+    if(_socket == null || val == null || val.isEmpty){
       _connect();
     }
 
@@ -93,6 +93,9 @@ class SocketService {
     _socket.onConnect((data) {
       print("##### Socket is connected");
       print("##### With $data");
+
+      // join rooms
+      joinRooms(_rooms ?? []);
 
       // Subscribe to new message
       _socket.on('new message', (data) {

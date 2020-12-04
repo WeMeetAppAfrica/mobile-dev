@@ -636,7 +636,7 @@ class _ChatViewState extends State<ChatView> {
               key: ValueKey(index),
               controller: _indexScrollController,
               index: index,
-              child: buildItem(chats[index]),
+              child: buildItem(chats[index], index),
               // highlightColor: Colors.black.withOpacity(0.1),
             )
         // buildItem(messages[index]),
@@ -675,50 +675,112 @@ class _ChatViewState extends State<ChatView> {
           url:
               'https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3',
         ),
-        margin: EdgeInsets.only(left: 10.0, top: 5),
+        margin: EdgeInsets.only(top: 5),
       );
     }
 
     return SizedBox();
   }
 
-  Widget buildItem(Message mssg) {
-    final bool me = mssg.senderId.toString() == id;
+  Widget buildTag(Message mssg, int index) {
+    String tag = mssg.tag;
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-      margin: EdgeInsets.only(top: 5.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment:
-            me ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        children: [
-          Stack(
-            alignment: me ? Alignment.centerRight : Alignment.centerLeft,
+    Widget w = Center(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
+        margin: EdgeInsets.symmetric(vertical: 15.0),
+        child: Text(tag),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.01),
+          borderRadius: BorderRadius.circular(10.0)
+        ),
+      ),
+    );
+
+    if(index == (chats.length - 1) || chats.length == 1){
+      return w;
+    }
+
+    if(index < (chats.length - 2)) {
+      Message m = chats[index + 1];
+      if(m.tag != tag) {
+        return w;
+      }
+    }
+
+    return SizedBox();
+  }
+
+  Widget buildTimestamp(Message mssg, int index) {
+    String tag = mssg.chatDate;
+
+    Widget w = Text(
+      tag,
+      textAlign: TextAlign.end,
+      style: TextStyle(
+          color: AppColors.accentText,
+          fontSize: 12.0,
+          fontStyle: FontStyle.italic),
+    );
+
+    if(index == (chats.length - 1) || chats.length == 1){
+      return w;
+    }
+
+    if(index < (chats.length - 2)) {
+      Message m = chats[index + 1];
+      if(m.chatDate != tag) {
+        return w;
+      }
+    }
+
+    return SizedBox();
+  }
+
+  Widget buildItem(Message mssg, int index) {
+    final bool me = mssg.senderId.toString() == id;
+    final bool showT = showTime(mssg, index);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        buildTag(mssg, index),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+          margin: EdgeInsets.only(top: showT ? 8.0 : 15.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment:
+                me ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
-              Container(
-                constraints: BoxConstraints(minWidth: 150.0, maxWidth: 350.0),
-                child: Column(
-                  crossAxisAlignment:
-                      me ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                  children: [
-                    buildContent(mssg, me),
-                    SizedBox(height: 5.0),
-                    Text(
-                      mssg.chatDate,
-                      textAlign: TextAlign.end,
-                      style: TextStyle(
-                          color: AppColors.accentText,
-                          fontSize: 12.0,
-                          fontStyle: FontStyle.italic),
-                    )
-                  ],
-                ),
+              Stack(
+                alignment: me ? Alignment.centerRight : Alignment.centerLeft,
+                children: [
+                  Container(
+                    constraints: BoxConstraints(minWidth: 150.0, maxWidth: 350.0),
+                    child: Column(
+                      crossAxisAlignment:
+                          me ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                      children: [
+                        buildContent(mssg, me),
+                        SizedBox(height: showT ? 5.0 : 0.0),
+                        showT ? Text(
+                          mssg.chatDate,
+                          textAlign: TextAlign.end,
+                          style: TextStyle(
+                              color: AppColors.accentText,
+                              fontSize: 12.0,
+                              fontStyle: FontStyle.italic),
+                        ) : null
+                      ].where((e) => e != null).toList(),
+                    ),
+                  )
+                ],
               )
             ],
-          )
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -776,6 +838,33 @@ class _ChatViewState extends State<ChatView> {
           preferPosition: AutoScrollPosition.end,
           duration: Duration(seconds: 2));
     }
+  }
+
+  bool showTime(Message mssg, int index) {
+    String tag = mssg.chatDate;
+
+    if(index == 0) {
+      return true;
+    }
+
+    if(index == (chats.length - 1) || chats.length == 1) {
+      return false;
+    };
+
+    if(index < (chats.length - 2)) {
+      Message mt = chats[index + 1];
+      Message mb = chats[index - 1];
+
+      if("${mb.senderId}" != id &&  "${mt.senderId}" != id) {
+        return true;
+      }
+      
+      if(mb.chatDate != tag){
+        return true;
+      }
+    }
+
+    return false;
   }
 
   Widget buildInput() {

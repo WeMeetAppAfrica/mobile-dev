@@ -112,23 +112,43 @@ class Message {
     }
 
     String get chatDate {
-      DateTime now = DateTime.now();
+      return formatDate(sentAt, [hh, ':', nn, ' ', am]);
 
-      // check if today
-      if(now.year == sentAt.year && now.month == sentAt.month && now.day == sentAt.day) {
-        return formatDate(sentAt, [hh, ':', nn, ' ', am]);
-      } 
+      // DateTime now = DateTime.now();
 
-      // check if yesterday
-      if(now.year == sentAt.year && now.month == sentAt.month && now.day == (sentAt.day + 1)) {
-        return formatDate(sentAt, ["Yesterday at ", hh, ':', nn, ' ', am]);
-      }
+      // // check if today
+      // if(now.year == sentAt.year && now.month == sentAt.month && now.day == sentAt.day) {
+      //   return formatDate(sentAt, [hh, ':', nn, ' ', am]);
+      // } 
 
-      return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
+      // // check if yesterday
+      // if(now.year == sentAt.year && now.month == sentAt.month && now.day == (sentAt.day + 1)) {
+      //   return formatDate(sentAt, ["Yesterday at ", hh, ':', nn, ' ', am]);
+      // }
+
+      // return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
     }
 
     int get timestamp {
       return sentAt.microsecondsSinceEpoch;
     }
+
+    String get tag {
+
+      DateTime now = DateTime.now();
+
+      // check if today
+      if(now.year == sentAt.year && now.month == sentAt.month && now.day == sentAt.day) {
+        return "Today";
+      }
+
+      // check if yesterday
+      if(now.year == sentAt.year && now.month == sentAt.month && now.day == (sentAt.day + 1)) {
+        return "Yesterday";
+      }
+
+      return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
+    }
+
 }
 
