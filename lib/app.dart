@@ -18,6 +18,8 @@ import 'package:wemeet/pages/home.dart';
 
 import 'package:wemeet/models/app.dart';
 
+import 'package:wemeet/values/colors.dart';
+
 class MyApp extends StatelessWidget {
 
   final AppModel model;
@@ -35,6 +37,13 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.green,
           visualDensity: VisualDensity.adaptivePlatformDensity,
+          appBarTheme: AppBarTheme(
+            actionsIconTheme: IconThemeData(color: AppColors.primaryText),
+            iconTheme: IconThemeData(color: AppColors.primaryText),
+            brightness: Brightness.light,
+            color: Colors.white,
+            elevation: 0.0
+          )
         ),
         home: MyHomePage(title: 'WeMeet - Swipe'),
       ),
