@@ -120,7 +120,7 @@ class _ChatViewState extends State<ChatView> {
     super.initState();
     readLocal();
     // G.socketUtils.joinRoom('52_22');
-    G.socketUtils.setOnChatMessageReceivedListener(onMessageReceived);
+    // G.socketUtils.setOnChatMessageReceivedListener(onMessageReceived);
     bloc.getMessages(widget.peerId, widget.token);
     onChatMessage = socketService?.onChatReceived?.listen(onChatReceive);
     waitJoinRoom();
@@ -143,6 +143,8 @@ class _ChatViewState extends State<ChatView> {
     if (data.data == null) {
       return;
     }
+
+    print("### Received messages");
 
     final List mL = data.data.data.messages;
 
@@ -767,7 +769,7 @@ class _ChatViewState extends State<ChatView> {
                           me ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                       children: [
                         buildContent(mssg, me, showT),
-                        SizedBox(height: showT ? 5.0 : 0.0),
+                        SizedBox(height: showT ? 3.0 : 0.0),
                         showT ? Text(
                           mssg.chatDate,
                           textAlign: TextAlign.end,
@@ -775,7 +777,8 @@ class _ChatViewState extends State<ChatView> {
                               color: AppColors.accentText,
                               fontSize: 12.0,
                               fontStyle: FontStyle.italic),
-                        ) : null
+                        ) : null,
+                        SizedBox(height: showT ? 13.0 : 0.0),
                       ].where((e) => e != null).toList(),
                     ),
                   )
