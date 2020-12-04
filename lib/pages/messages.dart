@@ -11,7 +11,7 @@ import 'package:wemeet/models/user.dart';
 import 'package:wemeet/services/message.dart';
 import 'package:wemeet/services/socket.dart';
 import 'package:wemeet/providers/data.dart';
-import 'package:wemeet/src/views/dashboard/profile.dart';
+import 'package:wemeet/src/views/dashboard/chat-page.dart';
 import 'package:wemeet/utils/utils.dart';
 
 import 'package:wemeet/values/colors.dart';
@@ -213,6 +213,18 @@ class _MessagesPageState extends State<MessagesPage> {
             ChatModel item = chats[index]; 
 
             return ListTile(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => ChatView(
+                    peerAvatar: item.avatar,
+                    peerId: item.senderId == user.id ? "${item.receiverId}" : "${item.senderId}",
+                    chatId: item.chatId,
+                    apiToken: _dataProvider.token,
+                    peerName: item.name,
+                    token: _dataProvider.messageToken,
+                  ))
+                );
+              },
               leading: CircleAvatar(
                 radius: 30.0,
                 backgroundImage:CachedNetworkImageProvider(item.avatar),
