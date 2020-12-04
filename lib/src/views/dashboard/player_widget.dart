@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:wemeet/values/values.dart';
 
 enum PlayerState { stopped, playing, paused }
 enum PlayingRouteState { speakers, earpiece }
@@ -76,61 +77,40 @@ class _PlayerWidgetState extends State<PlayerWidget> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.horizontal(
-            left: Radius.circular(20),
-          ),
-          child: Image(
-            height: 135,
-            width: 80,
-            fit: BoxFit.cover,
-            image: NetworkImage(
-              widget.artwork != null
-                  ? widget.artwork
-                  : 'https://via.placeholder.com/1080',
+        Container(
+          margin: EdgeInsets.only(left: 20),
+          height: 70,
+          width: 70,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.white,
+              
             ),
-          ),
-        ),
+            child: Icon(
+              FeatherIcons.music,
+              color: AppColors.secondaryElement,
+            )),
+        // ClipRRect(
+        //   borderRadius: BorderRadius.horizontal(
+        //     left: Radius.circular(20),
+        //   ),
+        //   child: Image(
+        //     height: 135,
+        //     width: 80,
+        //     fit: BoxFit.cover,
+        //     image: NetworkImage(
+        //       widget.artwork != null
+        //           ? widget.artwork
+        //           : 'https://via.placeholder.com/1080',
+        //     ),
+        //   ),
+        // ),
         SizedBox(width: 10),
         Container(
           height: 120,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    key: Key('play_button'),
-                    onPressed: _isPlaying ? null : () => _play(),
-                    iconSize: 30.0,
-                    icon: Icon(FeatherIcons.playCircle),
-                    color: Colors.white,
-                  ),
-                  IconButton(
-                    key: Key('pause_button'),
-                    onPressed: _isPlaying ? () => _pause() : null,
-                    iconSize: 30.0,
-                    icon: Icon(Icons.pause),
-                    color: Colors.white,
-                  ),
-                  IconButton(
-                    key: Key('stop_button'),
-                    onPressed: _isPlaying || _isPaused ? () => _stop() : null,
-                    iconSize: 30.0,
-                    icon: Icon(Icons.stop),
-                    color: Colors.white,
-                  ),
-                  // IconButton(
-                  //   onPressed: _earpieceOrSpeakersToggle,
-                  //   iconSize: 30.0,
-                  //   icon: _isPlayingThroughEarpiece
-                  //       ? Icon(Icons.volume_up)
-                  //       : Icon(Icons.hearing),
-                  //   color: Colors.white,
-                  // ),
-                ],
-              ),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -165,6 +145,40 @@ class _PlayerWidgetState extends State<PlayerWidget> {
                             : '',
                     style: TextStyle(fontSize: 12.0, color: Colors.white),
                   ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    key: Key('play_button'),
+                    onPressed: _isPlaying ? null : () => _play(),
+                    iconSize: 30.0,
+                    icon: Icon(FeatherIcons.playCircle),
+                    color: Colors.white,
+                  ),
+                  IconButton(
+                    key: Key('pause_button'),
+                    onPressed: _isPlaying ? () => _pause() : null,
+                    iconSize: 30.0,
+                    icon: Icon(Icons.pause),
+                    color: Colors.white,
+                  ),
+                  IconButton(
+                    key: Key('stop_button'),
+                    onPressed: _isPlaying || _isPaused ? () => _stop() : null,
+                    iconSize: 30.0,
+                    icon: Icon(Icons.stop),
+                    color: Colors.white,
+                  ),
+                  // IconButton(
+                  //   onPressed: _earpieceOrSpeakersToggle,
+                  //   iconSize: 30.0,
+                  //   icon: _isPlayingThroughEarpiece
+                  //       ? Icon(Icons.volume_up)
+                  //       : Icon(Icons.hearing),
+                  //   color: Colors.white,
+                  // ),
                 ],
               ),
             ],
