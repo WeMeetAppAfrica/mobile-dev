@@ -643,7 +643,7 @@ class _ChatViewState extends State<ChatView> {
         );
   }
 
-  Widget buildContent(Message message, [bool me = false]) {
+  Widget buildContent(Message message, bool me, bool showT) {
     if (message.type == "TEXT") {
       return Container(
         child: Wrap(
@@ -654,7 +654,8 @@ class _ChatViewState extends State<ChatView> {
             ),
           ],
         ),
-        padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+        margin: EdgeInsets.only(bottom: showT ? 0.0 : 2.0),
         decoration: BoxDecoration(
             color: me
                 ? Color.fromRGBO(247, 247, 247, 1.0)
@@ -747,7 +748,7 @@ class _ChatViewState extends State<ChatView> {
         buildTag(mssg, index),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
-          margin: EdgeInsets.only(top: showT ? 8.0 : 15.0),
+          margin: EdgeInsets.only(top: showT ? 0.0 : 15.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment:
@@ -762,7 +763,7 @@ class _ChatViewState extends State<ChatView> {
                       crossAxisAlignment:
                           me ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                       children: [
-                        buildContent(mssg, me),
+                        buildContent(mssg, me, showT),
                         SizedBox(height: showT ? 5.0 : 0.0),
                         showT ? Text(
                           mssg.chatDate,

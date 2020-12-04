@@ -15,6 +15,7 @@ class SocketService {
   }
 
   Socket _socket;
+  bool _alive = false;
 
   String _currentRoom;
   String get room => _currentRoom;
@@ -92,6 +93,9 @@ class SocketService {
     _socket.onConnect((data) {
       print("##### Socket is connected");
 
+      // make the socket alive
+      _alive = true;
+
       // join rooms
       joinRooms(_rooms ?? []);
 
@@ -110,6 +114,7 @@ class SocketService {
     // Socket on disconnect
     _socket.onDisconnect((data){
       print("socket is disconnected...");
+      _alive = false;
       _rooms.clear();
     });
 
