@@ -1,7 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'dart:io';
+import 'dart:convert';
 
 import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/user.dart';
@@ -31,6 +32,9 @@ class _StartPageState extends State<StartPage> {
 
     model = widget.model;
     user = model.user;
+
+    configurePush();
+    configLocalNotification();
 
     created();
     
@@ -68,6 +72,62 @@ class _StartPageState extends State<StartPage> {
 
   }
 
+  void configLocalNotification() {
+    var initializationSettingsAndroid =
+        new AndroidInitializationSettings('app_icon');
+    var initializationSettingsIOS = new IOSInitializationSettings();
+    var initializationSettings = new InitializationSettings(
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  void configurePush() {
+    firebaseMessaging.requestNotificationPermissions();
+
+    firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
+      print('onMessage: $message');
+      Platform.isAndroid
+          ? showNotification(message['notification'])
+          : showNotification(message['aps']['alert']);
+      return;
+    }, 
+    onBackgroundMessage: Platform.isAndroid ? myBackgroundMessageHandler : null,
+    onResume: (Map<String, dynamic> message) {
+      print('onResume: $message');
+      return;
+    }, onLaunch: (Map<String, dynamic> message) {
+      print('onLaunch: $message');
+      return;
+    });
+
+    firebaseMessaging.getToken().then((token) {
+      print('tokemn: $token');
+
+      model.setPushToken(token);
+    }).catchError((err) {
+      print('err: $err');
+    });
+  }
+
+  void showNotification(message) async {
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+      Platform.isAndroid ? 'com.wemeetng.wemeet' : 'com.wemeetng.wemeet',
+      'WeMeet',
+      'swipe, meet',
+      playSound: true,
+      enableVibration: true,
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+        android: androidPlatformChannelSpecifics,
+        iOS: iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(0, message['title'].toString(),
+        message['body'].toString(), platformChannelSpecifics,
+        payload: jsonEncode(message));
+  }
+
   void routeTo(String route, [bool delay = true]) async {
 
     if(delay) {
@@ -101,5 +161,17 @@ class _StartPageState extends State<StartPage> {
       backgroundColor: Colors.white,
       body: buildBody(),
     );
+  }
+}
+
+Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
+  if (message.containsKey('data')) {
+    // Handle data message
+    // final dynamic data = message['data'];
+  }
+
+  if (message.containsKey('notification')) {
+    // Handle notification message
+    // final dynamic notification = message['notification'];
   }
 }

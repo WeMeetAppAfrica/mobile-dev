@@ -288,6 +288,7 @@ class _LoginState extends State<Login> {
                                   }
                                   return null;
                                 },
+                                keyboardType: TextInputType.emailAddress,
                                 controller: emailController,
                                 decoration: InputDecoration(
                                   prefixIcon: Icon(

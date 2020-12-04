@@ -24,12 +24,12 @@ void main() async {
   // initialize AppModel
   AppModel model = AppModel();
 
-  var data = prefs.getString("store");
+  var data = prefs.getString("app");
   if(data != null){
     var t = jsonDecode(data);
     model.init(t, prefs);
   } else {
-    await prefs.setString("store", "{}");
+    await prefs.setString("app", "{}");
     model.init({}, prefs);
   }
 

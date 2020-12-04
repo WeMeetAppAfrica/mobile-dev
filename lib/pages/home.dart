@@ -70,6 +70,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget buildBody() {
+    return Center(
+      child: Text(widget.model.token),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,6 +102,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       drawer: HomeDrawer(),
+      body: buildBody(),
     );
   }
 }

@@ -23,6 +23,12 @@ class _MainModel extends Model {
   // API Token
   String _token = "";
 
+  // Push Token
+  String _pushToken = "";
+
+  // Message Token
+  String _messageToken = "";
+
   // First launch
   String _firstLaunch = "yes";
 
@@ -38,6 +44,14 @@ class _MainModel extends Model {
     // get and set the token
     _token = _localStorage["@token"];
     _dataProvider.setToken(_token);
+
+    // get and set push token
+    _token = _localStorage["@push_token"];
+    _dataProvider.setPushToken(_token);
+
+    // get and set message token
+    _token = _localStorage["@message_token"];
+    _dataProvider.setMessageToken(_token);
 
     // Get and set the user
     var user = _localStorage["@user"];
@@ -60,7 +74,8 @@ class _MainModel extends Model {
   }
 
   void _internalSaveData() async{
-    await _prefs.setString("store", jsonEncode(_localStorage));
+    _prefs.setString('pushToken', _pushToken);
+    await _prefs.setString("app", jsonEncode(_localStorage));
   }
 
 }
@@ -69,6 +84,8 @@ mixin _UserData on _MainModel {
 
   UserModel get user => _user;
   String get token => _token;
+  String get pushToken => _pushToken;
+  String get messageToken => _messageToken;
   String get firstLaunch => _firstLaunch;
 
   // Set the user model
@@ -91,9 +108,28 @@ mixin _UserData on _MainModel {
 
   // Set the user token
   void setToken(String data){
+    print("### Setting user token: $data");
     _token = data;
     _localStorage['@token'] = data;
     _dataProvider.setToken(data);
+    notifyListeners();
+    _internalSaveData();
+  }
+
+  // Set the push token
+  void setPushToken(String data){
+    _token = data;
+    _localStorage['@push_token'] = data;
+    _dataProvider.setPushToken(data);
+    notifyListeners();
+    _internalSaveData();
+  }
+
+  // Set the messae token
+  void setMessageToken(String data){
+    _token = data;
+    _localStorage['@message_token'] = data;
+    _dataProvider.setMessageToken(data);
     notifyListeners();
     _internalSaveData();
   }
