@@ -1,3 +1,5 @@
+import 'package:date_format/date_format.dart';
+
 class ChatModel {
   final int id;
   final String content;
@@ -36,7 +38,41 @@ class ChatModel {
     );
   }
 
+  String get fDate {
+
+    DateTime now = DateTime.now();
+
+    // check if today
+    if(now.year == sentAt.year && now.month == sentAt.month && now.day == sentAt.day) {
+      return formatDate(sentAt, [hh, ':', nn, ' ', am]);
+    } 
+
+    return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
+
+  }
+
+  String get chatDate {
+    return formatDate(sentAt, [hh, ':', nn, ' ', am]);
+  }
+
   int get timestamp {
     return sentAt.microsecondsSinceEpoch;
+  }
+
+  String get tag {
+
+    DateTime now = DateTime.now();
+
+    // check if today
+    if(now.year == sentAt.year && now.month == sentAt.month && now.day == sentAt.day) {
+      return "Today";
+    }
+
+    // check if yesterday
+    if(now.year == sentAt.year && now.month == sentAt.month && now.day == (sentAt.day + 1)) {
+      return "Yesterday";
+    }
+
+    return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
   }
 }

@@ -53,9 +53,8 @@ class HomeDrawer extends StatelessWidget {
     prefs.setString('locationFilter', locationFilter);
     prefs.setBool('passWalkthrough', true);
 
-    Navigator.of(ctx).pushNamedAndRemoveUntil("/login", (route) => false).then((value){
-      model.logOut();
-    });
+    Navigator.of(ctx).pushNamedAndRemoveUntil("/login", (route) => false);
+    model.logOut();
   }
 
 

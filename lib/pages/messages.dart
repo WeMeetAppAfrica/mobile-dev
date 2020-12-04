@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
 
 import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/chat.dart';
+import 'package:wemeet/models/user.dart';
 
 import 'package:wemeet/services/message.dart';
+import 'package:wemeet/services/socket.dart';
+import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/views/dashboard/profile.dart';
 import 'package:wemeet/utils/utils.dart';
+
+import 'package:wemeet/values/colors.dart';
 
 import 'package:wemeet/components/error.dart';
 
@@ -28,15 +35,33 @@ class _MessagesPageState extends State<MessagesPage> {
   String errorText;
   List<ChatModel> items = [];
 
+  SocketService socketService = SocketService();
+  DataProvider _dataProvider = DataProvider();
+
+  StreamSubscription<ChatModel> onChatMessage;
+  StreamSubscription<String> onRoom;
+
   AppModel model;
+  UserModel user;
 
   @override
   void initState() { 
     super.initState();
     
     model = widget.model;
+    user = model.user;
+
+    onChatMessage = socketService?.onChatReceived?.listen(onChatReceive);
+    onRoom = socketService?.onRoomChanged?.listen(onRoomChanged);
 
     fetchChats();
+  }
+
+  @override
+  void dispose() {
+    onChatMessage?.cancel();
+    onRoom?.cancel();
+    super.dispose();
   }
 
   void fetchChats() async {
@@ -48,11 +73,11 @@ class _MessagesPageState extends State<MessagesPage> {
 
     try {
       var res = await MessageService.getChats();
-      print(res);
       List data = res["data"]["messages"];
       setState(() {
-        items = data.map((e) => ChatModel.fromMap(e));
+        items = data.map((e) => ChatModel.fromMap(e)).toList();
       });
+      _prepareChatList();
 
     } catch (e) {
       print(e);
@@ -69,20 +94,166 @@ class _MessagesPageState extends State<MessagesPage> {
     }
   }
 
+  void getMatch(int id) {
+    if(id == user.id) {
+      return;
+    }
+  }
+
+  void _prepareChatList() {
+
+    Map cL = model.chatList ?? {};
+
+    items.forEach((e) { 
+      if(!cL.containsKey(e.chatId)) {
+        cL[e.chatId] = 0;
+      }
+    });
+
+    model.setChatList(cL);
+  }
+
+  void onRoomChanged(String roomId) {
+    if (!mounted || roomId == null) {
+      return;
+    }
+
+    int index = items.indexWhere((el) {
+      // if chatId matches
+      if (roomId == el.chatId) {
+        return true;
+      }
+
+      return false;
+    });
+
+    if (index >= 0) {
+      Map cL = model.chatList;
+      cL[roomId] = items[index].timestamp;
+      setState(() {
+        items[index].withBubble = false;
+      });
+      model.setChatList(cL);
+    }
+  }
+
+  void onChatReceive(ChatModel chat) {
+    if (!mounted) {
+      return;
+    }
+
+    int i = items.indexWhere((el) => el.chatId == chat.chatId);
+
+    setState(() {
+      if (i >= 0) {
+        items[i] = chat;
+      } else {
+        items.add(chat);
+      }
+    });
+
+    // update chatList if in the same room
+    if(chat.chatId == socketService.room) {
+      Map cL = model.chatList;
+      cL[chat.chatId] = chat.timestamp;
+    }
+
+    // check if user is a match
+    getMatch(chat.senderId == user.id ? chat.receiverId : chat.senderId);
+  }
+
   List<ChatModel> get chats {
-    return items;
+
+    if(items.isEmpty) {
+      return [];
+    }
+
+    Map mcL = model.chatList ?? {};
+    Map mtL = model.matchList ?? {};
+    List<ChatModel> i = items;
+
+    i.forEach((el) { 
+
+      int u = (el.senderId == user.id) ? el.receiverId : el.senderId;
+
+      // get the matches
+      if(mtL.containsKey(u.toString())) {
+        el.avatar = mtL["$u"]["image"];
+        el.name = mtL["$u"]["name"];
+      }
+
+      // make sure there is no bubble if user sent the last message
+      if(el.senderId == user.id) {
+        el.withBubble = false;
+        return;
+      }
+
+      // check if key is present
+      if(mcL.containsKey(el.chatId)){
+        el.withBubble = el.timestamp > mcL[el.chatId];
+      }
+
+    });
+
+    i.sort((b, a) => b.timestamp.compareTo(a.timestamp));
+    // i.retainWhere((e) => e.name != null);
+
+    return i;
   }
 
   Widget buildList() {
 
     return ScopedModelDescendant<AppModel>(
       builder: (context, child, m) {
+        model = m;
+
         return ListView.separated(
           itemBuilder: (context, index) {
-            return ListTile();
+
+            ChatModel item = chats[index]; 
+
+            return ListTile(
+              leading: CircleAvatar(
+                radius: 30.0,
+                backgroundImage:CachedNetworkImageProvider(item.avatar),
+              ),
+              title: Text("${item.name}"),
+              subtitle: Text(
+                (item.type == "MEDIA")
+                    ? "audio..."
+                    : item.content,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontStyle: (item.type == "MEDIA")
+                      ? FontStyle.italic
+                      : FontStyle.normal),
+              ),
+              trailing: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    "${item.fDate}",
+                    style: TextStyle(fontSize: 11.0),
+                  ),
+                  item.withBubble
+                      ? Container(
+                          width: 10.0,
+                          height: 10.0,
+                          margin: EdgeInsets.only(
+                              top: 10.0),
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors
+                                  .secondaryElement),
+                        )
+                      : null,
+              ].where((e) => e != null).toList(),
+              )
+            );
           },
           separatorBuilder: (context, index) {
-            return Divider(indent: 30.0,);
+            return Divider(indent: 80.0,);
           },
           itemCount: chats.length,
         );
@@ -102,31 +273,12 @@ class _MessagesPageState extends State<MessagesPage> {
     }
 
     if(chats.isEmpty) {
-
       return Center(
         child: Icon(FeatherIcons.messageSquare, size: 60.0, color: Colors.black38),
       );
     }
 
     return buildList();
-  }
-
-  Widget buildMatches() {
-    return ScopedModelDescendant<AppModel>(
-      builder: (context, child, m) {
-
-        List i = [];
-        m.matchList.forEach((key, value){
-          i.add({"id": key, "name": value["name"], "image": value["image"]});
-        });
-
-        return Column(
-          children: i.map((e) {
-            return Text(e["name"]);
-          }).toList(),
-        );
-      }
-    );
   }
 
   @override

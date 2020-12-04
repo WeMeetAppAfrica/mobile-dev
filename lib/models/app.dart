@@ -171,7 +171,7 @@ mixin _Chat on _MainModel {
   // Set the user token
   void setChatList(Map data){
     _chatList = data;
-    _localStorage['@chat_list'] = data;
+    _localStorage['@chat_list'] = jsonEncode(data);
     notifyListeners();
     _internalSaveData();
   }
@@ -179,7 +179,7 @@ mixin _Chat on _MainModel {
   // Set the match list
   void setMatchList(Map data){
     _matchList = data;
-    _localStorage['@match_list'] = data;
+    _localStorage['@match_list'] = jsonEncode(data);
     notifyListeners();
     _internalSaveData();
   }

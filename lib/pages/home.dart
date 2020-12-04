@@ -11,6 +11,7 @@ import 'package:wemeet/src/views/dashboard/messages.dart';
 
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/match.dart';
+import 'package:wemeet/services/message.dart';
 import 'package:wemeet/values/values.dart';
 
 class HomePage extends StatefulWidget {
@@ -38,6 +39,9 @@ class _HomePageState extends State<HomePage> {
 
     // fetch user matches
     updateMatches();
+
+    // get message token
+    getMessageToken();
   }
 
   void updateMatches() {
@@ -47,10 +51,18 @@ class _HomePageState extends State<HomePage> {
       Map matches = {};
 
       data.map((e) => UserModel.fromMap(e)).toList().forEach((u) {
-        matches["${u.id}"] = {"name": u.fullName, "image": u.fullName};
+        matches["${u.id}"] = {"name": u.fullName, "image": u.profileImage};
       });
 
       model.setMatchList(matches);
+    });
+  }
+
+  void getMessageToken() {
+    MessageService.postLogin().then((res){
+      String data = res["data"]["accessToken"] as String;
+      print("Message Token: $data");
+      model.setMessageToken(data);
     });
   }
 
