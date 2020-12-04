@@ -41,7 +41,7 @@ class _PlaylistState extends State<Playlist> {
   bool allowSend = true;
   TextEditingController descController = TextEditingController();
 
-  List items = [];
+  List<mm.Content> items = [];
 
   @override
   void initState() {
@@ -201,27 +201,20 @@ class _PlaylistState extends State<Playlist> {
         SizedBox(height: 10.0),
         Column(
           children: items.map((item) {
-            return ListTile(
-              leading: Icon(
-                FeatherIcons.music,
-                color: AppColors.secondaryElement,
-              ),
-              trailing: ClipOval(
-                child: Material(
-                  color: AppColors.secondaryElement, // button color
-                  child: InkWell(
-                    child: SizedBox(
-                      width: 56,
-                      height: 56,
-                      child: SizedBox(
-                          width: 48,
-                          height: 48,
-                          child: Icon(
-                            FeatherIcons.play,
-                            color: Colors.white,
-                          )),
+            bool isLast = item.id == (items.last.id);
+            return Column(
+              children: [
+                ListTile(
+                  leading: Container(
+                    width: 30.0,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      FeatherIcons.music,
+                      color: AppColors.secondaryElement,
                     ),
-                    onTap: () {
+                  ),
+                  trailing: InkWell(
+                    onTap: (){
                       // AudioService.stop();
                       // _changeQueue(songs[index].songUrl);
                       // List orderSong = [];
@@ -243,11 +236,39 @@ class _PlaylistState extends State<Playlist> {
                       // });
                       // _play();
                     },
+                    child: Container(
+                      width: 45.0,
+                      height: 45.0,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.secondaryElement.withOpacity(0.2),
+                        shape: BoxShape.circle
+                      ),
+                      child: Container(
+                        width: 35.0,
+                        height: 35.0,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.secondaryElement,
+                          shape: BoxShape.circle
+                        ),
+                        child: Container(
+                          margin: EdgeInsets.only(left: 3.0),
+                          child: Icon(
+                            FeatherIcons.play,
+                            color: Colors.white,
+                            size: 20.0,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
+                  title: Text(item.title),
+                  subtitle: Text(item.artist),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 30.0),
                 ),
-              ),
-              title: Text(item.title),
-              subtitle: Text(item.artist),
+                Divider(indent: 70.0,)
+              ],
             );
           }).toList()
         ),
