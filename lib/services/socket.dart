@@ -86,13 +86,11 @@ class SocketService {
       OptionBuilder()
         .setTransports(['websocket'])
         .build()
-      // <String, dynamic>{
-      //   'transports': ['websocket'],
-      // }
     );
+
+    // Socket on connection
     _socket.onConnect((data) {
       print("##### Socket is connected");
-      print("##### With $data");
 
       // join rooms
       joinRooms(_rooms ?? []);
@@ -108,10 +106,13 @@ class SocketService {
       });
 
     });
+
+    // Socket on disconnect
     _socket.onDisconnect((data){
       print("socket is disconnected...");
       _rooms.clear();
     });
+
     _socket.on('fromServer', (_) => print(_));
 
     // set chat message listener
