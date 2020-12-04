@@ -753,7 +753,6 @@ class _ChatViewState extends State<ChatView> {
         buildTag(mssg, index),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
-          margin: EdgeInsets.only(top: showT ? 0.0 : 15.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment:
@@ -778,7 +777,7 @@ class _ChatViewState extends State<ChatView> {
                               fontSize: 12.0,
                               fontStyle: FontStyle.italic),
                         ) : null,
-                        SizedBox(height: showT ? 13.0 : 0.0),
+                        SizedBox(height: showT ? 10.0 : 0.0),
                       ].where((e) => e != null).toList(),
                     ),
                   )

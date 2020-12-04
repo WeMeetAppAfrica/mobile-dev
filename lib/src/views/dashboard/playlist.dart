@@ -47,232 +47,238 @@ class _PlaylistState extends State<Playlist> {
     super.dispose();
   }
 
+  Widget buildBody() {
+
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: ListView(
-        padding: EdgeInsets.all(16),
-        children: [
-          Row(
-            children: [
-              Text(
-                "Today's Playlist",
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  fontFamily: 'Berkshire Swash',
-                  color: AppColors.primaryText,
-                  fontWeight: FontWeight.w400,
-                  fontSize: 32,
+    return Scaffold(
+      /*body: Container(
+        color: Colors.white,
+        child: ListView(
+          padding: EdgeInsets.all(16),
+          children: [
+            Row(
+              children: [
+                Text(
+                  "Today's Playlist",
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontFamily: 'Berkshire Swash',
+                    color: AppColors.primaryText,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 32,
+                  ),
                 ),
+                Spacer(),
+                IconButton(
+                  onPressed: () => {_showDialog()},
+                  color: AppColors.secondaryElement,
+                  icon: Icon(FeatherIcons.plus),
+                )
+              ],
+            ),
+            SizedBox(
+              height: 18,
+            ),
+            Text(
+              "Music Requests",
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 20,
               ),
-              Spacer(),
-              IconButton(
-                onPressed: () => {_showDialog()},
-                color: AppColors.secondaryElement,
-                icon: Icon(FeatherIcons.plus),
-              )
-            ],
-          ),
-          SizedBox(
-            height: 18,
-          ),
-          Text(
-            "Music Requests",
-            textAlign: TextAlign.left,
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 20,
             ),
-          ),
-          SizedBox(
-            height: 18,
-          ),
-          StreamBuilder(
-              stream: bloc.musicStream,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  switch (snapshot.data.status) {
-                    case Status.LOADING:
-                      return Center(
-                        child: Container(),
-                      );
-                      break;
-                    case Status.DONE:
-                      featured = snapshot.data.data.data.content;
-
-                      break;
-                    case Status.ERROR:
-                      break;
-                    default:
-                  }
-                }
-                return Container(
-                  height: 300,
-                  child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: featured.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          clipBehavior: Clip.antiAliasWithSaveLayer,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: Radii.k8pxRadius,
-                          ),
-                          child: Stack(
-                            children: [
-                              Image(
-                                height: 300,
-                                width: 240,
-                                fit: BoxFit.cover,
-                                image: NetworkImage(
-                                  featured[index].artworkUrl,
-                                ),
-                              ),
-                              Container(
-                                height: 300,
-                                width: 240,
-                                decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    gradient: LinearGradient(
-                                        begin: FractionalOffset.topCenter,
-                                        end: FractionalOffset.bottomCenter,
-                                        colors: [
-                                          Colors.transparent,
-                                          Colors.black.withOpacity(0.7),
-                                        ],
-                                        stops: [
-                                          0.6,
-                                          1.0
-                                        ])),
-                              ),
-                              Positioned(
-                                bottom: 18,
-                                left: 18,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      featured[index].title,
-                                      textAlign: TextAlign.left,
-                                      style: TextStyle(
-                                        color: AppColors.secondaryText,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 22,
-                                      ),
-                                    ),
-                                    Text(
-                                      featured[index].artist,
-                                      textAlign: TextAlign.left,
-                                      style: TextStyle(
-                                        color: AppColors.secondaryText
-                                            .withOpacity(0.8),
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
+            SizedBox(
+              height: 18,
+            ),
+            StreamBuilder(
+                stream: bloc.musicStream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    switch (snapshot.data.status) {
+                      case Status.LOADING:
+                        return Center(
+                          child: Container(),
                         );
-                      }),
-                );
-              }),
-          SizedBox(
-            height: 18,
-          ),
-          Text(
-            "Daily Playlist",
-            textAlign: TextAlign.left,
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 20,
-            ),
-          ),
-          StreamBuilder(
-              stream: bloc.musicStream,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  switch (snapshot.data.status) {
-                    case Status.LOADING:
-                      return Center(child: CircularProgressIndicator());
-                      break;
-                    case Status.DONE:
-                      songs = snapshot.data.data.data.content;
+                        break;
+                      case Status.DONE:
+                        featured = snapshot.data.data.data.content;
 
-                      break;
-                    case Status.ERROR:
-                      bloc.musicSink.add(ApiResponse.idle('message'));
-                      try {
-                        Fluttertoast.showToast(
-                            msg: json.decode(snapshot.data.message)['message']);
-                      } on FormatException {
-                        Fluttertoast.showToast(msg: snapshot.data.message);
-                      }
-                      break;
-                    default:
+                        break;
+                      case Status.ERROR:
+                        break;
+                      default:
+                    }
                   }
-                }
-                return Container(
-                  height: 300,
-                  child: ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      itemCount: songs.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          leading: Icon(
-                            FeatherIcons.music,
-                            color: AppColors.secondaryElement,
-                          ),
-                          trailing: ClipOval(
-                            child: Material(
-                              color: AppColors.secondaryElement, // button color
-                              child: InkWell(
-                                child: SizedBox(
-                                  width: 56,
-                                  height: 56,
-                                  child: SizedBox(
-                                      width: 48,
-                                      height: 48,
-                                      child: Icon(
-                                        FeatherIcons.play,
-                                        color: Colors.white,
-                                      )),
+                  return Container(
+                    height: 300,
+                    child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: featured.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            clipBehavior: Clip.antiAliasWithSaveLayer,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: Radii.k8pxRadius,
+                            ),
+                            child: Stack(
+                              children: [
+                                Image(
+                                  height: 300,
+                                  width: 240,
+                                  fit: BoxFit.cover,
+                                  image: NetworkImage(
+                                    featured[index].artworkUrl,
+                                  ),
                                 ),
-                                onTap: () {
-                                  // AudioService.stop();
-                                  // _changeQueue(songs[index].songUrl);
-                                  // List orderSong = [];
-                                  // for (int i = 0; i < songs.length; i++) {
-                                  //   if (index <= i) {
-                                  //     orderSong.add(songs[i]);
-                                  //   }
-                                  // }
-                                  // bloc.musicSink
-                                  //     .add(ApiResponse.play(orderSong));
-                                  // setState(() {
-                                  //   _currentPlay = index;
-                                  //   _queue = songs;
-                                  //   url = _queue[index].songUrl;
-                                  //   songs.forEach((element) {
-                                  //     element.isPlaying = false;
-                                  //   });
-                                  //   songs[index].isPlaying = true;
-                                  // });
-                                  // _play();
-                                },
+                                Container(
+                                  height: 300,
+                                  width: 240,
+                                  decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      gradient: LinearGradient(
+                                          begin: FractionalOffset.topCenter,
+                                          end: FractionalOffset.bottomCenter,
+                                          colors: [
+                                            Colors.transparent,
+                                            Colors.black.withOpacity(0.7),
+                                          ],
+                                          stops: [
+                                            0.6,
+                                            1.0
+                                          ])),
+                                ),
+                                Positioned(
+                                  bottom: 18,
+                                  left: 18,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        featured[index].title,
+                                        textAlign: TextAlign.left,
+                                        style: TextStyle(
+                                          color: AppColors.secondaryText,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 22,
+                                        ),
+                                      ),
+                                      Text(
+                                        featured[index].artist,
+                                        textAlign: TextAlign.left,
+                                        style: TextStyle(
+                                          color: AppColors.secondaryText
+                                              .withOpacity(0.8),
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                          );
+                        }),
+                  );
+                }),
+            SizedBox(
+              height: 18,
+            ),
+            Text(
+              "Daily Playlist",
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 20,
+              ),
+            ),
+            StreamBuilder(
+                stream: bloc.musicStream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    switch (snapshot.data.status) {
+                      case Status.LOADING:
+                        return Center(child: CircularProgressIndicator());
+                        break;
+                      case Status.DONE:
+                        songs = snapshot.data.data.data.content;
+
+                        break;
+                      case Status.ERROR:
+                        bloc.musicSink.add(ApiResponse.idle('message'));
+                        try {
+                          Fluttertoast.showToast(
+                              msg: json.decode(snapshot.data.message)['message']);
+                        } on FormatException {
+                          Fluttertoast.showToast(msg: snapshot.data.message);
+                        }
+                        break;
+                      default:
+                    }
+                  }
+                  return Container(
+                    height: 300,
+                    child: ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        itemCount: songs.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            leading: Icon(
+                              FeatherIcons.music,
+                              color: AppColors.secondaryElement,
+                            ),
+                            trailing: ClipOval(
+                              child: Material(
+                                color: AppColors.secondaryElement, // button color
+                                child: InkWell(
+                                  child: SizedBox(
+                                    width: 56,
+                                    height: 56,
+                                    child: SizedBox(
+                                        width: 48,
+                                        height: 48,
+                                        child: Icon(
+                                          FeatherIcons.play,
+                                          color: Colors.white,
+                                        )),
+                                  ),
+                                  onTap: () {
+                                    // AudioService.stop();
+                                    // _changeQueue(songs[index].songUrl);
+                                    // List orderSong = [];
+                                    // for (int i = 0; i < songs.length; i++) {
+                                    //   if (index <= i) {
+                                    //     orderSong.add(songs[i]);
+                                    //   }
+                                    // }
+                                    // bloc.musicSink
+                                    //     .add(ApiResponse.play(orderSong));
+                                    // setState(() {
+                                    //   _currentPlay = index;
+                                    //   _queue = songs;
+                                    //   url = _queue[index].songUrl;
+                                    //   songs.forEach((element) {
+                                    //     element.isPlaying = false;
+                                    //   });
+                                    //   songs[index].isPlaying = true;
+                                    // });
+                                    // _play();
+                                  },
+                                ),
                               ),
                             ),
-                          ),
-                          title: Text(songs[index].title),
-                          subtitle: Text(songs[index].artist),
-                        );
-                      }),
-                );
-              }),
-        ],
-      ),
+                            title: Text(songs[index].title),
+                            subtitle: Text(songs[index].artist),
+                          );
+                        }),
+                  );
+                }),
+          ],
+        ),
+      ),*/
     );
   }
 

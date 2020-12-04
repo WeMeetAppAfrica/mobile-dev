@@ -64,7 +64,7 @@ class _PaymentState extends State<Payment> {
   @override
   void dispose() {
     super.dispose();
-    _timer.cancel();
+    _timer?.cancel();
   }
 
   @override

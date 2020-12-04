@@ -8,7 +8,7 @@ class UserModel {
   String bio;
   String gender;
   int dob;
-  String workStatus;
+  String workStatus = "";
   List genderPreference;
   String type;
   int age;
@@ -59,9 +59,9 @@ class UserModel {
       firstName: res["firstName"] ?? "",
       lastName: res["lastName"] ?? "",
       bio: res["bio"] ?? "",
-      gender: res["gender"],
+      gender: res["gender"] ?? "",
       dob: ensureInt(res["dateOfBirth"]),
-      workStatus: res["workStatus"],
+      workStatus: res["workStatus"] ?? "",
       genderPreference: res["genderPreference"] ?? [],
       type: res["type"],
       age: ensureInt(res["age"]),
