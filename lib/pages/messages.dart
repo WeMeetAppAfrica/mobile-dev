@@ -195,7 +195,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
     });
 
-    i.sort((b, a) => b.timestamp.compareTo(a.timestamp));
+    i.sort((a, b) => b.timestamp.compareTo(a.timestamp));
     // i.retainWhere((e) => e.name != null);
 
     return i;

@@ -12,6 +12,7 @@ import 'package:wemeet/src/views/dashboard/messages.dart';
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/match.dart';
 import 'package:wemeet/services/message.dart';
+import 'package:wemeet/services/socket.dart';
 import 'package:wemeet/values/values.dart';
 
 class HomePage extends StatefulWidget {
@@ -42,6 +43,13 @@ class _HomePageState extends State<HomePage> {
 
     // get message token
     getMessageToken();
+
+    // initSocket
+    initSocket();
+  }
+
+  void initSocket() {
+    // SocketService()..init();
   }
 
   void updateMatches() {
