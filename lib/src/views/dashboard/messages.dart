@@ -23,7 +23,7 @@ import 'package:wemeet/values/values.dart';
 
 // My code
 import 'package:wemeet/services/socket.dart';
-import 'package:wemeet/src/models/chat_model.dart';
+import 'package:wemeet/models/chat.dart';
 import 'package:wemeet/models/user.dart';
 import 'package:wemeet/src/models/MessageModel.dart' as mm;
 import 'package:wemeet/models/app.dart';
@@ -48,6 +48,7 @@ class _MessagesState extends State<Messages> {
   List activeChats = [];
 
   SocketService socketService = SocketService();
+  DataProvider _dataProvider = DataProvider();
 
   StreamSubscription<ChatModel> onChatMessage;
   StreamSubscription<String> onRoom;
@@ -65,7 +66,7 @@ class _MessagesState extends State<Messages> {
     onRoom = socketService?.onRoomChanged?.listen(onRoomChanged);
 
     // set user
-    user = DataProvider().user;
+    user = _dataProvider.user;
 
     super.initState();
   }
@@ -130,6 +131,7 @@ class _MessagesState extends State<Messages> {
   setMessageToken(val) async {
     prefs = await SharedPreferences.getInstance();
     prefs.setString('messageToken', val);
+    _dataProvider.setMessageToken(val);
     messageToken = val;
   }
 
@@ -178,227 +180,251 @@ class _MessagesState extends State<Messages> {
     );
   }
 
+  Widget buildError() {
+    return Center(
+      child: Column(
+        children: [
+          Text(
+            "Unable to load messages"
+          )
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScopedModelDescendant<AppModel>(builder: (context, child, m) {
       model = m;
-      return Container(
-        child: StreamBuilder(
-            stream: bloc.messageStream,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                switch (snapshot.data.status) {
-                  case Status.LOADING:
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
-                    break;
-                  case Status.LOGINMESSAGES:
-                    print('meme');
-                    bloc.messageSink.add(ApiResponse.idle('message'));
-                    print(snapshot.data.data.data.accessToken);
-                    setMessageToken(snapshot.data.data.data.accessToken);
-                    swipeBloc.getMatches(widget.token);
-                    break;
-                  case Status.ERROR:
-                    Fluttertoast.showToast(msg: 'An error occured');
-                    break;
-                  default:
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(
+            "Messages ${activeChats?.length}",
+            style: TextStyle(
+              fontFamily: 'Berkshire Swash',
+              color: AppColors.primaryText,
+            ),
+          )
+        ),
+        body: Container(
+          child: StreamBuilder(
+              stream: bloc.messageStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  switch (snapshot.data.status) {
+                    case Status.LOADING:
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                      break;
+                    case Status.LOGINMESSAGES:
+                      print('meme');
+                      bloc.messageSink.add(ApiResponse.idle('message'));
+                      print(snapshot.data.data.data.accessToken);
+                      setMessageToken(snapshot.data.data.data.accessToken);
+                      swipeBloc.getMatches(widget.token);
+                      break;
+                    case Status.ERROR:
+                      Fluttertoast.showToast(msg: 'An error occured');
+                      return buildError();
+                      break;
+                    default:
+                  }
                 }
-              }
-              return Container(
-                color: Colors.white,
-                child: Column(
-                  children: [
-                    StreamBuilder(
-                        stream: swipeBloc.matchStream,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            switch (snapshot.data.status) {
-                              case Status.LOADING:
-                                return Container(
-                                    height: 100,
-                                    child: Center(
-                                      child: Text('Loading matches...'),
-                                    ));
-                                break;
-                              case Status.DONE:
-                                var items = snapshot.data.data.data.content;
-                                matches = items;
-                                swipeBloc.matchSink
-                                    .add(ApiResponse.idle('message'));
-                                bloc.getChats(messageToken);
+                return Container(
+                  color: Colors.white,
+                  child: Column(
+                    children: [
+                      StreamBuilder(
+                          stream: swipeBloc.matchStream,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              switch (snapshot.data.status) {
+                                case Status.LOADING:
+                                  return Container(
+                                      height: 100,
+                                      child: Center(
+                                        child: Text('Loading matches...'),
+                                      ));
+                                  break;
+                                case Status.DONE:
+                                  var items = snapshot.data.data.data.content;
+                                  matches = items;
+                                  swipeBloc.matchSink
+                                      .add(ApiResponse.idle('message'));
+                                  bloc.getChats(messageToken);
 
-                                break;
-                              default:
+                                  break;
+                                default:
+                              }
                             }
-                          }
-                          if (matches.length > 0) {
+                            if (matches.length > 0) {
+                              return Container(
+                                height: 100,
+                                child: ListView.builder(
+                                  itemCount: matches.length,
+                                  itemBuilder: (context, index) {
+                                    if (!activeChats.contains(
+                                        matches[index]['id'].toString())) {
+                                      return GestureDetector(
+                                        onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => ChatView(
+                                                token: messageToken,
+                                                apiToken: widget.token,
+                                                // socket: socket,
+                                                peerAvatar: matches[index]
+                                                    ['profileImage'],
+                                                peerId: matches[index]['id']
+                                                    .toString(),
+                                                peerName: matches[index]
+                                                    ['firstName'],
+                                              ),
+                                            )),
+                                        child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 8.0),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              CircleAvatar(
+                                                radius: 30,
+                                                backgroundImage: matches[index]
+                                                            ['profileImage'] !=
+                                                        null
+                                                    ? CachedNetworkImageProvider(
+                                                        matches[index]
+                                                            ['profileImage'])
+                                                    : null,
+                                                child: matches[index]
+                                                            ['profileImage'] ==
+                                                        null
+                                                    ? Text(matches[index]['name'])
+                                                    : null,
+                                              ),
+                                              Text(matches[index]['firstName'])
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    return SizedBox(); // Solves widget return error
+                                  },
+                                  scrollDirection: Axis.horizontal,
+                                ),
+                              );
+                            }
                             return Container(
                               height: 100,
-                              child: ListView.builder(
-                                itemCount: matches.length,
-                                itemBuilder: (context, index) {
-                                  if (!activeChats.contains(
-                                      matches[index]['id'].toString())) {
-                                    return GestureDetector(
-                                      onTap: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => ChatView(
-                                              token: messageToken,
-                                              apiToken: widget.token,
-                                              // socket: socket,
-                                              peerAvatar: matches[index]
-                                                  ['profileImage'],
-                                              peerId: matches[index]['id']
-                                                  .toString(),
-                                              peerName: matches[index]
-                                                  ['firstName'],
-                                            ),
-                                          )),
-                                      child: Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 8.0),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            CircleAvatar(
-                                              radius: 30,
-                                              backgroundImage: matches[index]
-                                                          ['profileImage'] !=
-                                                      null
-                                                  ? CachedNetworkImageProvider(
-                                                      matches[index]
-                                                          ['profileImage'])
-                                                  : null,
-                                              child: matches[index]
-                                                          ['profileImage'] ==
-                                                      null
-                                                  ? Text(matches[index]['name'])
-                                                  : null,
-                                            ),
-                                            Text(matches[index]['firstName'])
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                  return SizedBox(); // Solves widget return error
-                                },
-                                scrollDirection: Axis.horizontal,
-                              ),
                             );
-                          }
-                          return Container(
-                            height: 100,
-                          );
-                        }),
-                    StreamBuilder(
-                        stream: bloc.messageStream,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            switch (snapshot.data.status) {
-                              case Status.LOADING:
-                                return Container(
-                                    height: 100,
-                                    child: Center(
-                                      child: Text('Loading matches...'),
-                                    ));
-                                break;
-                              case Status.ERROR:
-                                print(snapshot.data.message);
-                                return Center(
-                                    child:
-                                        Text('erro ${snapshot.data.message}'));
-                                break;
-                              case Status.GETCHATS:
-                                print('sss');
-                                print(snapshot.data.data.data);
-                                activeChats = snapshot.data.data.data.messages;
-                                break;
-                              default:
+                          }),
+                      StreamBuilder(
+                          stream: bloc.messageStream,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              switch (snapshot.data.status) {
+                                case Status.LOADING:
+                                  return Container(
+                                      height: 100,
+                                      child: Center(
+                                        child: Text('Loading matches...'),
+                                      ));
+                                  break;
+                                case Status.ERROR:
+                                  print(snapshot.data.message);
+                                  return Center(
+                                      child:
+                                          Text('erro ${snapshot.data.message}'));
+                                  break;
+                                case Status.GETCHATS:
+                                  print('sss');
+                                  print(snapshot.data.data.data);
+                                  activeChats = snapshot.data.data.data.messages;
+                                  break;
+                                default:
+                              }
                             }
-                          }
-                          return Flexible(
-                              child: ListView.builder(
-                                  itemCount: activeChats.length,
-                                  itemBuilder: (context, index) {
-                                    var mssg = chats[index];
-                                    Map u = itemDetails(mssg);
-                                    if (u.isEmpty) return SizedBox();
-                                    return ListTile(
-                                      // onTap: () => Navigator.push(
-                                      //     context,
-                                      //     MaterialPageRoute(
-                                      //       builder: (context) => ChatView(
-                                      //         token: messageToken,
-                                      //         // socket: socket,
-                                      //         chatId: mssg.chatId,
-                                      //         peerAvatar: u["profileImage"],
-                                      //         peerId: u['id'].toString(),
-                                      //         peerName: u['firstName'],
-                                      //       ),
-                                      //     )),
-                                      onTap: () {
-                                        gotoChat(
-                                          image: u["profileImage"],
-                                          name: u['firstName'],
-                                          peerId: u['id'],
-                                          chatId: mssg.chatId,
-                                          timestamp: mssg.timestamp
-                                        );
-                                      },
-                                      leading: CircleAvatar(
-                                        radius: 30.0,
-                                        backgroundImage:
-                                            CachedNetworkImageProvider(
-                                                u["profileImage"]),
-                                      ),
-                                      title: Text(
-                                          "${((u["firstName"] ?? "") + " " + (u["lastName"] ?? ""))}"
-                                              .trim()),
-                                      subtitle: Text(
-                                        (mssg.type == "MEDIA")
-                                            ? "audio..."
-                                            : mssg.content,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontStyle: (mssg.type == "MEDIA")
-                                                ? FontStyle.italic
-                                                : FontStyle.normal),
-                                      ),
-                                      trailing: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            "${mssg.fDate}",
-                                            style: TextStyle(fontSize: 11.0),
-                                          ),
-                                          mssg.withBubble
-                                              ? Container(
-                                                  width: 10.0,
-                                                  height: 10.0,
-                                                  margin: EdgeInsets.only(
-                                                      top: 10.0),
-                                                  decoration: BoxDecoration(
-                                                      shape: BoxShape.circle,
-                                                      color: AppColors
-                                                          .secondaryElement),
-                                                )
-                                              : null,
-                                        ].where((e) => e != null).toList(),
-                                      ),
-                                    );
-                                  }));
-                        }),
-                  ],
-                ),
-              );
-            }),
+                            return Flexible(
+                                child: ListView.builder(
+                                    itemCount: activeChats.length,
+                                    itemBuilder: (context, index) {
+                                      var mssg = chats[index];
+                                      Map u = itemDetails(mssg);
+                                      if (u.isEmpty) return SizedBox();
+                                      return ListTile(
+                                        // onTap: () => Navigator.push(
+                                        //     context,
+                                        //     MaterialPageRoute(
+                                        //       builder: (context) => ChatView(
+                                        //         token: messageToken,
+                                        //         // socket: socket,
+                                        //         chatId: mssg.chatId,
+                                        //         peerAvatar: u["profileImage"],
+                                        //         peerId: u['id'].toString(),
+                                        //         peerName: u['firstName'],
+                                        //       ),
+                                        //     )),
+                                        onTap: () {
+                                          gotoChat(
+                                            image: u["profileImage"],
+                                            name: u['firstName'],
+                                            peerId: u['id'],
+                                            chatId: mssg.chatId,
+                                            timestamp: mssg.timestamp
+                                          );
+                                        },
+                                        leading: CircleAvatar(
+                                          radius: 30.0,
+                                          backgroundImage:
+                                              CachedNetworkImageProvider(
+                                                  u["profileImage"]),
+                                        ),
+                                        title: Text(
+                                            "${((u["firstName"] ?? "") + " " + (u["lastName"] ?? ""))}"
+                                                .trim()),
+                                        subtitle: Text(
+                                          (mssg.type == "MEDIA")
+                                              ? "audio..."
+                                              : mssg.content,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                              fontStyle: (mssg.type == "MEDIA")
+                                                  ? FontStyle.italic
+                                                  : FontStyle.normal),
+                                        ),
+                                        trailing: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              "${mssg.fDate}",
+                                              style: TextStyle(fontSize: 11.0),
+                                            ),
+                                            mssg.withBubble
+                                                ? Container(
+                                                    width: 10.0,
+                                                    height: 10.0,
+                                                    margin: EdgeInsets.only(
+                                                        top: 10.0),
+                                                    decoration: BoxDecoration(
+                                                        shape: BoxShape.circle,
+                                                        color: AppColors
+                                                            .secondaryElement),
+                                                  )
+                                                : null,
+                                          ].where((e) => e != null).toList(),
+                                        ),
+                                      );
+                                    }));
+                          }),
+                    ],
+                  ),
+                );
+              }),
+        ),
       );
     });
   }
@@ -495,7 +521,7 @@ class _MessagesState extends State<Messages> {
 
   List<mm.Message> get chats {
 
-    List cl = activeChats;
+    List<mm.Message> cl = activeChats;
 
     if(model == null || model.chatList.isEmpty) {
       return cl;

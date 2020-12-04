@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'dart:async';
+import 'package:firebase_core/firebase_core.dart';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:wemeet/services/socket.dart';
 
@@ -17,6 +15,9 @@ SharedPreferences prefs;
 void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize firebase
+  await Firebase.initializeApp();
 
   // initialize shared preference
   prefs = await SharedPreferences.getInstance();

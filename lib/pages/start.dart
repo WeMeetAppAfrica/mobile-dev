@@ -37,7 +37,7 @@ class _StartPageState extends State<StartPage> {
     configLocalNotification();
 
     created();
-    
+
   }
 
   void created() async {
@@ -46,9 +46,12 @@ class _StartPageState extends State<StartPage> {
       isLoading = true;
     });
 
-    // if there is no token go to login
-    if(model.token == null || model.token.isEmpty) {
+    await Future.delayed(Duration(milliseconds: 1000));
 
+    print("//// Model token: ${model.token}");
+
+    // if there is no token go to login
+    if(model.token == null || model.token.isEmpty || model.user == null) {
       // if first launch got to walkthrough
       if(model.firstLaunch == "yes") {
         model.setFirstLaunch("no");
@@ -101,8 +104,6 @@ class _StartPageState extends State<StartPage> {
     });
 
     firebaseMessaging.getToken().then((token) {
-      print('tokemn: $token');
-
       model.setPushToken(token);
     }).catchError((err) {
       print('err: $err');

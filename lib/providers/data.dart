@@ -18,7 +18,6 @@ class DataProvider {
   void setToken(String t){
     print(t);
     _token = t;
-    print("### setting token: $t");
   }
 
   String _messageToken;
@@ -27,7 +26,6 @@ class DataProvider {
   void setMessageToken(String t){
     print(t);
     _messageToken = t;
-    print("### setting message token: $t");
   }
 
   String _pushToken;
@@ -36,7 +34,6 @@ class DataProvider {
   void setPushToken(String t){
     print(t);
     _pushToken = t;
-    print("### setting push token: $t");
   }
 
   // User
@@ -45,7 +42,6 @@ class DataProvider {
 
   void setUser(UserModel val) {
     _user = val;
-    print("### setting user");
   }
 
 }

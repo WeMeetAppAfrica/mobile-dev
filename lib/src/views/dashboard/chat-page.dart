@@ -18,7 +18,7 @@ import 'package:wemeet/src/views/dashboard/share-songs.dart';
 import 'package:wemeet/values/values.dart';
 
 import 'package:wemeet/services/socket.dart';
-import 'package:wemeet/src/models/chat_model.dart';
+import 'package:wemeet/models/chat.dart';
 
 class ChatView extends StatefulWidget {
   final String token;

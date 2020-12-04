@@ -20,6 +20,9 @@ class _MainModel extends Model {
   // chat list
   Map _chatList = {};
 
+  // match list
+  Map _matchList = {};
+
   // API Token
   String _token = "";
 
@@ -41,17 +44,7 @@ class _MainModel extends Model {
     _prefs = pref;
     _localStorage = item ?? {};
 
-    // get and set the token
-    _token = _localStorage["@token"];
-    _dataProvider.setToken(_token);
-
-    // get and set push token
-    _token = _localStorage["@push_token"];
-    _dataProvider.setPushToken(_token);
-
-    // get and set message token
-    _token = _localStorage["@message_token"];
-    _dataProvider.setMessageToken(_token);
+    print("##### Local storage Keys: ${_localStorage.keys}");
 
     // Get and set the user
     var user = _localStorage["@user"];
@@ -61,9 +54,25 @@ class _MainModel extends Model {
       _dataProvider.setUser(_user);
     }
 
+    // get and set the token
+    _token = _localStorage["@token"];
+    _dataProvider.setToken(_token);
+
+    // get and set push token
+    _pushToken = _localStorage["@push_token"];
+    _dataProvider.setPushToken(_pushToken);
+
+    // get and set message token
+    _messageToken = _localStorage["@message_token"];
+    _dataProvider.setMessageToken(_messageToken);
+
     // Get and set user chat list
     var chatList = _localStorage["@chat_list"] ?? "{}";
     _chatList = jsonDecode(chatList);
+
+    // Get and set user match list
+    var matchList = _localStorage["@match_list"] ?? "{}";
+    _matchList = jsonDecode(matchList);
 
     // get and set firsttime
     _firstLaunch = _localStorage["@first_launch"] ?? "yes";
@@ -74,8 +83,8 @@ class _MainModel extends Model {
   }
 
   void _internalSaveData() async{
-    _prefs.setString('pushToken', _pushToken);
     await _prefs.setString("app", jsonEncode(_localStorage));
+    await _prefs.setString('pushToken', _pushToken);
   }
 
 }
@@ -157,11 +166,20 @@ mixin _UserData on _MainModel {
 
 mixin _Chat on _MainModel {
   Map get chatList => _chatList;
+  Map get matchList => _matchList;
 
   // Set the user token
   void setChatList(Map data){
     _chatList = data;
     _localStorage['@chat_list'] = data;
+    notifyListeners();
+    _internalSaveData();
+  }
+
+  // Set the match list
+  void setMatchList(Map data){
+    _matchList = data;
+    _localStorage['@match_list'] = data;
     notifyListeners();
     _internalSaveData();
   }

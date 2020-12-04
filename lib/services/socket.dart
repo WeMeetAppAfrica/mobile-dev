@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:socket_io_client/socket_io_client.dart';
 
-import 'package:wemeet/src/models/chat_model.dart';
+import 'package:wemeet/models/chat.dart';
 
 class SocketService {
 
