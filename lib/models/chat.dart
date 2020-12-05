@@ -76,7 +76,3 @@ class ChatModel {
     return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
   }
 }
-
-DateTime toNgDate(DateTime val) {
-  
-}
