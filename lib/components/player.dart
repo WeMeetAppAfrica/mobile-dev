@@ -162,7 +162,7 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
-                              "${mediaItem?.artist} $playing",
+                              "${mediaItem?.artist}",
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: Colors.white,
@@ -172,7 +172,7 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
                             ),
                             SizedBox(height: 5.0),
                             Text(
-                              "${mediaItem?.title} ${queue?.length}",
+                              "${mediaItem?.title}",
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: Colors.white,
