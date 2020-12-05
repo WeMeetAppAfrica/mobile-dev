@@ -141,7 +141,7 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
           }
 
           return Container(
-            padding: EdgeInsets.symmetric(vertical: 13.0, horizontal: 15.0),
+            padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 7.0),
             margin: widget.margin,
             width: mQuery.size.width * 0.90,
             constraints: BoxConstraints(
@@ -151,35 +151,53 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
               color: AppColors.secondaryElement,
               borderRadius: BorderRadius.circular(12.0)
             ),
-            child: Row(
+            child: Stack(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 15.0),
+                  child: Row(
                     children: [
-                      Text(
-                        "${mediaItem?.artist} $playing",
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12.0,
-                          fontWeight: FontWeight.w300
-                        )
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              "${mediaItem?.artist} $playing",
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12.0,
+                                fontWeight: FontWeight.w300
+                              )
+                            ),
+                            SizedBox(height: 5.0),
+                            Text(
+                              "${mediaItem?.title} ${queue?.length}",
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14.0
+                              )
+                            )
+                          ],
+                        ),
                       ),
-                      SizedBox(height: 5.0),
-                      Text(
-                        "${mediaItem?.title} ${queue?.length}",
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14.0
-                        )
-                      )
+                      SizedBox(width: 5.0),
+                      buildControls(mediaItem, queue, playing),
+                      
                     ],
                   ),
                 ),
-                SizedBox(width: 5.0),
-                buildControls(mediaItem, queue, playing)
+                Positioned(
+                  top: 0.0,
+                  right: 0.0,
+                  child: GestureDetector(
+                    onTap: (){
+                      AudioService.stop();
+                    },
+                    child: Icon(FeatherIcons.x, color: Colors.white, size: 20.0,),
+                  ),
+                )
               ],
             )
           );
