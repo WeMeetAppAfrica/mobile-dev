@@ -15,6 +15,7 @@ import 'package:wemeet/components/player.dart';
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/match.dart';
 import 'package:wemeet/services/message.dart';
+import 'package:wemeet/services/socket.dart';
 import 'package:wemeet/services/user.dart';
 import 'package:wemeet/values/values.dart';
 
@@ -95,6 +96,9 @@ class _HomePageState extends State<HomePage> {
       String data = res["data"]["accessToken"] as String;
       print("Message Token: $data");
       model.setMessageToken(data);
+
+      List list = (model.chatList ?? {}).keys.toList();
+      SocketService().joinRooms(list);
     });
   }
 
