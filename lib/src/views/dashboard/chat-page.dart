@@ -17,6 +17,7 @@ import 'package:wemeet/src/views/dashboard/player_widget.dart';
 import 'package:wemeet/src/views/dashboard/share-songs.dart';
 import 'package:wemeet/values/values.dart';
 
+import 'package:wemeet/components/chat_player.dart';
 import 'package:wemeet/services/socket.dart';
 import 'package:wemeet/models/chat.dart';
 
@@ -670,18 +671,7 @@ class _ChatViewState extends State<ChatView> {
     }
 
     if (message.type == "MEDIA") {
-      return Container(
-        padding: EdgeInsets.only(right: 20),
-        decoration: BoxDecoration(
-            color: AppColors.secondaryElement,
-            borderRadius: BorderRadius.all(Radius.circular(20))),
-        height: 135,
-        width: MediaQuery.of(context).size.width * 0.75,
-        child: PlayerWidget(
-          url: message.content,
-        ),
-        margin: EdgeInsets.only(top: 5),
-      );
+      return ChatPlayerWidget(url: message.content,);
     }
 
     return SizedBox();

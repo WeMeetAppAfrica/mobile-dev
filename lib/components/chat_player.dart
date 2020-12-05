@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:date_format/date_format.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/foundation.dart';
@@ -9,25 +10,22 @@ import 'package:wemeet/values/colors.dart';
 enum PlayerState { stopped, playing, paused }
 enum PlayingRouteState { speakers, earpiece }
 
-class PlayerWidget extends StatefulWidget {
+class ChatPlayerWidget extends StatefulWidget {
+
   final String url;
-  final String artwork;
   final PlayerMode mode;
 
-  PlayerWidget(
+  ChatPlayerWidget(
       {Key key,
       @required this.url,
-      this.artwork,
       this.mode = PlayerMode.MEDIA_PLAYER})
       : super(key: key);
 
   @override
-  State<StatefulWidget> createState() {
-    return _PlayerWidgetState(url, mode);
-  }
+  State<StatefulWidget> createState() =>  _ChatPlayerWidgetState();
 }
 
-class _PlayerWidgetState extends State<PlayerWidget> {
+class _ChatPlayerWidgetState extends State<ChatPlayerWidget> {
   String url;
   PlayerMode mode;
 
@@ -53,11 +51,10 @@ class _PlayerWidgetState extends State<PlayerWidget> {
   get _isPlayingThroughEarpiece =>
       _playingRouteState == PlayingRouteState.earpiece;
 
-  _PlayerWidgetState(this.url, this.mode);
-
   @override
   void initState() {
     super.initState();
+    url = widget.url;
     _initAudioPlayer();
   }
 
@@ -73,115 +70,91 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     super.dispose();
   }
 
+  Widget buildTime() {
+
+    String val = "";
+
+    if(_position == null && _duration != null) {
+      val = formatDate(DateTime.fromMillisecondsSinceEpoch(_duration.inMilliseconds), [mm, ':', ss]);
+    }
+
+    if(_position != null) {
+      val = formatDate(DateTime.fromMillisecondsSinceEpoch(_duration.inMilliseconds), [mm, ':', ss]);
+    }
+
+    return Text(
+      val ?? "",
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 12.0
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Row(
+      margin: EdgeInsets.only(top: 5),
+      padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+      decoration: BoxDecoration(
+        color: AppColors.secondaryElement,
+            borderRadius: BorderRadius.all(Radius.circular(20))
+      ),
+      child: Stack(
         children: [
-          Container(
-            width: 60.0,
-            height: 60.0,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10.0)
-            ),
-            child: Icon(FeatherIcons.music, color: AppColors.secondaryElement),
-          ),
-          /*ClipRRect(
-            borderRadius: BorderRadius.horizontal(
-              left: Radius.circular(20),
-            ),
-            child: Image(
-              height: 135,
-              width: 80,
-              fit: BoxFit.cover,
-              image: NetworkImage(
-                widget.artwork != null
-                    ? widget.artwork
-                    : 'https://via.placeholder.com/1080',
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 60.0,
+                height: 60.0,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10.0)
+                ),
+                child: Icon(FeatherIcons.music, color: AppColors.secondaryElement),
               ),
-            ),
-          ),*/
-          SizedBox(width: 10),
-          Container(
-            height: 120,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      key: Key('play_button'),
-                      onPressed: _isPlaying ? null : () => _play(),
-                      iconSize: 30.0,
-                      icon: Icon(FeatherIcons.playCircle),
-                      color: Colors.white,
-                    ),
-                    IconButton(
-                      key: Key('pause_button'),
-                      onPressed: _isPlaying ? () => _pause() : null,
-                      iconSize: 30.0,
-                      icon: Icon(Icons.pause),
-                      color: Colors.white,
-                    ),
-                    IconButton(
-                      key: Key('stop_button'),
-                      onPressed: _isPlaying || _isPaused ? () => _stop() : null,
-                      iconSize: 30.0,
-                      icon: Icon(Icons.stop),
-                      color: Colors.white,
-                    ),
-                    // IconButton(
-                    //   onPressed: _earpieceOrSpeakersToggle,
-                    //   iconSize: 30.0,
-                    //   icon: _isPlayingThroughEarpiece
-                    //       ? Icon(Icons.volume_up)
-                    //       : Icon(Icons.hearing),
-                    //   color: Colors.white,
-                    // ),
-                  ],
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(2.0),
-                      child: Stack(
-                        children: [
-                          Slider(
-                            activeColor: Colors.white,
-                            onChanged: (v) {
-                              final Position = v * _duration.inMilliseconds;
-                              _audioPlayer
-                                  .seek(Duration(milliseconds: Position.round()));
-                            },
-                            value: (_position != null &&
-                                    _duration != null &&
-                                    _position.inMilliseconds > 0 &&
-                                    _position.inMilliseconds <
-                                        _duration.inMilliseconds)
-                                ? _position.inMilliseconds /
-                                    _duration.inMilliseconds
-                                : 0.0,
-                          ),
-                        ],
+              SizedBox(width: 10),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Slider(
+                        activeColor: Colors.white,
+                        onChanged: _duration == null ? null : (v) {
+                          final Position = v * _duration.inMilliseconds;
+                          _audioPlayer
+                              .seek(Duration(milliseconds: Position.round()));
+                        },
+                        inactiveColor: Colors.white,
+                        value: (_position != null &&
+                                _duration != null &&
+                                _position.inMilliseconds > 0 &&
+                                _position.inMilliseconds <
+                                    _duration.inMilliseconds)
+                            ? _position.inMilliseconds /
+                                _duration.inMilliseconds
+                            : 0.0,
                       ),
-                    ),
-                    Text(
-                      _position != null
-                          ? '${_positionText ?? ''} / ${_durationText ?? ''}'
-                          : _duration != null
-                              ? _durationText
-                              : '',
-                      style: TextStyle(fontSize: 12.0, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                      InkWell(
+                        onTap: _duration == null ? null :  _isPlaying ? _pause : _play,
+                        child: Icon(_isPlaying ? FeatherIcons.pauseCircle : FeatherIcons.playCircle, color: Colors.white, size: 30.0),
+                      ),
+                      SizedBox(width: 5.0)
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
+          Positioned(
+            left: 85.0,
+            bottom: 5.0,
+            child: buildTime(),
+          )
         ],
       ),
     );
@@ -200,7 +173,10 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
         // set at least title to see the notification bar on ios.
         _audioPlayer.setNotification(
-          title: 'WeMeet',
+          title: 'Unknown',
+          artist: 'Unknown',
+          albumTitle: 'albulm',
+          imageUrl: '',
           // forwardSkipInterval: const Duration(seconds: 30), // default is 30s
           // backwardSkipInterval: const Duration(seconds: 30), // default is 30s
           duration: duration,
@@ -254,13 +230,18 @@ class _PlayerWidgetState extends State<PlayerWidget> {
   }
 
   Future<int> _play() async {
+    if(!url.contains("http")){
+      return 0;
+    }
+
+
     final playPosition = (_position != null &&
             _duration != null &&
             _position.inMilliseconds > 0 &&
             _position.inMilliseconds < _duration.inMilliseconds)
         ? _position
         : null;
-    final result = await _audioPlayer.play(url, position: playPosition);
+    final result = await _audioPlayer.play(widget.url, position: playPosition);
     if (result == 1) setState(() => _playerState = PlayerState.playing);
 
     // default playback rate is 1.0
@@ -272,6 +253,11 @@ class _PlayerWidgetState extends State<PlayerWidget> {
   }
 
   Future<int> _pause() async {
+    
+    if(!url.contains("http")){
+      return 0;
+    }
+
     final result = await _audioPlayer.pause();
     if (result == 1) setState(() => _playerState = PlayerState.paused);
     return result;

@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter_tindercard/flutter_tindercard.dart';
+import 'dart:async';
 
 import 'package:wemeet/models/user.dart';
 import 'package:wemeet/providers/data.dart';
@@ -25,12 +26,31 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
   List<UserModel> users = [];
   CardController controller = CardController();
 
+  DataProvider _dataProvider = DataProvider();
+  StreamSubscription<bool> reloadStream;
+
   MediaQueryData mQuery;
 
   @override
   void initState() { 
     super.initState();
+
+    reloadStream = _dataProvider.onReload.listen(onReload);
     
+    fetchData();
+  }
+
+  @override
+  void dispose() {
+    reloadStream?.cancel();
+    super.dispose();
+  }
+
+  void onReload(bool val) {
+    if(!mounted) {
+      return;
+    }
+
     fetchData();
   }
 

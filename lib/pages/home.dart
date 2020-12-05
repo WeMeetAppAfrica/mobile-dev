@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -13,7 +15,8 @@ import 'package:wemeet/components/player.dart';
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/match.dart';
 import 'package:wemeet/services/message.dart';
-import 'package:wemeet/src/views/dashboard/audioplayertask.dart';
+import 'package:wemeet/services/socket.dart';
+import 'package:wemeet/services/user.dart';
 import 'package:wemeet/values/values.dart';
 
 class HomePage extends StatefulWidget {
@@ -32,12 +35,15 @@ class _HomePageState extends State<HomePage> {
   UserModel user;
 
   DataProvider _dataProvider = DataProvider();
+  StreamSubscription<bool> reloadStream;
 
   @override
   void initState() { 
     super.initState();
     model = widget.model;
     user = model.user;
+
+    reloadStream = _dataProvider.onReload.listen(onReload);
 
     setIdentifier();
 
@@ -46,6 +52,22 @@ class _HomePageState extends State<HomePage> {
 
     // get message token
     getMessageToken();
+  }
+
+  @override
+  void dispose() {
+    reloadStream?.cancel();
+    super.dispose();
+  }
+
+  void onReload(bool val) {
+    if(!mounted) {
+      return;
+    }
+
+    updateMatches();
+    getMessageToken();
+    getProfile();
   }
 
   void updateMatches() {
@@ -62,11 +84,21 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  getProfile() {
+    UserService.getProfile().then((res){
+      Map data = res["data"] as Map;
+      model.setUserMap(data);
+    });
+  }
+
   void getMessageToken() {
     MessageService.postLogin().then((res){
       String data = res["data"]["accessToken"] as String;
       print("Message Token: $data");
       model.setMessageToken(data);
+
+      List list = (model.chatList ?? {}).keys.toList();
+      SocketService().joinRooms(list);
     });
   }
 
