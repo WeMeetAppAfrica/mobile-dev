@@ -39,7 +39,7 @@ void main() async {
     model.init({}, prefs);
   }
 
-  // start socket service
+  // start socket service. Uncomment this on live
   // SocketService()..init();
 
   runApp(MyApp(model: model));

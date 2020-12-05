@@ -40,17 +40,81 @@ class _PlaylistState extends State<Playlist> {
   bool allowSend = true;
   TextEditingController descController = TextEditingController();
 
+  StreamSubscription queueStream;
+
   List<mm.Content> items = [];
+  List<MediaItem> queue = [];
 
   @override
   void initState() {
     super.initState();
     bloc.getMusic(widget.token);
+
+    queueStream = AudioService.queueStream.listen(onQueueChanged);
   }
 
   @override
   void dispose() {
+    queueStream?.cancel();
     super.dispose();
+  }
+
+  void onQueueChanged(List<MediaItem> val) {
+    if(!mounted) {
+      return;
+    }
+
+    print("Audio queue length: ${val.length}");
+
+    setState(() {
+      queue = val ?? [];     
+    });
+  }
+
+  void updateQueue() async {
+
+    if(!mounted || items.isEmpty) {
+      return;
+    }
+
+    items.forEach((e) async {
+      MediaItem q = queue.firstWhere((i) => i.id == e.songUrl, orElse: () => null);
+
+      if(q == null) {
+        setState(() {
+          queue.add(MediaItem(
+            album: e.title,
+            id: e.songUrl,
+            title: e.title,
+            artUri: e.artworkUrl,
+            artist: e.artist,
+            displayTitle: e.title,
+            displaySubtitle: e.artist,
+          ));          
+        });
+      }
+    });
+
+    await initPlayer();
+  }
+
+  void initPlayer() async {
+    await AudioService.start(
+      backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
+      androidNotificationChannelName: 'Audio Player',
+      androidNotificationColor: 0xFF2196f3,
+      androidNotificationIcon: 'mipmap/ic_launcher',
+      params: {"data": queue.map((q) => q.toJson).toList()}
+    );
+  }
+
+  void _playItem(String url) {
+    print("Play: $url");
+    print(queue.length);
+    if(AudioService.running){
+      print("Audio running");
+    }
+    AudioService.playFromMediaId(url);
   }
 
   Widget buildTop() {
@@ -204,6 +268,7 @@ class _PlaylistState extends State<Playlist> {
             return Column(
               children: [
                 ListTile(
+                  onTap:  () => _playItem(item.songUrl),
                   leading: Container(
                     width: 30.0,
                     alignment: Alignment.center,
@@ -213,28 +278,7 @@ class _PlaylistState extends State<Playlist> {
                     ),
                   ),
                   trailing: InkWell(
-                    onTap: (){
-                      // AudioService.stop();
-                      // _changeQueue(songs[index].songUrl);
-                      // List orderSong = [];
-                      // for (int i = 0; i < songs.length; i++) {
-                      //   if (index <= i) {
-                      //     orderSong.add(songs[i]);
-                      //   }
-                      // }
-                      // bloc.musicSink
-                      //     .add(ApiResponse.play(orderSong));
-                      // setState(() {
-                      //   _currentPlay = index;
-                      //   _queue = songs;
-                      //   url = _queue[index].songUrl;
-                      //   songs.forEach((element) {
-                      //     element.isPlaying = false;
-                      //   });
-                      //   songs[index].isPlaying = true;
-                      // });
-                      // _play();
-                    },
+                    onTap:  () => _playItem(item.songUrl),
                     child: Container(
                       width: 45.0,
                       height: 45.0,
@@ -288,6 +332,7 @@ class _PlaylistState extends State<Playlist> {
               break;
             case Status.DONE:
               items = snapshot.data.data.data.content;
+              updateQueue();
               break;
             case Status.ERROR:
             return SizedBox();
@@ -659,6 +704,10 @@ class _PlaylistState extends State<Playlist> {
       callback();
     });
   }
+}
+
+void _audioPlayerTaskEntrypoint() async {
+  AudioServiceBackground.run(() => AudioPlayerTask());
 }
 
 class _SystemPadding extends StatelessWidget {
