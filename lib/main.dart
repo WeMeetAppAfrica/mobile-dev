@@ -40,7 +40,7 @@ void main() async {
   }
 
   // start socket service. Uncomment this on live
-  SocketService()..init();
+  // SocketService()..init();
 
   runApp(MyApp(model: model));
 }

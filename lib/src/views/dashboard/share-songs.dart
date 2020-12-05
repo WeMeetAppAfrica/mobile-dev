@@ -150,7 +150,7 @@ class _ShareSongsState extends State<ShareSongs> {
                                         onTap: () {
                                           var request = {
                                             "content":
-                                                songs[index].id.toString(),
+                                                songs[index].songUrl,
                                             "receiverId": widget.peerId,
                                             "type": "MEDIA"
                                           };
