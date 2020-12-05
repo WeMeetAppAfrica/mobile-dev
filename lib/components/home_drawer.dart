@@ -138,7 +138,7 @@ class HomeDrawer extends StatelessWidget {
           ),
           SizedBox(height: 5.0),
           Text(
-            "${user.workStatus}",
+            "${user.type}",
             style: TextStyle(
               color: Colors.black54,
               fontSize: 14,

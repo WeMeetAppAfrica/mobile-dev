@@ -672,18 +672,6 @@ class _ChatViewState extends State<ChatView> {
 
     if (message.type == "MEDIA") {
       return ChatPlayerWidget(url: message.content,);
-      return Container(
-        padding: EdgeInsets.only(right: 20),
-        decoration: BoxDecoration(
-            color: AppColors.secondaryElement,
-            borderRadius: BorderRadius.all(Radius.circular(20))),
-        height: 135,
-        width: MediaQuery.of(context).size.width * 0.75,
-        child: PlayerWidget(
-          url: message.content,
-        ),
-        margin: EdgeInsets.only(top: 5),
-      );
     }
 
     return SizedBox();

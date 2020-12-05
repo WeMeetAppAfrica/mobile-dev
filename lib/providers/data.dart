@@ -1,5 +1,7 @@
 // import 'dart:async';
 
+import 'dart:async';
+
 import 'package:wemeet/models/user.dart';
 
 class DataProvider {
@@ -49,6 +51,16 @@ class DataProvider {
 
   void setUser(UserModel val) {
     _user = val;
+  }
+
+  // new chat stream controller
+  StreamController<bool> _reloadController =
+      StreamController<bool>.broadcast();
+  Stream<bool> get onReload =>
+      _reloadController.stream;
+  
+  void reloadData() {
+    _reloadController.add(true);
   }
 
 }
