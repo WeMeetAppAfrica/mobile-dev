@@ -678,8 +678,7 @@ class _ChatViewState extends State<ChatView> {
         height: 135,
         width: MediaQuery.of(context).size.width * 0.75,
         child: PlayerWidget(
-          url:
-              'https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3',
+          url: message.content,
         ),
         margin: EdgeInsets.only(top: 5),
       );
