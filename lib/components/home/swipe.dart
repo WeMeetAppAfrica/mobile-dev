@@ -8,6 +8,7 @@ import 'package:wemeet/providers/data.dart';
 
 import 'package:wemeet/services/match.dart';
 import 'package:wemeet/src/SwipeAnimation/detail.dart';
+import 'package:wemeet/src/views/dashboard/payment.dart';
 import 'package:wemeet/utils/errors.dart';
 import 'package:wemeet/values/colors.dart';
 
@@ -20,7 +21,7 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
 
   bool isLoading = false;
   int swipesLeft = 0;
-
+  int left = 0;
   List<UserModel> users = [];
   CardController controller = CardController();
 
@@ -47,7 +48,8 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
       setState(() {
         users = u.map((e) => UserModel.fromMap(e)).toList();
         users.removeWhere((e) => e.profileImage == null);
-        swipesLeft = data["swipesLeft"];        
+        swipesLeft = data["swipesLeft"];   
+        left = users.length;     
       });
 
     } catch (e) {
@@ -59,6 +61,75 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
     }
   }
 
+  void postSwipe(int id, String action) {
+
+    if(swipesLeft <= 0) {
+      _showUpgrade();
+      return;
+    }
+
+    setState(() {
+      left = left - 1;
+      users.removeWhere((e) => e.id == id);      
+    });
+
+    MatchService.postSwipe({"swipeeId": id, "type": action}).then((val){
+      print(val);
+      setState(() {
+        swipesLeft = swipesLeft - 1;        
+      });
+    });
+  }
+
+  _showUpgrade() async {
+    await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+                title: Text(
+                  'Upgrade',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Berkshire Swash',
+                    color: AppColors.secondaryElement,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 24,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.all(16.0),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'You are out of swipes for today.',
+                      textAlign: TextAlign.center,
+                    ),
+                    FlatButton(
+                      color: AppColors.secondaryElement,
+                      child: Text(
+                        'Subscribe',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () => {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Payment(
+                                token: DataProvider().token,
+                              ),
+                            ))
+                      },
+                    )
+                  ],
+                ));
+          },
+        );
+      },
+    );
+  }
+
   Widget buildSwipes() {
     return Container(
       child: Column(
@@ -67,19 +138,34 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
         children: [
           SizedBox(height: 30.0),
           Container(
-            height: 300.0,
+            constraints: BoxConstraints(
+              maxWidth: 400.0,
+              maxHeight: mQuery.size.width * 0.95
+            ),
             child: TinderSwapCard(
               cardController: controller,
               swipeUp: false,
               swipeDown: false,
+              swipeCompleteCallback: (orientation, index){
+                if (orientation == CardSwipeOrientation.LEFT) {
+                  postSwipe(users[index].id, "UNLIKE");
+                }
+
+                if (orientation == CardSwipeOrientation.RIGHT) {
+                  postSwipe(users[index].id, "LIKE");
+                }
+              },
+              swipeUpdateCallback: (details, align) {
+
+              },
               orientation: AmassOrientation.TOP,
               totalNum: users.length,
               stackNum: 2,
               swipeEdge: 10.0,
-              maxWidth: mQuery.size.width * 0.80,
-              maxHeight: mQuery.size.width * 0.80,
-              minWidth: mQuery.size.width * 0.70,
-              minHeight: mQuery.size.width * 0.70,
+              maxWidth: mQuery.size.width * 0.95,
+              maxHeight: mQuery.size.width * 0.95,
+              minWidth: mQuery.size.width * 0.80,
+              minHeight: mQuery.size.width * 0.80,
               cardBuilder: (context, index){
                 UserModel item = users[index];
                 return InkWell(
@@ -205,35 +291,36 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
           ),
           SizedBox(height: 20.0),
           Wrap(
-            spacing: 20.0,
+            spacing: 10.0,
             alignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              InkWell(
-                child: Container(
-                  width: 40.0,
-                  height: 40.0,
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    shape: BoxShape.circle
-                  ),
-                  child: Center(
-                    child: Icon(FeatherIcons.x, color: Colors.white, size: 20.0,),
-                  ),
-                ),
+              RawMaterialButton(
+                onPressed: (){
+                  if(swipesLeft <= 0) {
+                    _showUpgrade();
+                    return;
+                  }
+                  controller.triggerLeft();
+                },
+                elevation: 2.0,
+                shape: CircleBorder(),
+                padding: EdgeInsets.all(15.0),
+                fillColor: Colors.green,
+                child: Icon(FeatherIcons.x, color: Colors.white, size: 20.0,),
               ),
-              InkWell(
-                child: Container(
-                  width: 50.0,
-                  height: 50.0,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryElement,
-                    shape: BoxShape.circle
-                  ),
-                  child: Center(
-                    child: Icon(Icons.favorite, color: Colors.white,)
-                  ),
-                ),
+              RawMaterialButton(
+                onPressed: () {
+                  if(swipesLeft <= 0) {
+                    _showUpgrade();
+                    return;
+                  }
+                  controller.triggerRight();
+                },
+                shape: CircleBorder(),
+                fillColor: AppColors.secondaryElement,
+                padding: EdgeInsets.all(20.0),
+                child: Icon(Icons.favorite, color: Colors.white,),
               ),
             ],
           )
