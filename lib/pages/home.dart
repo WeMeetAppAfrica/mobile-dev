@@ -8,7 +8,7 @@ import 'package:wemeet/models/app.dart';
 
 import 'package:wemeet/components/home_drawer.dart';
 import 'package:wemeet/components/home/swipe.dart';
-import 'package:wemeet/components/home/player.dart';
+import 'package:wemeet/components/player.dart';
 
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/match.dart';
@@ -95,12 +95,6 @@ class _HomePageState extends State<HomePage> {
           Center(
             child: MusicPlayerComponent(
               margin: EdgeInsets.symmetric(vertical: 30.0),
-              onShow: (val) {
-                print("#Player: $val");
-                setState(() {
-                  isPlayer = val ?? false;                    
-                });
-              },
             )
           )
         ].where((e) => e != null).toList(),

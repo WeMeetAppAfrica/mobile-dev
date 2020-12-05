@@ -15,6 +15,8 @@ import 'package:wemeet/src/views/dashboard/bgaudioplayer.dart';
 import 'package:wemeet/src/views/dashboard/musicplayer.dart';
 import 'package:wemeet/values/values.dart';
 
+import 'package:wemeet/components/player.dart';
+
 import 'package:wemeet/src/models/musicmodel.dart' as mm;
 
 enum PlayerState { stopped, playing, paused }
@@ -81,21 +83,17 @@ class _PlaylistState extends State<Playlist> {
       MediaItem q = queue.firstWhere((i) => i.id == e.songUrl, orElse: () => null);
 
       if(q == null) {
-        setState(() {
-          queue.add(MediaItem(
-            album: e.title,
-            id: e.songUrl,
-            title: e.title,
-            artUri: e.artworkUrl,
-            artist: e.artist,
-            displayTitle: e.title,
-            displaySubtitle: e.artist,
-          ));          
-        });
+        queue.add(MediaItem(
+          album: e.title,
+          id: e.songUrl,
+          title: e.title,
+          artUri: e.artworkUrl,
+          artist: e.artist,
+          displayTitle: e.title,
+          displaySubtitle: e.artist,
+        ));
       }
     });
-
-    await initPlayer();
   }
 
   void initPlayer() async {
@@ -108,13 +106,27 @@ class _PlaylistState extends State<Playlist> {
     );
   }
 
-  void _playItem(String url) {
-    print("Play: $url");
-    print(queue.length);
-    if(AudioService.running){
-      print("Audio running");
+  void _playItem(mm.Content item) async {
+    print("Play: ${item.title} by ${item.artist}");
+
+    List list = queue;
+    int i = queue.indexWhere((e) => e.id == item.songUrl);
+    if(i >= 0) {
+      MediaItem it = list[i];
+      list.removeAt(i);
+      list.insert(0, it);
     }
-    AudioService.playFromMediaId(url);
+    print(list.length);
+    var params = {"data": list.map((e) => e.toJson()).toList()};
+    await AudioService.start(
+      backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
+      androidNotificationChannelName: 'Audio Player',
+      androidNotificationColor: 0xFF2196f3,
+      androidNotificationIcon: 'mipmap/ic_launcher',
+      params: params,
+    );
+
+    // await AudioService.playFromMediaId(url);
   }
 
   Widget buildTop() {
@@ -264,11 +276,10 @@ class _PlaylistState extends State<Playlist> {
         SizedBox(height: 10.0),
         Column(
           children: items.map((item) {
-            // bool isLast = item.id == (items.last.id);
             return Column(
               children: [
                 ListTile(
-                  onTap:  () => _playItem(item.songUrl),
+                  onTap:  () => _playItem(item),
                   leading: Container(
                     width: 30.0,
                     alignment: Alignment.center,
@@ -278,7 +289,7 @@ class _PlaylistState extends State<Playlist> {
                     ),
                   ),
                   trailing: InkWell(
-                    onTap:  () => _playItem(item.songUrl),
+                    onTap:  () => _playItem(item),
                     child: Container(
                       width: 45.0,
                       height: 45.0,
@@ -354,15 +365,31 @@ class _PlaylistState extends State<Playlist> {
   Widget buildBody() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 16.0),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            buildTop(),
-            SizedBox(height: 20.0),
-            songsStream()
-          ],
-        ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  buildTop(),
+                  SizedBox(height: 20.0),
+                  songsStream()
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 0.0,
+            left: 0.0,
+            right: 0.0,
+            child: Center(
+              child: MusicPlayerComponent(
+                margin: EdgeInsets.symmetric(vertical: 30.0),
+              ),
+            ),
+          )
+        ],
       ),
     );
   }
