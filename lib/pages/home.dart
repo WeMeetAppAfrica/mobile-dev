@@ -6,8 +6,7 @@ import 'package:wemeet/models/user.dart';
 import 'package:wemeet/models/app.dart';
 
 import 'package:wemeet/components/home_drawer.dart';
-
-import 'package:wemeet/src/views/dashboard/messages.dart';
+import 'package:wemeet/components/home/swipe.dart';
 
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/match.dart';
@@ -89,8 +88,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget buildBody() {
-    return Center(
-      child: Text(model.token),
+    return Container(
+      child: Column(
+        children: [
+          Expanded(
+            child: HomeSwipeComponent(),
+          )
+        ],
+      ),
     );
   }
 

@@ -3,22 +3,16 @@ import 'dart:async';
 
 import 'package:scoped_model/scoped_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+// import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/blocs/swipe_bloc.dart';
 import 'package:wemeet/src/chat/Global.dart';
 import 'package:wemeet/src/models/getmatchesmodel.dart';
 import 'package:wemeet/src/resources/api_response.dart';
-import 'package:wemeet/src/views/auth/picture.dart';
 import 'package:wemeet/src/views/dashboard/chat-page.dart';
-import 'package:wemeet/src/views/dashboard/chat-screen.dart';
-import 'package:wemeet/src/views/dashboard/chat.dart';
-import 'package:wemeet/src/views/dashboard/music.dart';
 import 'package:wemeet/values/values.dart';
 
 // My code

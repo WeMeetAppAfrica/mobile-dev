@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
-import 'package:wemeet/src/views/auth/login.dart';
-import 'package:wemeet/src/views/auth/picture.dart';
-import 'package:wemeet/src/views/dashboard/profile.dart';
-import 'package:wemeet/src/views/dashboard/updatepicture.dart';
+// import 'package:wemeet/src/views/auth/login.dart';
+// import 'package:wemeet/src/views/auth/picture.dart';
+// import 'package:wemeet/src/views/dashboard/profile.dart';
+// import 'package:wemeet/src/views/dashboard/updatepicture.dart';
 import 'package:wemeet/values/values.dart';
 
 class UpdateProfile extends StatefulWidget {

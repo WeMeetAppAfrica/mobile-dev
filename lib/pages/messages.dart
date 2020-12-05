@@ -196,7 +196,7 @@ class _MessagesPageState extends State<MessagesPage> {
     });
 
     i.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    // i.retainWhere((e) => e.name != null);
+    i.retainWhere((e) => e.avatar != null);
 
     return i;
   }

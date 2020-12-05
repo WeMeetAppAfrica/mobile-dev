@@ -12,7 +12,6 @@ import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/values/colors.dart';
 
-import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/src/views/dashboard/profile.dart';
 import 'package:wemeet/src/views/dashboard/playlist.dart';
 import 'package:wemeet/src/views/dashboard/payment.dart';

@@ -236,10 +236,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     print('object' + id);
   }
 
-  Widget buildBody() {
-
-  }
-
   @override
   Widget build(BuildContext context) {
     CardController controller; //Use this to trigger swap.
