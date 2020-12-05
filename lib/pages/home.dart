@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
@@ -7,11 +8,12 @@ import 'package:wemeet/models/app.dart';
 
 import 'package:wemeet/components/home_drawer.dart';
 import 'package:wemeet/components/home/swipe.dart';
+import 'package:wemeet/components/player.dart';
 
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/match.dart';
 import 'package:wemeet/services/message.dart';
-import 'package:wemeet/services/socket.dart';
+import 'package:wemeet/src/views/dashboard/audioplayertask.dart';
 import 'package:wemeet/values/values.dart';
 
 class HomePage extends StatefulWidget {
@@ -23,6 +25,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  bool isPlayer = false;
 
   AppModel model;
   UserModel user;
@@ -42,13 +46,6 @@ class _HomePageState extends State<HomePage> {
 
     // get message token
     getMessageToken();
-
-    // initSocket
-    initSocket();
-  }
-
-  void initSocket() {
-    // SocketService()..init();
   }
 
   void updateMatches() {
@@ -94,8 +91,13 @@ class _HomePageState extends State<HomePage> {
         children: [
           Expanded(
             child: HomeSwipeComponent(),
+          ),
+          Center(
+            child: MusicPlayerComponent(
+              margin: EdgeInsets.symmetric(vertical: 30.0),
+            )
           )
-        ],
+        ].where((e) => e != null).toList(),
       ),
     );
   }

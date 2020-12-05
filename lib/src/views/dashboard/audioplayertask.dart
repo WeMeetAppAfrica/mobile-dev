@@ -40,6 +40,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
   MediaItem get mediaItem => _queue[_queueIndex];
   StreamSubscription<AudioPlaybackState> _playerStateSubscription;
   StreamSubscription<AudioPlaybackEvent> _eventSubscription;
+
   @override
   void onStart(Map<String, dynamic> params) {
     _queue.clear();

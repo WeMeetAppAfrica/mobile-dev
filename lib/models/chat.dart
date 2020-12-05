@@ -47,12 +47,12 @@ class ChatModel {
       return formatDate(sentAt, [hh, ':', nn, ' ', am]);
     } 
 
-    return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
+    return formatDate(sentAt.toLocal(), [dd, ' ', M, ', ', yyyy]);
 
   }
 
   String get chatDate {
-    return formatDate(sentAt, [hh, ':', nn, ' ', am]);
+    return formatDate(sentAt.toLocal(), [hh, ':', nn, ' ', am]);
   }
 
   int get timestamp {
@@ -73,6 +73,6 @@ class ChatModel {
       return "Yesterday";
     }
 
-    return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
+    return formatDate(sentAt.toLocal(), [dd, ' ', M, ', ', yyyy]);
   }
 }
