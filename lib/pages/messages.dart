@@ -9,6 +9,7 @@ import 'package:wemeet/models/chat.dart';
 import 'package:wemeet/models/user.dart';
 
 import 'package:wemeet/services/message.dart';
+import 'package:wemeet/services/match.dart';
 import 'package:wemeet/services/socket.dart';
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/views/dashboard/chat-page.dart';
@@ -98,6 +99,25 @@ class _MessagesPageState extends State<MessagesPage> {
     if(id == user.id) {
       return;
     }
+
+    if(model.matchList.containsKey("$id")) {
+      return;
+    }
+
+    MatchService.getMatches().then((res){
+      List data = res["data"]["content"] as List;
+
+      Map mtL = model.matchList ?? {};
+      Map matches = {};
+
+      data.map((e) => UserModel.fromMap(e)).toList().forEach((u) {
+        matches["${u.id}"] = {"name": u.fullName, "image": u.profileImage};
+      });
+
+      mtL.addAll(matches);
+
+      model.setMatchList(mtL);
+    });
   }
 
   void _prepareChatList() {
