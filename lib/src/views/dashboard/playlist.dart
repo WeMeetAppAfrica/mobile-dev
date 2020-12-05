@@ -127,7 +127,7 @@ class _PlaylistState extends State<Playlist> {
       params: params,
     );
 
-    // await AudioService.playFromMediaId(url);
+    await AudioService.playFromMediaId(item.songUrl);
   }
 
   Widget buildTop() {
