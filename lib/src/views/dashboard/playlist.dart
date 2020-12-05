@@ -385,8 +385,12 @@ class _PlaylistState extends State<Playlist> {
             left: 0.0,
             right: 0.0,
             child: Center(
-              child: MusicPlayerComponent(
-                margin: EdgeInsets.symmetric(vertical: 30.0),
+              // child: MusicPlayerComponent(
+              //   margin: EdgeInsets.symmetric(vertical: 30.0),
+              // ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: MusicWidget(),
               ),
             ),
           )
@@ -394,141 +398,13 @@ class _PlaylistState extends State<Playlist> {
       ),
     );
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(),
       body: buildBody(),
-      // bottomNavigationBar: Column(
-      //   mainAxisSize: MainAxisSize.min,
-      //   children: [
-      //       AudioServiceWidget(
-      //         child: StreamBuilder<AudioState>(
-      //           stream: _audioStateStream,
-      //           builder: (context, snapshot) {
-      //             final audioState = snapshot.data;
-      //             final queue = audioState?.queue;
-      //             final mediaItem = audioState?.mediaItem;
-      //             final playbackState = audioState?.playbackState;
-      //             final processingState =
-      //                 playbackState?.processingState ?? AudioProcessingState.none;
-      //             final playing = playbackState?.playing ?? false;
-      //             if (AudioService.running)
-      //               return Positioned.fill(
-      //                 bottom: 80,
-      //                 child: Align(
-      //                     alignment: Alignment.bottomCenter,
-      //                     child: Container(
-      //                       padding: EdgeInsets.only(right: 20, left: 20),
-      //                       decoration: BoxDecoration(
-      //                           color: AppColors.secondaryElement,
-      //                           borderRadius: BorderRadius.all(Radius.circular(20))),
-      //                       height: 80,
-      //                       width: MediaQuery.of(context).size.width * .8,
-      //                       child: Container(
-      //                           child: Container(
-      //                         width: MediaQuery.of(context).size.width,
-      //                         child: Row(
-      //                           mainAxisAlignment: MainAxisAlignment.center,
-      //                           crossAxisAlignment: CrossAxisAlignment.center,
-      //                           mainAxisSize: MainAxisSize.max,
-      //                           children: [
-      //                             if (processingState !=
-      //                                 AudioProcessingState.none) ...[
-      //                               if (mediaItem?.title != null)
-      //                                 Column(
-      //                                   mainAxisAlignment: MainAxisAlignment.center,
-      //                                   crossAxisAlignment: CrossAxisAlignment.start,
-      //                                   children: [
-      //                                     Flexible(
-      //                                         child: Text(
-      //                                       mediaItem.artist,
-      //                                       style: TextStyle(
-      //                                           color: Color.fromARGB(
-      //                                               180, 255, 255, 255),
-      //                                           fontSize: 12),
-      //                                     )),
-      //                                     Flexible(
-      //                                         child: Text(
-      //                                       mediaItem.title,
-      //                                       style: TextStyle(
-      //                                           color: AppColors.secondaryText,
-      //                                           fontSize: 16),
-      //                                     )),
-      //                                   ],
-      //                                 ),
-      //                               Spacer(),
-      //                               Row(
-      //                                 mainAxisAlignment: MainAxisAlignment.center,
-      //                                 children: [
-      //                                   IconButton(
-      //                                     icon: Icon(
-      //                                       FeatherIcons.skipBack,
-      //                                       color: Colors.white,
-      //                                     ),
-      //                                     iconSize: 30,
-      //                                     onPressed: () {
-      //                                       if (mediaItem == queue.first) {
-      //                                         return;
-      //                                       }
-      //                                       AudioService.skipToPrevious();
-      //                                     },
-      //                                   ),
-      //                                   !playing
-      //                                       ? IconButton(
-      //                                           icon: Icon(
-      //                                             FeatherIcons.playCircle,
-      //                                             color: Colors.white,
-      //                                           ),
-      //                                           iconSize: 30.0,
-      //                                           onPressed: AudioService.play,
-      //                                         )
-      //                                       : IconButton(
-      //                                           icon: Icon(
-      //                                             FeatherIcons.pauseCircle,
-      //                                             color: Colors.white,
-      //                                           ),
-      //                                           iconSize: 30.0,
-      //                                           onPressed: AudioService.pause,
-      //                                         ),
-      //                                   IconButton(
-      //                                     icon: Icon(
-      //                                       FeatherIcons.skipForward,
-      //                                       color: Colors.white,
-      //                                     ),
-      //                                     iconSize: 30,
-      //                                     onPressed: () {
-      //                                       if (mediaItem == queue.last) {
-      //                                         return;
-      //                                       }
-      //                                       AudioService.skipToNext();
-      //                                     },
-      //                                   ),
-      //                                   // IconButton(
-      //                                   //   icon: Icon(
-      //                                   //     FeatherIcons.stopCircle,
-      //                                   //     color: Colors.white,
-      //                                   //   ),
-      //                                   //   iconSize: 30.0,
-      //                                   //   onPressed: AudioService.stop,
-      //                                   // ),
-      //                                 ],
-      //                               )
-      //                             ]
-      //                           ],
-      //                         ),
-      //                       )),
-      //                     )),
-      //               );
-
-      //             return Container();
-      //           },
-      //         )
-      //       )
-      //     ],
-      // ),
       /*body: Container(
         color: Colors.white,
         child: ListView(

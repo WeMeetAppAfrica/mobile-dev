@@ -172,7 +172,7 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
                             ),
                             SizedBox(height: 5.0),
                             Text(
-                              "${mediaItem?.title} ${queue?.length}",
+                              "${mediaItem?.title}",
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: Colors.white,
@@ -203,6 +203,134 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
           );
         }
       ),
+    );
+  }
+}
+
+class MusicWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AudioServiceWidget(
+      child: StreamBuilder<AudioState>(
+        stream: _audioStateStream,
+        builder: (context, snapshot) {
+          final audioState = snapshot.data;
+          final queue = audioState?.queue;
+          final mediaItem = audioState?.mediaItem;
+          final playbackState = audioState?.playbackState;
+          final processingState =
+              playbackState?.processingState ?? AudioProcessingState.none;
+          final playing = playbackState?.playing ?? false;
+          if (AudioService.running)
+            return Container(
+              padding: EdgeInsets.only(right: 20, left: 20),
+              // padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 7.0),
+              width: MediaQuery.of(context).size.width * 0.90,
+              constraints: BoxConstraints(
+                maxWidth: 350.0
+              ),
+              decoration: BoxDecoration(
+                  color: AppColors.secondaryElement,
+                  borderRadius: BorderRadius.all(Radius.circular(20))),
+              height: 80,
+              child: Container(
+                  child: Container(
+                width: MediaQuery.of(context).size.width,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    if (processingState !=
+                        AudioProcessingState.none) ...[
+                      if (mediaItem?.title != null)
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Flexible(
+                                child: Text(
+                              mediaItem.artist,
+                              style: TextStyle(
+                                  color: Color.fromARGB(
+                                      180, 255, 255, 255),
+                                  fontSize: 12),
+                            )),
+                            Flexible(
+                                child: Text(
+                              mediaItem.title,
+                              style: TextStyle(
+                                  color: AppColors.secondaryText,
+                                  fontSize: 16),
+                            )),
+                          ],
+                        ),
+                      Spacer(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              FeatherIcons.skipBack,
+                              color: Colors.white,
+                            ),
+                            iconSize: 30,
+                            onPressed: () {
+                              if (mediaItem == queue.first) {
+                                return;
+                              }
+                              AudioService.skipToPrevious();
+                            },
+                          ),
+                          !playing
+                              ? IconButton(
+                                  icon: Icon(
+                                    FeatherIcons.playCircle,
+                                    color: Colors.white,
+                                  ),
+                                  iconSize: 30.0,
+                                  onPressed: AudioService.play,
+                                )
+                              : IconButton(
+                                  icon: Icon(
+                                    FeatherIcons.pauseCircle,
+                                    color: Colors.white,
+                                  ),
+                                  iconSize: 30.0,
+                                  onPressed: AudioService.pause,
+                                ),
+                          IconButton(
+                            icon: Icon(
+                              FeatherIcons.skipForward,
+                              color: Colors.white,
+                            ),
+                            iconSize: 30,
+                            onPressed: () {
+                              if (mediaItem == queue.last) {
+                                return;
+                              }
+                              AudioService.skipToNext();
+                            },
+                          ),
+                          // IconButton(
+                          //   icon: Icon(
+                          //     FeatherIcons.stopCircle,
+                          //     color: Colors.white,
+                          //   ),
+                          //   iconSize: 30.0,
+                          //   onPressed: AudioService.stop,
+                          // ),
+                        ],
+                      )
+                    ]
+                  ],
+                ),
+              )),
+            );
+
+          return Container();
+        },
+      )
     );
   }
 }
