@@ -66,8 +66,8 @@ class HomeDrawer extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
-            padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+            margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
+            padding: EdgeInsets.symmetric(horizontal: 17.0, vertical: 10.0),
             decoration: BoxDecoration(
               color: shade ? AppColors.secondaryElement : null,
               borderRadius: BorderRadius.circular(10.0)

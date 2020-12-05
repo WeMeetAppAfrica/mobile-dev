@@ -680,7 +680,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                         swipesLeft =
                                             snapshot.data.data.data.swipesLeft;
                                         disableSwipe =
-                                            swipesLeft == 0 ? true : false;
+                                            swipesLeft <= 0 ? true : false;
                                         print(swipesLeft);
 
                                         break;

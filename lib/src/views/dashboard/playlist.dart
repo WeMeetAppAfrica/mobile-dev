@@ -8,7 +8,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/dashboard/audioplayertask.dart';
@@ -201,7 +200,7 @@ class _PlaylistState extends State<Playlist> {
         SizedBox(height: 10.0),
         Column(
           children: items.map((item) {
-            bool isLast = item.id == (items.last.id);
+            // bool isLast = item.id == (items.last.id);
             return Column(
               children: [
                 ListTile(

@@ -89,6 +89,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget buildBody() {
     return Container(
+      color: Colors.white,
       child: Column(
         children: [
           Expanded(
@@ -102,6 +103,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         brightness: Brightness.light,
