@@ -162,7 +162,7 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
-                              "${mediaItem?.artist} $playing",
+                              "${mediaItem?.artist}",
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: Colors.white,
