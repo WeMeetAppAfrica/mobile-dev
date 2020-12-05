@@ -8,6 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/dashboard/audioplayertask.dart';
@@ -34,13 +35,22 @@ class Playlist extends StatefulWidget {
 }
 
 class _PlaylistState extends State<Playlist> {
-
   List featured = [];
   List songs = [];
   bool allowSend = true;
   TextEditingController descController = TextEditingController();
 
   List<mm.Content> items = [];
+
+  final BehaviorSubject<double> _dragPositionSubject =
+      BehaviorSubject.seeded(null);
+
+  AudioPlayer _audioPlayer;
+  AudioPlayerState _audioPlayerState;
+  Duration _duration;
+  Duration _position;
+  int toSwipe = 0;
+  bool playing = false;
 
   @override
   void initState() {
@@ -80,230 +90,356 @@ class _PlaylistState extends State<Playlist> {
   }
 
   Widget buildSongRequests() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            "Music Requests",
-            textAlign: TextAlign.left,
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 17,
-            ),
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        child: Text(
+          "Music Requests",
+          textAlign: TextAlign.left,
+          style: TextStyle(
+            fontWeight: FontWeight.w400,
+            fontSize: 17,
           ),
         ),
-        SizedBox(height: 10.0),
-        SizedBox(
+      ),
+      SizedBox(height: 10.0),
+      SizedBox(
           height: 300.0,
           child: ListView.builder(
             itemBuilder: (context, index) {
               mm.Content item = items[index];
               return Card(
-                clipBehavior: Clip.antiAliasWithSaveLayer,
-                shape: RoundedRectangleBorder(
-                  borderRadius: Radii.k8pxRadius,
-                ),
-                margin: EdgeInsets.only(right: 16.0),
-                child: Stack(
-                  children: [
+                  clipBehavior: Clip.antiAliasWithSaveLayer,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: Radii.k8pxRadius,
+                  ),
+                  margin: EdgeInsets.only(right: 16.0),
+                  child: Stack(children: [
                     Positioned.fill(
                       child: CachedNetworkImage(
-                        imageUrl: item.artworkUrl,
-                        placeholder: (context, _) => Container(
-                          color: Colors.black12
-                        )
-                      ),
+                          imageUrl: item.artworkUrl,
+                          placeholder: (context, _) =>
+                              Container(color: Colors.black12)),
                     ),
                     Container(
                       height: 300,
                       width: 220,
                       decoration: BoxDecoration(
-                        color: Colors.black,
-                        gradient: LinearGradient(
-                          begin: FractionalOffset.topCenter,
-                          end: FractionalOffset.bottomCenter,
-                          colors: [
-                            Colors.black.withOpacity(0.2),
-                            Colors.black.withOpacity(0.9),
-                          ],
-                        )
-                      ),
+                          color: Colors.black,
+                          gradient: LinearGradient(
+                            begin: FractionalOffset.topCenter,
+                            end: FractionalOffset.bottomCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.2),
+                              Colors.black.withOpacity(0.9),
+                            ],
+                          )),
                     ),
                     Positioned(
-                      bottom: 18.0,
-                      left: 0.0, 
-                      right: 0.0,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.title,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: AppColors.secondaryText,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 18,
+                        bottom: 18.0,
+                        left: 0.0,
+                        right: 0.0,
+                        child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 20.0),
+                            child: Row(children: [
+                              Expanded(
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                    Text(
+                                      item.title,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: AppColors.secondaryText,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 18,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    item.artist,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: AppColors.secondaryText
-                                          .withOpacity(0.8),
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 14,
+                                    Text(
+                                      item.artist,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: AppColors.secondaryText
+                                            .withOpacity(0.8),
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 14,
+                                      ),
                                     ),
-                                  ),
-                                ]
-                              )
-                            )
-                          ]
-                        )
-                      )
-                    )
-                  ]
-                )
-              );
+                                  ]))
+                            ])))
+                  ]));
             },
             itemCount: items.length,
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: 15.0),
-          )
-        ),
-      ]
-    );
-  } 
+          )),
+    ]);
+  }
 
   Widget buildPlaylist() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            "Daily Playlist",
-            textAlign: TextAlign.left,
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 17,
-            ),
-          ),
-        ),
-        SizedBox(height: 10.0),
-        Column(
+    return Stack(children: [
+      Column(
           children: items.map((item) {
-            // bool isLast = item.id == (items.last.id);
-            return Column(
-              children: [
-                ListTile(
-                  leading: Container(
-                    width: 30.0,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      FeatherIcons.music,
-                      color: AppColors.secondaryElement,
-                    ),
-                  ),
-                  trailing: InkWell(
-                    onTap: (){
-                      // AudioService.stop();
-                      // _changeQueue(songs[index].songUrl);
-                      // List orderSong = [];
-                      // for (int i = 0; i < songs.length; i++) {
-                      //   if (index <= i) {
-                      //     orderSong.add(songs[i]);
-                      //   }
-                      // }
-                      // bloc.musicSink
-                      //     .add(ApiResponse.play(orderSong));
-                      // setState(() {
-                      //   _currentPlay = index;
-                      //   _queue = songs;
-                      //   url = _queue[index].songUrl;
-                      //   songs.forEach((element) {
-                      //     element.isPlaying = false;
-                      //   });
-                      //   songs[index].isPlaying = true;
-                      // });
-                      // _play();
-                    },
-                    child: Container(
-                      width: 45.0,
-                      height: 45.0,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: AppColors.secondaryElement.withOpacity(0.2),
-                        shape: BoxShape.circle
-                      ),
-                      child: Container(
-                        width: 35.0,
-                        height: 35.0,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: AppColors.secondaryElement,
-                          shape: BoxShape.circle
-                        ),
-                        child: Container(
-                          margin: EdgeInsets.only(left: 3.0),
-                          child: Icon(
-                            FeatherIcons.play,
-                            color: Colors.white,
-                            size: 20.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  title: Text(item.title),
-                  subtitle: Text(item.artist),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 30.0),
+        // bool isLast = item.id == (items.last.id);
+        return Column(
+          children: [
+            ListTile(
+              leading: Container(
+                width: 30.0,
+                alignment: Alignment.center,
+                child: Icon(
+                  FeatherIcons.music,
+                  color: AppColors.secondaryElement,
                 ),
-                Divider(indent: 70.0,)
-              ],
-            );
-          }).toList()
+              ),
+              trailing: InkWell(
+                onTap: () async {
+                  print(item.songUrl);
+                  var index = items.indexOf(item);
+                  print(index);
+                  if (AudioService.running) {
+                    print('running');
+                    AudioService.skipToQueueItem(item.songUrl);
+                    return;
+                  }
+                  var m;
+
+                  List orderSong = [];
+                  List append = [];
+                  for (int i = 0; i < items.length; i++) {
+                    if (index <= i) {
+                      orderSong.add(items[i]);
+                    } else {
+                      append.add(items[i]);
+                    }
+                  }
+                  orderSong.addAll(append);
+                  List<dynamic> list = List();
+                  orderSong.forEach(
+                    (element) => {
+                      m = MediaItem(
+                        id: element.songUrl,
+                        album: element.title,
+                        title: element.title,
+                        artist: element.artist,
+                        // duration: Duration(milliseconds: 5739820),
+                        artUri: element.artworkUrl,
+                      ).toJson(),
+                      list.add(m)
+                    },
+                  );
+                  var params = {"data": list};
+                  print(params);
+                  _startAudioPlayerBtn(params);
+                  // AudioService.stop();
+                  // _changeQueue(songs[index].songUrl);
+                  // List orderSong = [];
+                  // for (int i = 0; i < songs.length; i++) {
+                  //   if (index <= i) {
+                  //     orderSong.add(songs[i]);
+                  //   }
+                  // }
+                  // bloc.musicSink
+                  //     .add(ApiResponse.play(orderSong));
+                  // setState(() {
+                  //   _currentPlay = index;
+                  //   _queue = songs;
+                  //   url = _queue[index].songUrl;
+                  //   songs.forEach((element) {
+                  //     element.isPlaying = false;
+                  //   });
+                  //   songs[index].isPlaying = true;
+                  // });
+                  // _play();
+                },
+                child: Container(
+                  width: 45.0,
+                  height: 45.0,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                      color: AppColors.secondaryElement.withOpacity(0.2),
+                      shape: BoxShape.circle),
+                  child: Container(
+                    width: 35.0,
+                    height: 35.0,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                        color: AppColors.secondaryElement,
+                        shape: BoxShape.circle),
+                    child: Container(
+                      margin: EdgeInsets.only(left: 3.0),
+                      child: Icon(
+                        FeatherIcons.play,
+                        color: Colors.white,
+                        size: 20.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              title: Text(item.title),
+              subtitle: Text(item.artist),
+              contentPadding: EdgeInsets.symmetric(horizontal: 30.0),
+            ),
+            Divider(
+              indent: 70.0,
+            )
+          ],
+        );
+      }).toList()),
+      AudioServiceWidget(
+        child: StreamBuilder<AudioState>(
+          stream: _audioStateStream,
+          builder: (context, snapshot) {
+            final audioState = snapshot.data;
+            final queue = audioState?.queue;
+            final mediaItem = audioState?.mediaItem;
+            final playbackState = audioState?.playbackState;
+            final processingState =
+                playbackState?.processingState ?? AudioProcessingState.none;
+            playing = playbackState?.playing ?? false;
+            if (AudioService.running)
+              return Positioned.fill(
+                bottom: 80,
+                child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      padding: EdgeInsets.only(right: 20, left: 20),
+                      decoration: BoxDecoration(
+                          color: AppColors.secondaryElement,
+                          borderRadius: BorderRadius.all(Radius.circular(20))),
+                      height: 80,
+                      width: MediaQuery.of(context).size.width * .8,
+                      child: Container(
+                          child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            if (processingState !=
+                                AudioProcessingState.none) ...[
+                              if (mediaItem?.title != null)
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Flexible(
+                                        child: Text(
+                                      mediaItem.artist,
+                                      style: TextStyle(
+                                          color: Color.fromARGB(
+                                              180, 255, 255, 255),
+                                          fontSize: 12),
+                                    )),
+                                    Flexible(
+                                        child: Text(
+                                      mediaItem.title,
+                                      style: TextStyle(
+                                          color: AppColors.secondaryText,
+                                          fontSize: 16),
+                                    )),
+                                  ],
+                                ),
+                              Spacer(),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(
+                                      FeatherIcons.skipBack,
+                                      color: Colors.white,
+                                    ),
+                                    iconSize: 30,
+                                    onPressed: () {
+                                      if (mediaItem == queue.first) {
+                                        return;
+                                      }
+                                      AudioService.skipToPrevious();
+                                    },
+                                  ),
+                                  !playing
+                                      ? IconButton(
+                                          icon: Icon(
+                                            FeatherIcons.playCircle,
+                                            color: Colors.white,
+                                          ),
+                                          iconSize: 30.0,
+                                          onPressed: AudioService.play,
+                                        )
+                                      : IconButton(
+                                          icon: Icon(
+                                            FeatherIcons.pauseCircle,
+                                            color: Colors.white,
+                                          ),
+                                          iconSize: 30.0,
+                                          onPressed: AudioService.pause,
+                                        ),
+                                  IconButton(
+                                    icon: Icon(
+                                      FeatherIcons.skipForward,
+                                      color: Colors.white,
+                                    ),
+                                    iconSize: 30,
+                                    onPressed: () {
+                                      if (mediaItem == queue.last) {
+                                        return;
+                                      }
+                                      AudioService.skipToNext();
+                                    },
+                                  ),
+                                  // IconButton(
+                                  //   icon: Icon(
+                                  //     FeatherIcons.stopCircle,
+                                  //     color: Colors.white,
+                                  //   ),
+                                  //   iconSize: 30.0,
+                                  //   onPressed: AudioService.stop,
+                                  // ),
+                                ],
+                              )
+                            ]
+                          ],
+                        ),
+                      )),
+                    )),
+              );
+
+            return Container();
+          },
         ),
-      ]
-    );
-  } 
+      )
+    ]);
+  }
 
   Widget songsStream() {
     return StreamBuilder(
-      stream: bloc.musicStream,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          switch (snapshot.data.status) {
-            case Status.LOADING:
-              return Center(
-                child: Container(),
-              );
-              break;
-            case Status.DONE:
-              items = snapshot.data.data.data.content;
-              break;
-            case Status.ERROR:
-            return SizedBox();
-              break;
-            default:
+        stream: bloc.musicStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            switch (snapshot.data.status) {
+              case Status.LOADING:
+                return Center(
+                  child: Container(),
+                );
+                break;
+              case Status.DONE:
+                items = snapshot.data.data.data.content;
+                break;
+              case Status.ERROR:
+                return SizedBox();
+                break;
+              default:
+            }
           }
-        }
-        return Column(
-          children: [
+          return Column(children: [
             buildSongRequests(),
             SizedBox(height: 25.0),
             buildPlaylist()
-          ]
-        );
-      }
-    );
+          ]);
+        });
   }
 
   Widget buildBody() {
@@ -312,11 +448,7 @@ class _PlaylistState extends State<Playlist> {
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            buildTop(),
-            SizedBox(height: 20.0),
-            songsStream()
-          ],
+          children: [buildTop(), SizedBox(height: 20.0), songsStream()],
         ),
       ),
     );
@@ -659,6 +791,57 @@ class _PlaylistState extends State<Playlist> {
       callback();
     });
   }
+
+  _startAudioPlayerBtn(params) async {
+    await AudioService.start(
+      backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
+      androidNotificationChannelName: 'Audio Player',
+      androidNotificationColor: 0xFF2196f3,
+      androidNotificationIcon: 'mipmap/ic_launcher',
+      params: params,
+    );
+    setState(() {});
+  }
+
+  Widget positionIndicator(MediaItem mediaItem, PlaybackState state) {
+    double seekPos;
+    return StreamBuilder(
+      stream: Rx.combineLatest2<double, double, double>(
+          _dragPositionSubject.stream,
+          Stream.periodic(Duration(milliseconds: 200)),
+          (dragPosition, _) => dragPosition),
+      builder: (context, snapshot) {
+        double position =
+            snapshot.data ?? state.currentPosition.inMilliseconds.toDouble();
+        double duration = mediaItem?.duration?.inMilliseconds?.toDouble();
+        return Column(
+          children: [
+            if (duration != null)
+              Slider(
+                min: 0.0,
+                max: duration,
+                value: seekPos ?? max(0.0, min(position, duration)),
+                onChanged: (value) {
+                  _dragPositionSubject.add(value);
+                },
+                onChangeEnd: (value) {
+                  AudioService.seekTo(Duration(milliseconds: value.toInt()));
+                  // Due to a delay in platform channel communication, there is
+                  // a brief moment after releasing the Slider thumb before the
+                  // new position is broadcast from the platform side. This
+                  // hack is to hold onto seekPos until the next state update
+                  // comes through.
+                  // TODO: Improve this code.
+                  seekPos = value;
+                  _dragPositionSubject.add(null);
+                },
+              ),
+            Text("${state.currentPosition}"),
+          ],
+        );
+      },
+    );
+  }
 }
 
 class _SystemPadding extends StatelessWidget {
@@ -674,4 +857,22 @@ class _SystemPadding extends StatelessWidget {
         duration: const Duration(milliseconds: 300),
         child: child);
   }
+}
+
+Stream<AudioState> get _audioStateStream {
+  return Rx.combineLatest3<List<MediaItem>, MediaItem, PlaybackState,
+      AudioState>(
+    AudioService.queueStream,
+    AudioService.currentMediaItemStream,
+    AudioService.playbackStateStream,
+    (queue, mediaItem, playbackState) => AudioState(
+      queue,
+      mediaItem,
+      playbackState,
+    ),
+  );
+}
+
+void _audioPlayerTaskEntrypoint() async {
+  AudioServiceBackground.run(() => AudioPlayerTask());
 }
