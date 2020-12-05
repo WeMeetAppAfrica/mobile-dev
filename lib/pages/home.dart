@@ -56,13 +56,10 @@ class _HomePageState extends State<HomePage> {
       List data = res["data"]["content"] as List;
 
       Map mtL = model.matchList ?? {};
-      Map matches = {};
 
       data.map((e) => UserModel.fromMap(e)).toList().forEach((u) {
-        matches["${u.id}"] = {"name": u.fullName, "image": u.profileImage};
+        mtL["${u.id}"] = {"name": u.fullName, "image": u.profileImage};
       });
-
-      mtL.addAll(matches);
 
       model.setMatchList(mtL);
     });
