@@ -104,6 +104,7 @@ class _StartPageState extends State<StartPage> {
     });
 
     firebaseMessaging.getToken().then((token) {
+      print('pushh $token');
       model.setPushToken(token);
     }).catchError((err) {
       print('err: $err');
