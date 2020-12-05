@@ -398,7 +398,7 @@ class _PlaylistState extends State<Playlist> {
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -20,52 +20,7 @@ class MusicPlayerComponent extends StatefulWidget {
 
 class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
 
-  bool show = false;
-  MediaItem currentItem;
-
-  StreamSubscription _runningSub;
-
   MediaQueryData mQuery;
-
-  @override
-  void initState() { 
-    super.initState();
-
-    // runing sub
-    _runningSub = AudioService.currentMediaItemStream.listen(onCurrentRunning);
-    
-  }
-
-  @override
-  void dispose() {
-    _runningSub?.cancel();
-    
-    super.dispose();
-  }
-
-  void onCurrentRunning(MediaItem val) {
-    if(!mounted) {
-      return;
-    }
-
-    print("New Media: ${val?.id}");
-
-    setState(() {
-      show = val != null;
-      currentItem = val;
-    });
-
-  }
-
-  void setShow(bool val) async {
-    await Future.delayed(Duration(milliseconds: 1000));
-    if(widget.onShow != null) {
-      widget.onShow(val);
-      setState(() {
-        show = val;        
-      });
-    }
-  }
 
   Widget buildBtn({IconData icon, bool visible = false, VoidCallback callback}) {
 
@@ -136,7 +91,7 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
           playbackState?.processingState ?? AudioProcessingState.none;
           final playing = playbackState?.playing ?? false;
 
-          if(mediaItem == null) {
+          if(!AudioService.running) {
             return SizedBox();
           }
 
