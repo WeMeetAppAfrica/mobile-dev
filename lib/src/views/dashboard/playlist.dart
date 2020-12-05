@@ -8,6 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/dashboard/audioplayertask.dart';
@@ -66,8 +67,6 @@ class _PlaylistState extends State<Playlist> {
       return;
     }
 
-    print("Audio queue length: ${val.length}");
-
     setState(() {
       queue = val ?? [];     
     });
@@ -109,15 +108,17 @@ class _PlaylistState extends State<Playlist> {
   void _playItem(mm.Content item) async {
     print("Play: ${item.title} by ${item.artist}");
 
-    List list = queue;
-    int i = queue.indexWhere((e) => e.id == item.songUrl);
-    if(i >= 0) {
-      MediaItem it = list[i];
-      list.removeAt(i);
-      list.insert(0, it);
+    if(AudioService.running) {
+      AudioService.skipToQueueItem(item.songUrl);
+      return;
     }
-    print(list.length);
-    var params = {"data": list.map((e) => e.toJson()).toList()};
+
+    List<dynamic> list = List();
+    for (int i = 0; i < 2; i++) {
+      var m = queue[i].toJson();
+      list.add(m);
+    }
+    var params = {"data": list};
     await AudioService.start(
       backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
       androidNotificationChannelName: 'Audio Player',
@@ -400,6 +401,134 @@ class _PlaylistState extends State<Playlist> {
       backgroundColor: Colors.white,
       appBar: AppBar(),
       body: buildBody(),
+      // bottomNavigationBar: Column(
+      //   mainAxisSize: MainAxisSize.min,
+      //   children: [
+      //       AudioServiceWidget(
+      //         child: StreamBuilder<AudioState>(
+      //           stream: _audioStateStream,
+      //           builder: (context, snapshot) {
+      //             final audioState = snapshot.data;
+      //             final queue = audioState?.queue;
+      //             final mediaItem = audioState?.mediaItem;
+      //             final playbackState = audioState?.playbackState;
+      //             final processingState =
+      //                 playbackState?.processingState ?? AudioProcessingState.none;
+      //             final playing = playbackState?.playing ?? false;
+      //             if (AudioService.running)
+      //               return Positioned.fill(
+      //                 bottom: 80,
+      //                 child: Align(
+      //                     alignment: Alignment.bottomCenter,
+      //                     child: Container(
+      //                       padding: EdgeInsets.only(right: 20, left: 20),
+      //                       decoration: BoxDecoration(
+      //                           color: AppColors.secondaryElement,
+      //                           borderRadius: BorderRadius.all(Radius.circular(20))),
+      //                       height: 80,
+      //                       width: MediaQuery.of(context).size.width * .8,
+      //                       child: Container(
+      //                           child: Container(
+      //                         width: MediaQuery.of(context).size.width,
+      //                         child: Row(
+      //                           mainAxisAlignment: MainAxisAlignment.center,
+      //                           crossAxisAlignment: CrossAxisAlignment.center,
+      //                           mainAxisSize: MainAxisSize.max,
+      //                           children: [
+      //                             if (processingState !=
+      //                                 AudioProcessingState.none) ...[
+      //                               if (mediaItem?.title != null)
+      //                                 Column(
+      //                                   mainAxisAlignment: MainAxisAlignment.center,
+      //                                   crossAxisAlignment: CrossAxisAlignment.start,
+      //                                   children: [
+      //                                     Flexible(
+      //                                         child: Text(
+      //                                       mediaItem.artist,
+      //                                       style: TextStyle(
+      //                                           color: Color.fromARGB(
+      //                                               180, 255, 255, 255),
+      //                                           fontSize: 12),
+      //                                     )),
+      //                                     Flexible(
+      //                                         child: Text(
+      //                                       mediaItem.title,
+      //                                       style: TextStyle(
+      //                                           color: AppColors.secondaryText,
+      //                                           fontSize: 16),
+      //                                     )),
+      //                                   ],
+      //                                 ),
+      //                               Spacer(),
+      //                               Row(
+      //                                 mainAxisAlignment: MainAxisAlignment.center,
+      //                                 children: [
+      //                                   IconButton(
+      //                                     icon: Icon(
+      //                                       FeatherIcons.skipBack,
+      //                                       color: Colors.white,
+      //                                     ),
+      //                                     iconSize: 30,
+      //                                     onPressed: () {
+      //                                       if (mediaItem == queue.first) {
+      //                                         return;
+      //                                       }
+      //                                       AudioService.skipToPrevious();
+      //                                     },
+      //                                   ),
+      //                                   !playing
+      //                                       ? IconButton(
+      //                                           icon: Icon(
+      //                                             FeatherIcons.playCircle,
+      //                                             color: Colors.white,
+      //                                           ),
+      //                                           iconSize: 30.0,
+      //                                           onPressed: AudioService.play,
+      //                                         )
+      //                                       : IconButton(
+      //                                           icon: Icon(
+      //                                             FeatherIcons.pauseCircle,
+      //                                             color: Colors.white,
+      //                                           ),
+      //                                           iconSize: 30.0,
+      //                                           onPressed: AudioService.pause,
+      //                                         ),
+      //                                   IconButton(
+      //                                     icon: Icon(
+      //                                       FeatherIcons.skipForward,
+      //                                       color: Colors.white,
+      //                                     ),
+      //                                     iconSize: 30,
+      //                                     onPressed: () {
+      //                                       if (mediaItem == queue.last) {
+      //                                         return;
+      //                                       }
+      //                                       AudioService.skipToNext();
+      //                                     },
+      //                                   ),
+      //                                   // IconButton(
+      //                                   //   icon: Icon(
+      //                                   //     FeatherIcons.stopCircle,
+      //                                   //     color: Colors.white,
+      //                                   //   ),
+      //                                   //   iconSize: 30.0,
+      //                                   //   onPressed: AudioService.stop,
+      //                                   // ),
+      //                                 ],
+      //                               )
+      //                             ]
+      //                           ],
+      //                         ),
+      //                       )),
+      //                     )),
+      //               );
+
+      //             return Container();
+      //           },
+      //         )
+      //       )
+      //     ],
+      // ),
       /*body: Container(
         color: Colors.white,
         child: ListView(
@@ -731,6 +860,20 @@ class _PlaylistState extends State<Playlist> {
       callback();
     });
   }
+}
+
+Stream<AudioState> get _audioStateStream {
+  return Rx.combineLatest3<List<MediaItem>, MediaItem, PlaybackState,
+      AudioState>(
+    AudioService.queueStream,
+    AudioService.currentMediaItemStream,
+    AudioService.playbackStateStream,
+    (queue, mediaItem, playbackState) => AudioState(
+      queue,
+      mediaItem,
+      playbackState,
+    ),
+  );
 }
 
 void _audioPlayerTaskEntrypoint() async {

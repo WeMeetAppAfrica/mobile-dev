@@ -34,7 +34,6 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
     // runing sub
     _runningSub = AudioService.currentMediaItemStream.listen(onCurrentRunning);
     
-    // setShow(true);
   }
 
   @override
@@ -48,6 +47,8 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
     if(!mounted) {
       return;
     }
+
+    print("New Media: ${val?.id}");
 
     setState(() {
       show = val != null;
@@ -84,21 +85,40 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
 
   }
 
-  Widget buildControls() {
+  Widget buildControls(MediaItem item, List<MediaItem> queue, [bool playing = false]) {
     return Wrap(
       spacing: 8.0,
       children: [
         buildBtn(
           visible: true,
-          icon: FeatherIcons.skipBack
+          icon: FeatherIcons.skipBack,
+          callback: () {
+            if (item == queue.first) {
+              return;
+            }
+            AudioService.skipToPrevious();
+          }
         ),
         buildBtn(
           visible: true,
-          icon: FeatherIcons.pauseCircle
+          icon: playing ? FeatherIcons.pauseCircle : FeatherIcons.playCircle,
+          callback: () async {
+            if(playing) {
+              await AudioService.pause();
+            } else {
+              await AudioService.play();
+            }
+          }
         ),
         buildBtn(
           visible: true,
-          icon: FeatherIcons.skipForward
+          icon: FeatherIcons.skipForward,
+          callback: () {
+            if (item == queue.last) {
+              return;
+            }
+            AudioService.skipToNext();
+          }
         )
       ].where((e) => e != null).toList(),
     );
@@ -108,110 +128,68 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
   Widget build(BuildContext context) {
     mQuery = MediaQuery.of(context);
 
-    return StreamBuilder<AudioState>(
-      stream: _audioStateStream,
-      builder: (context, snapshot) {
-        final audioState = snapshot.data;
-        final queue = audioState?.queue;
-        final mediaItem = audioState?.mediaItem;
-        final playbackState = audioState?.playbackState;
-        final processingState =
-        playbackState?.processingState ?? AudioProcessingState.none;
-        final playing = playbackState?.playing ?? false;
+    return AudioServiceWidget(
+      child: StreamBuilder<AudioState>(
+        stream: _audioStateStream,
+        builder: (context, snapshot) {
+          final audioState = snapshot.data;
+          List<MediaItem> queue = audioState?.queue;
+          final mediaItem = audioState?.mediaItem;
+          final playbackState = audioState?.playbackState;
+          final processingState =
+          playbackState?.processingState ?? AudioProcessingState.none;
+          final playing = playbackState?.playing ?? false;
 
-        // if(mediaItem == null) {
-        //   return SizedBox();
-        // }
+          if(mediaItem == null) {
+            return SizedBox();
+          }
 
-        return Container(
-          padding: EdgeInsets.symmetric(vertical: 13.0, horizontal: 15.0),
-          margin: widget.margin,
-          width: mQuery.size.width * 0.90,
-          constraints: BoxConstraints(
-            maxWidth: 350.0
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.secondaryElement,
-            borderRadius: BorderRadius.circular(12.0)
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      "${mediaItem?.artist}",
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.w300
+          return Container(
+            padding: EdgeInsets.symmetric(vertical: 13.0, horizontal: 15.0),
+            margin: widget.margin,
+            width: mQuery.size.width * 0.90,
+            constraints: BoxConstraints(
+              maxWidth: 350.0
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.secondaryElement,
+              borderRadius: BorderRadius.circular(12.0)
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        "${mediaItem?.artist} $playing",
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w300
+                        )
+                      ),
+                      SizedBox(height: 5.0),
+                      Text(
+                        "${mediaItem?.title} ${queue?.length}",
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.0
+                        )
                       )
-                    ),
-                    SizedBox(height: 5.0),
-                    Text(
-                      "${mediaItem?.title}",
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14.0
-                      )
-                    )
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(width: 5.0),
-              buildControls()
-            ],
-          )
-        );
-      }
+                SizedBox(width: 5.0),
+                buildControls(mediaItem, queue, playing)
+              ],
+            )
+          );
+        }
+      ),
     );
-
-    // return show ? Container(
-    //   padding: EdgeInsets.symmetric(vertical: 13.0, horizontal: 15.0),
-    //   margin: widget.margin,
-    //   width: mQuery.size.width * 0.90,
-    //   constraints: BoxConstraints(
-    //     maxWidth: 350.0
-    //   ),
-    //   decoration: BoxDecoration(
-    //     color: AppColors.secondaryElement,
-    //     borderRadius: BorderRadius.circular(12.0)
-    //   ),
-    //   child: Row(
-    //     children: [
-    //       Expanded(
-    //         child: Column(
-    //           crossAxisAlignment: CrossAxisAlignment.stretch,
-    //           children: [
-    //             Text(
-    //               "Song Artist",
-    //               overflow: TextOverflow.ellipsis,
-    //               style: TextStyle(
-    //                 color: Colors.white,
-    //                 fontSize: 12.0,
-    //                 fontWeight: FontWeight.w300
-    //               )
-    //             ),
-    //             SizedBox(height: 5.0),
-    //             Text(
-    //               "Song title",
-    //               overflow: TextOverflow.ellipsis,
-    //               style: TextStyle(
-    //                 color: Colors.white,
-    //                 fontSize: 14.0
-    //               )
-    //             )
-    //           ],
-    //         ),
-    //       ),
-    //       SizedBox(width: 5.0),
-    //       buildControls()
-    //     ],
-    //   ),
-    // ) : SizedBox();
   }
 }
 
