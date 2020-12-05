@@ -54,6 +54,7 @@ class _ChatPlayerWidgetState extends State<ChatPlayerWidget> {
   @override
   void initState() {
     super.initState();
+    url = widget.url;
     _initAudioPlayer();
   }
 
@@ -123,11 +124,12 @@ class _ChatPlayerWidgetState extends State<ChatPlayerWidget> {
                     children: [
                       Slider(
                         activeColor: Colors.white,
-                        onChanged: (v) {
+                        onChanged: _duration == null ? null : (v) {
                           final Position = v * _duration.inMilliseconds;
                           _audioPlayer
                               .seek(Duration(milliseconds: Position.round()));
                         },
+                        inactiveColor: Colors.white,
                         value: (_position != null &&
                                 _duration != null &&
                                 _position.inMilliseconds > 0 &&
@@ -138,7 +140,7 @@ class _ChatPlayerWidgetState extends State<ChatPlayerWidget> {
                             : 0.0,
                       ),
                       InkWell(
-                        onTap: _isPlaying ? _pause : _play,
+                        onTap: _duration == null ? null :  _isPlaying ? _pause : _play,
                         child: Icon(_isPlaying ? FeatherIcons.pauseCircle : FeatherIcons.playCircle, color: Colors.white, size: 30.0),
                       ),
                       SizedBox(width: 5.0)
@@ -171,10 +173,10 @@ class _ChatPlayerWidgetState extends State<ChatPlayerWidget> {
 
         // set at least title to see the notification bar on ios.
         _audioPlayer.setNotification(
-          title: 'App Name',
-          artist: 'Artist or blank',
-          albumTitle: 'Name or blank',
-          imageUrl: 'url or blank',
+          title: 'Unknown',
+          artist: 'Unknown',
+          albumTitle: 'albulm',
+          imageUrl: '',
           // forwardSkipInterval: const Duration(seconds: 30), // default is 30s
           // backwardSkipInterval: const Duration(seconds: 30), // default is 30s
           duration: duration,
@@ -228,13 +230,18 @@ class _ChatPlayerWidgetState extends State<ChatPlayerWidget> {
   }
 
   Future<int> _play() async {
+    if(!url.contains("http")){
+      return 0;
+    }
+
+
     final playPosition = (_position != null &&
             _duration != null &&
             _position.inMilliseconds > 0 &&
             _position.inMilliseconds < _duration.inMilliseconds)
         ? _position
         : null;
-    final result = await _audioPlayer.play(url, position: playPosition);
+    final result = await _audioPlayer.play(widget.url, position: playPosition);
     if (result == 1) setState(() => _playerState = PlayerState.playing);
 
     // default playback rate is 1.0
@@ -246,6 +253,11 @@ class _ChatPlayerWidgetState extends State<ChatPlayerWidget> {
   }
 
   Future<int> _pause() async {
+    
+    if(!url.contains("http")){
+      return 0;
+    }
+
     final result = await _audioPlayer.pause();
     if (result == 1) setState(() => _playerState = PlayerState.paused);
     return result;
