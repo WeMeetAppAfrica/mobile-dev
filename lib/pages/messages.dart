@@ -128,6 +128,7 @@ class _MessagesPageState extends State<MessagesPage> {
     });
 
     model.setChatList(cL);
+    socketService.joinRooms(items.map((e) => e.chatId).toList());
   }
 
   void onRoomChanged(String roomId) {
