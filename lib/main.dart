@@ -40,7 +40,7 @@ void main() async {
   }
 
   // start socket service
-  SocketService()..init();
+  // SocketService()..init();
 
   runApp(MyApp(model: model));
 }
