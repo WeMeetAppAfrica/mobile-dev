@@ -63,15 +63,15 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
 
   void postSwipe(int id, String action) {
 
-    if(swipesLeft <= 0) {
-      _showUpgrade();
-      return;
-    }
-
     setState(() {
       left = left - 1;
       users.removeWhere((e) => e.id == id);      
     });
+
+    if(swipesLeft <= 0) {
+      _showUpgrade();
+      return;
+    }
 
     MatchService.postSwipe({"swipeeId": id, "type": action}).then((val){
       print(val);
@@ -364,7 +364,7 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
             ),
             SizedBox(height: 10.0),
             Text(
-              "No match"
+              "No Match Found. Retry"
             )
           ],
         ),
