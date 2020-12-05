@@ -9,25 +9,22 @@ import 'package:wemeet/values/colors.dart';
 enum PlayerState { stopped, playing, paused }
 enum PlayingRouteState { speakers, earpiece }
 
-class PlayerWidget extends StatefulWidget {
+class ChatPlayerWidget extends StatefulWidget {
+
   final String url;
-  final String artwork;
   final PlayerMode mode;
 
-  PlayerWidget(
+  ChatPlayerWidget(
       {Key key,
       @required this.url,
-      this.artwork,
       this.mode = PlayerMode.MEDIA_PLAYER})
       : super(key: key);
 
   @override
-  State<StatefulWidget> createState() {
-    return _PlayerWidgetState(url, mode);
-  }
+  State<StatefulWidget> createState() =>  _ChatPlayerWidgetState();
 }
 
-class _PlayerWidgetState extends State<PlayerWidget> {
+class _ChatPlayerWidgetState extends State<ChatPlayerWidget> {
   String url;
   PlayerMode mode;
 
@@ -52,8 +49,6 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   get _isPlayingThroughEarpiece =>
       _playingRouteState == PlayingRouteState.earpiece;
-
-  _PlayerWidgetState(this.url, this.mode);
 
   @override
   void initState() {
