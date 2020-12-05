@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:wemeet/services/socket.dart';
 
 import 'package:wemeet/models/app.dart';
+import 'package:wemeet/providers/data.dart';
 
 import 'app.dart';
 
@@ -22,6 +23,10 @@ void main() async {
   // initialize shared preference
   prefs = await SharedPreferences.getInstance();
 
+  // get locationFilter
+  
+  DataProvider().setlocationFilter(prefs.getString('locationFilter'));
+
   // initialize AppModel
   AppModel model = AppModel();
 
@@ -34,7 +39,8 @@ void main() async {
     model.init({}, prefs);
   }
 
-  // SocketService()..init();
+  // start socket service
+  SocketService()..init();
 
   runApp(MyApp(model: model));
 }

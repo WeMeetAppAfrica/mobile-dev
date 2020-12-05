@@ -36,6 +36,13 @@ class DataProvider {
     _pushToken = t;
   }
 
+  // Location filter
+  String _locationFilter = "true";
+  String get locationFilter => _locationFilter;
+  void setlocationFilter(String val) {
+    _locationFilter = val ?? "true";
+  }
+
   // User
   UserModel _user;
   UserModel get user => _user;
