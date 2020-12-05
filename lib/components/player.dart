@@ -69,17 +69,13 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
 
   Widget buildBtn({IconData icon, bool visible = false, VoidCallback callback}) {
 
-    if(!visible) {
-      return null;
-    }
-
     return InkWell(
-      onTap: callback,
+      onTap: !visible ? null : callback,
       child: Container(
         alignment: Alignment.center,
         width: 40.0,
         height: 40.0,
-        child: Icon(icon, color: Colors.white),
+        child: Icon(icon, color: visible ? Colors.white : Colors.transparent),
       ),
     );
 
@@ -90,7 +86,7 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
       spacing: 8.0,
       children: [
         buildBtn(
-          visible: true,
+          visible: item != queue.first,
           icon: FeatherIcons.skipBack,
           callback: () {
             if (item == queue.first) {
@@ -111,7 +107,7 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
           }
         ),
         buildBtn(
-          visible: true,
+          visible: item != queue.last,
           icon: FeatherIcons.skipForward,
           callback: () {
             if (item == queue.last) {
