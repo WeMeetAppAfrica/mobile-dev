@@ -15,6 +15,8 @@ import 'package:wemeet/src/resources/api_response.dart';
 import 'package:rxdart/rxdart.dart';
 import '../resources/repository.dart';
 
+import 'package:wemeet/providers/data.dart';
+
 class Bloc {
   Repository _userRepository;
 
@@ -122,6 +124,8 @@ class Bloc {
       ProfileModel user = await _userRepository.updateProfile(request, token);
       print('object $user');
       profileSink.add(ApiResponse.done(user));
+
+      DataProvider().reloadData();
     } catch (e) {
       profileSink.add(ApiResponse.error(e.toString()));
       print(e);
@@ -247,6 +251,8 @@ class Bloc {
       PayModel user = await _userRepository.upgradePlan(request, token);
       print(user);
       paySink.add(ApiResponse.upgradePlan(amount.toString(), user));
+
+      DataProvider().reloadData();
     } catch (e) {
       paySink.add(ApiResponse.error(e.toString()));
       try {
