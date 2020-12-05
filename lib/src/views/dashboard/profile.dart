@@ -26,6 +26,8 @@ import 'package:wemeet/src/views/dashboard/updatepassword.dart';
 import 'package:wemeet/src/views/dashboard/updatepicture.dart';
 import 'package:wemeet/values/values.dart';
 
+import 'package:wemeet/providers/data.dart';
+
 class ProfilePage extends StatefulWidget {
   final token;
   ProfilePage({Key key, this.token}) : super(key: key);
@@ -141,11 +143,13 @@ class _ProfilePageState extends State<ProfilePage>
     setState(() {
       locationFilter = prefs.getString('locationFilter') ?? 'true';
     });
+    DataProvider().setlocationFilter(locationFilter);
   }
 
   _setPref() async {
     prefs = await SharedPreferences.getInstance();
     prefs.setString('locationFilter', locationFilter);
+    DataProvider().setlocationFilter(locationFilter);
   }
 
   initSocket() async {

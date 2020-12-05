@@ -18,7 +18,6 @@ class DataProvider {
   void setToken(String t){
     print(t);
     _token = t;
-    print("### setting token: $t");
   }
 
   String _messageToken;
@@ -27,7 +26,21 @@ class DataProvider {
   void setMessageToken(String t){
     print(t);
     _messageToken = t;
-    print("### setting message token: $t");
+  }
+
+  String _pushToken;
+  String get pushToken => _pushToken;
+
+  void setPushToken(String t){
+    print(t);
+    _pushToken = t;
+  }
+
+  // Location filter
+  String _locationFilter = "true";
+  String get locationFilter => _locationFilter;
+  void setlocationFilter(String val) {
+    _locationFilter = val ?? "true";
   }
 
   // User
@@ -36,7 +49,6 @@ class DataProvider {
 
   void setUser(UserModel val) {
     _user = val;
-    print("### setting user");
   }
 
 }

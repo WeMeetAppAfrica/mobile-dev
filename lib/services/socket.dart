@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:socket_io_client/socket_io_client.dart';
 
-import 'package:wemeet/src/models/chat_model.dart';
+import 'package:wemeet/models/chat.dart';
 
 class SocketService {
 
@@ -86,6 +86,7 @@ class SocketService {
       'https://dev.wemeet.africa/api/messaging-service/socket',
       OptionBuilder()
         .setTransports(['websocket'])
+        .setTimeout(20000)
         .build()
     );
 

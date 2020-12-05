@@ -37,7 +37,7 @@ class WeMeetAPI {
   }
 
   // Do GET request
-  Future get(String endpoint, {Map query, bool token = true}) async {
+  Future get(String endpoint, {Map query, bool token = true, String reqToken}) async {
 
     String url =
         _getUrl(endpoint) + ((query != null) ? "?" + composeQuery(query) : "");
@@ -50,7 +50,7 @@ class WeMeetAPI {
     var request = await _httpClient.openUrl("GET", uri);
     request.headers.set(HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
     if(token){
-      request.headers.set(HttpHeaders.authorizationHeader, "Bearer ${_dP.token}");
+      request.headers.set(HttpHeaders.authorizationHeader, "Bearer ${reqToken ?? _dP.token}");
     }
     
     var response = await request.close();
@@ -65,7 +65,7 @@ class WeMeetAPI {
   }
 
   // Do POST request
-  Future post(String endpoint, {dynamic data, bool token = true}) async{
+  Future post(String endpoint, {dynamic data, bool token = true, String reqToken}) async{
 
     String u = _getUrl(endpoint);
     Uri uri = Uri.parse(u);
@@ -74,7 +74,7 @@ class WeMeetAPI {
     var request = await _httpClient.postUrl(uri);
     request.headers.set(HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
     if(token){
-      request.headers.set(HttpHeaders.authorizationHeader, "Bearer ${_dP.token}");
+      request.headers.set(HttpHeaders.authorizationHeader, "Bearer ${reqToken ?? _dP.token}");
     }
     if(data != null){
       request.write(jsonEncode(data));
@@ -91,7 +91,7 @@ class WeMeetAPI {
   }
 
   // Do Put request
-  Future put(String endpoint, {dynamic data, bool token = true}) async {
+  Future put(String endpoint, {dynamic data, bool token = true, String reqToken}) async {
 
     String u = _getUrl(endpoint);
     Uri uri = Uri.parse(u);
@@ -100,7 +100,7 @@ class WeMeetAPI {
     var request = await _httpClient.putUrl(uri);
     request.headers.set(HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
     if(token){
-      request.headers.set(HttpHeaders.authorizationHeader, "Bearer ${_dP.token}");
+      request.headers.set(HttpHeaders.authorizationHeader, "Bearer ${reqToken ??_dP.token}");
     }
     if(data != null){
       request.write(jsonEncode(data));
@@ -117,7 +117,7 @@ class WeMeetAPI {
   }
 
   // Do DELETE request
-  Future delete(String endpoint, {dynamic data, bool token = true}) async {
+  Future delete(String endpoint, {dynamic data, bool token = true, String reqToken}) async {
 
     String u = _getUrl(endpoint);
     Uri uri = Uri.parse(u);
@@ -126,7 +126,7 @@ class WeMeetAPI {
     var request = await _httpClient.deleteUrl(uri);
     request.headers.set(HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
     if(token){
-      request.headers.set(HttpHeaders.authorizationHeader, "Bearer ${_dP.token}");
+      request.headers.set(HttpHeaders.authorizationHeader, "Bearer ${reqToken ?? _dP.token}");
     }
     if(data != null){
       request.write(jsonEncode(data));

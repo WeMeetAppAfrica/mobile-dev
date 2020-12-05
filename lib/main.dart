@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'dart:async';
+import 'package:firebase_core/firebase_core.dart';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:wemeet/services/socket.dart';
 
 import 'package:wemeet/models/app.dart';
+import 'package:wemeet/providers/data.dart';
 
 import 'app.dart';
 
@@ -18,8 +17,15 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize firebase
+  await Firebase.initializeApp();
+
   // initialize shared preference
   prefs = await SharedPreferences.getInstance();
+
+  // get locationFilter
+  
+  DataProvider().setlocationFilter(prefs.getString('locationFilter'));
 
   // initialize AppModel
   AppModel model = AppModel();
@@ -33,6 +39,7 @@ void main() async {
     model.init({}, prefs);
   }
 
+  // start socket service
   SocketService()..init();
 
   runApp(MyApp(model: model));

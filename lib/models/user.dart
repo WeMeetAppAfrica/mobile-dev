@@ -22,6 +22,8 @@ class UserModel {
   String profileImage;
   int minAge;
   int maxAge;
+  int distanceInKm;
+  List additionalImages;
 
   Map data;
 
@@ -47,6 +49,8 @@ class UserModel {
     this.profileImage,
     this.minAge,
     this.maxAge,
+    this.distanceInKm,
+    this.additionalImages,
 
     this.data
   });
@@ -74,6 +78,9 @@ class UserModel {
       suspended: res["suspended"] ?? false,
       minAge: ensureInt(res["minAge"]),
       maxAge: ensureInt(res["maxAge"]),
+      distanceInKm: ensureInt(res["distanceInKm"]) ?? 1,
+      additionalImages: res["additionalImages"] ?? [],
+
       data: res
     );
   }
@@ -97,7 +104,6 @@ class UserModel {
       "type": type,
       "minAge": minAge,
       "maxAge": maxAge
-
     });
     return entry;
   }

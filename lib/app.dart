@@ -10,11 +10,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/login.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:wemeet/src/views/dashboard/home.dart';
 import 'package:wemeet/src/views/onboarding/screen1.dart';
 import 'package:wemeet/src/views/onboarding/screen2.dart';
 import 'package:wemeet/src/views/onboarding/screen3.dart';
+
+// # my pages
 import 'package:wemeet/pages/home.dart';
+import 'package:wemeet/pages/start.dart';
+import 'package:wemeet/pages/onboarding.dart';
+import 'package:wemeet/pages/messages.dart';
 
 import 'package:wemeet/models/app.dart';
 
@@ -24,6 +28,19 @@ class MyApp extends StatelessWidget {
   final AppModel model;
 
   const MyApp({Key key, this.model}) : super(key: key);
+
+  Map<String, WidgetBuilder> _buildRoutes() {
+    final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
+      "/": (context) => StartPage(model: model),
+      "/on-boarding": (context) => OnBoardingPage(),
+      "/home": (context) => HomePage(model: model,),
+      "/login": (context) => Login(model: model,),
+      "/kyc": (context) => KYC(),
+      "/messages": (context) => MessagesPage(model: model)
+    };
+
+    return routes;
+  }
 
   // This widget is the root of your application.
   @override
@@ -40,11 +57,19 @@ class MyApp extends StatelessWidget {
             actionsIconTheme: IconThemeData(color: AppColors.primaryText),
             iconTheme: IconThemeData(color: AppColors.primaryText),
             brightness: Brightness.light,
+            textTheme: TextTheme(
+              headline6: TextStyle(
+                color: AppColors.primaryText,
+                fontSize: 20.0,
+                fontFamily: 'Berkshire Swash',
+              ),
+            ),
             color: Colors.white,
             elevation: 0.0
-          )
+          ),
         ),
-        home: MyHomePage(title: 'WeMeet - Swipe'),
+        // home: MyHomePage(title: 'WeMeet - Swipe'),
+        routes: _buildRoutes(),
       ),
     );
   }
@@ -217,8 +242,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: token != null
           ? passKYC
-              // ? HomePage(token: token) 
-              ? Home(token: token)
+              ? HomePage() 
+              // ? Home(token: token)
               : KYC()
           : passWalkthrough
               ? Login()

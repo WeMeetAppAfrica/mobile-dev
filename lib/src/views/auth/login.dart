@@ -19,8 +19,11 @@ import 'package:wemeet/src/views/dashboard/home.dart';
 
 import 'package:wemeet/values/values.dart';
 
+import 'package:wemeet/models/app.dart';
+
 class Login extends StatefulWidget {
-  Login({Key key}) : super(key: key);
+  final AppModel model;
+  Login({Key key, this.model}) : super(key: key);
 
   @override
   _LoginState createState() => _LoginState();
@@ -39,11 +42,15 @@ class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
   LatLng _center;
   Position currentLocation;
+
+  AppModel model;
+
   @override
   void initState() {
     super.initState();
+
+    model = widget.model;
     // initPlatformState();
-    print('asd');
     _getCurrentLocation();
     _getDevice();
   }
@@ -112,6 +119,12 @@ class _LoginState extends State<Login> {
   }
 
   _setUser(user, token) async {
+
+    // set model user data
+    model.setUserMap(user.jsonData);
+    model.setToken(token);
+
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('accessToken', token);
     prefs.setString('id', user.id.toString());
@@ -163,15 +176,25 @@ class _LoginState extends State<Login> {
                           msg: 'Please complete your profile');
                     }
                     myCallback(() {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              snapshot.data.data.data.user.profileImage == null
-                                  ? KYC()
-                                  : Home(token: token),
-                        ),
+
+                      if(snapshot.data.data.data.user.profileImage == null) {
+
+                      }
+
+                      Navigator.of(context).pushReplacementNamed(
+                        snapshot.data.data.data.user.profileImage == null ? "/kyc" : "/home"
                       );
+
+
+                      // Navigator.pushReplacement(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) =>
+                      //         snapshot.data.data.data.user.profileImage == null
+                      //             ? KYC()
+                      //             : Home(token: token),
+                      //   ),
+                      // );
                     });
                   } else {
                     bloc.getLoginEmailToken(token);
@@ -265,6 +288,7 @@ class _LoginState extends State<Login> {
                                   }
                                   return null;
                                 },
+                                keyboardType: TextInputType.emailAddress,
                                 controller: emailController,
                                 decoration: InputDecoration(
                                   prefixIcon: Icon(
@@ -349,9 +373,9 @@ class _LoginState extends State<Login> {
                                         final data = {
                                           "deviceId": pushToken,
                                           "email": emailController.text,
-                                          "latitude": _currentPosition.latitude,
+                                          "latitude": _currentPosition?.latitude,
                                           "longitude":
-                                              _currentPosition.longitude,
+                                              _currentPosition?.longitude,
                                           "password": passwordController.text,
                                         };
                                         print('login data');

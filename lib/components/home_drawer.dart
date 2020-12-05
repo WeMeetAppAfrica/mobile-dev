@@ -12,7 +12,6 @@ import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/values/colors.dart';
 
-import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/src/views/dashboard/profile.dart';
 import 'package:wemeet/src/views/dashboard/playlist.dart';
 import 'package:wemeet/src/views/dashboard/payment.dart';
@@ -53,14 +52,8 @@ class HomeDrawer extends StatelessWidget {
     prefs.setString('locationFilter', locationFilter);
     prefs.setBool('passWalkthrough', true);
 
-    Navigator.pushAndRemoveUntil(
-      ctx,
-      MaterialPageRoute(
-        builder: (context) => Login(),
-      ),
-      (Route<dynamic> route) => false).then((value){
-        model.logOut();
-      });
+    Navigator.of(ctx).pushNamedAndRemoveUntil("/login", (route) => false);
+    model.logOut();
   }
 
 
@@ -73,8 +66,8 @@ class HomeDrawer extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
-            padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+            margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
+            padding: EdgeInsets.symmetric(horizontal: 17.0, vertical: 10.0),
             decoration: BoxDecoration(
               color: shade ? AppColors.secondaryElement : null,
               borderRadius: BorderRadius.circular(10.0)
@@ -124,7 +117,6 @@ class HomeDrawer extends StatelessWidget {
               width: 64, 
               height: 64.0,
               decoration: BoxDecoration(
-                color: Colors.red,
                 borderRadius: BorderRadius.circular(10.0),
                 image: DecorationImage(
                   image: (user.profileImage == null) ? Image.asset("assets/images/profile_avatar.png") : CachedNetworkImageProvider(user.profileImage),
