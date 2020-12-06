@@ -39,7 +39,7 @@ dependencies:
   url_launcher: ^5.7.10
   geolocator: ^6.1.1
   google_maps_webservice: ^0.0.18
-  flutter_local_notifications: ^3.0.0
+  flutter_local_notifications: ^3.0.2
   place_picker: ^0.9.16
   cached_network_image: ^2.3.2+1
   flutter_tindercard: ^0.2.0

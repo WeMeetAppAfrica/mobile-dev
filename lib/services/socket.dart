@@ -81,7 +81,7 @@ class SocketService {
   }
 
   void _connect() async {
-    print("...connecting");
+    // print("...connecting");
     _socket = io(
       'https://dev.wemeet.africa/api/messaging-service/socket',
       OptionBuilder()
@@ -92,7 +92,7 @@ class SocketService {
 
     // Socket on connection
     _socket.onConnect((data) {
-      print("##### Socket is connected");
+      // print("##### Socket is connected");
 
       // make the socket alive
       _alive = true;

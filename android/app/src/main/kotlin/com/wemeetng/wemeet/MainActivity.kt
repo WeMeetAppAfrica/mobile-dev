@@ -1,4 +1,4 @@
-package africa.wemeet.dev
+package com.africa.wemeet
 
 import io.flutter.embedding.android.FlutterActivity
 

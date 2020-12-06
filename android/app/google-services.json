@@ -32,10 +32,46 @@
               "client_type": 3
             },
             {
-              "client_id": "277983141718-ofcia7h48lsp9mmbspiphelsj0hbompi.apps.googleusercontent.com",
+              "client_id": "277983141718-dvoblid7c9lv35aut7li4lp4dvdffnm4.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.wemeetng.wemeet"
+                "bundle_id": "com.africa.wemeet"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:277983141718:android:83a16bd8287e239c51c0f7",
+        "android_client_info": {
+          "package_name": "com.africa.wemeet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "277983141718-1ri66qgem90bh35iqmlpf35k32cjm11k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8H-Y_8OCNbfAUnc0ySjBDP5NAyUVRXxs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "277983141718-1ri66qgem90bh35iqmlpf35k32cjm11k.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "277983141718-dvoblid7c9lv35aut7li4lp4dvdffnm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.africa.wemeet"
               }
             }
           ]
@@ -68,10 +104,10 @@
               "client_type": 3
             },
             {
-              "client_id": "277983141718-ofcia7h48lsp9mmbspiphelsj0hbompi.apps.googleusercontent.com",
+              "client_id": "277983141718-dvoblid7c9lv35aut7li4lp4dvdffnm4.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.wemeetng.wemeet"
+                "bundle_id": "com.africa.wemeet"
               }
             }
           ]

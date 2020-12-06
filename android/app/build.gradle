@@ -39,7 +39,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "africa.wemeet.dev"
+        applicationId "com.africa.wemeet"
         minSdkVersion 16
         multiDexEnabled true
         targetSdkVersion 28
