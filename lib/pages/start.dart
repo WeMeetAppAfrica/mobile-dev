@@ -111,17 +111,18 @@ class _StartPageState extends State<StartPage> {
 
     firebaseMessaging.onTokenRefresh.listen((token) {
       print('new pushh $token');
-      bloc.updateDevice({
-        "newDeviceToken": token,
-        "oldDeviceToken": DataProvider().pushToken
-      });
+      if (DataProvider().pushToken != null)
+        bloc.updateDevice({
+          "newDeviceToken": token,
+          "oldDeviceToken": DataProvider().pushToken
+        });
       model.setPushToken(token);
     });
   }
 
   void showNotification(message) async {
     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-      Platform.isAndroid ? 'com.wemeetng.wemeet' : 'com.wemeetng.wemeet',
+      Platform.isAndroid ? 'africa.wemeet.dev' : 'africa.wemeet.dev',
       'WeMeet',
       'swipe, meet',
       playSound: true,
