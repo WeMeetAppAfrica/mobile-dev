@@ -111,8 +111,10 @@ class _StartPageState extends State<StartPage> {
 
     firebaseMessaging.onTokenRefresh.listen((token) {
       print('new pushh $token');
-
-      bloc.updateDevice({"old": DataProvider().pushToken, "new": token});
+      bloc.updateDevice({
+        "newDeviceToken": token,
+        "oldDeviceToken": DataProvider().pushToken
+      });
       model.setPushToken(token);
     });
   }
