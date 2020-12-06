@@ -19,11 +19,12 @@ import 'package:wemeet/src/views/dashboard/payment.dart';
 
 class HomeDrawer extends StatelessWidget {
 
-  final UserModel user = DataProvider().user;
+  
   final String token = DataProvider().token;
   static AppModel model;
 
   static BuildContext ctx;
+  static UserModel user = DataProvider().user;
 
   void gotoPage(Widget page, [bool clearStack = false]) async {
     await Navigator.pop(ctx);
@@ -138,7 +139,7 @@ class HomeDrawer extends StatelessWidget {
           ),
           SizedBox(height: 5.0),
           Text(
-            "${user.type}",
+            "${user.type ?? ""}",
             style: TextStyle(
               color: Colors.black54,
               fontSize: 14,
@@ -155,6 +156,7 @@ class HomeDrawer extends StatelessWidget {
     return ScopedModelDescendant<AppModel>(
       builder: (context, child, m) {
         model = m;
+        user = model.user;
         return ClipRRect(
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(32.0),
