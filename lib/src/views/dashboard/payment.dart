@@ -36,7 +36,7 @@ class _PaymentState extends State<Payment> {
     super.initState();
 
     PaystackPlugin.initialize(
-        publicKey: 'pk_test_1ee70468f4f53355ca5b88f3f4d4ac0dd9504749');
+        publicKey: 'pk_live_b747bf32e4fb87b0824a49f3dc4abb831ac64764');
     _getUser();
     bloc.getPlans(widget.token);
   }
