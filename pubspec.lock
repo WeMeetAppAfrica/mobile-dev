@@ -699,7 +699,7 @@ packages:
       name: timezone
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.7"
+    version: "0.5.9"
   tuple:
     dependency: "direct main"
     description:

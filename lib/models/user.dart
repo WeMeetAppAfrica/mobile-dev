@@ -90,8 +90,8 @@ class UserModel {
   }
 
   Map toMap() {
-    Map entry = data ?? {};
-    entry.addAll({
+    Map entry = {
+      "id": id,
       "email": email,
       "phone": phone,
       "firstName": firstName,
@@ -102,9 +102,11 @@ class UserModel {
       "workStatus": workStatus,
       "genderPreference": genderPreference,
       "type": type,
+      "distanceInKm": distanceInKm,
       "minAge": minAge,
       "maxAge": maxAge
-    });
+    };
+
     return entry;
   }
 }

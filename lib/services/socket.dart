@@ -86,7 +86,7 @@ class SocketService {
       'https://dev.wemeet.africa/api/messaging-service/socket',
       OptionBuilder()
         .setTransports(['websocket'])
-        .setTimeout(20000)
+        // .setTimeout(20000)
         .build()
     );
 

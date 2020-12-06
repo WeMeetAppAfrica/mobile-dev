@@ -82,13 +82,13 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
   }
 
   void postSwipe(int id, String action) {
-
+    
     setState(() {
       left = left - 1;
       users.removeWhere((e) => e.id == id);      
     });
 
-    if(swipesLeft <= 0) {
+    if(swipesLeft == 0) {
       _showUpgrade();
       return;
     }

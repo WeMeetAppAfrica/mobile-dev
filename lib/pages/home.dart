@@ -125,9 +125,13 @@ class _HomePageState extends State<HomePage> {
             child: HomeSwipeComponent(),
           ),
           Center(
-            child: MusicPlayerComponent(
-              margin: EdgeInsets.symmetric(vertical: 30.0),
-            )
+            // child: MusicPlayerComponent(
+            //   margin: EdgeInsets.symmetric(vertical: 30.0),
+            // )
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 30.0),
+              child: MusicWidget(),
+            ),
           )
         ].where((e) => e != null).toList(),
       ),

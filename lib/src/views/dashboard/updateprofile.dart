@@ -10,6 +10,7 @@ import 'package:wemeet/src/resources/api_response.dart';
 // import 'package:wemeet/src/views/auth/picture.dart';
 // import 'package:wemeet/src/views/dashboard/profile.dart';
 // import 'package:wemeet/src/views/dashboard/updatepicture.dart';
+import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/values/values.dart';
 
 class UpdateProfile extends StatefulWidget {
@@ -60,7 +61,8 @@ class _UpdateProfileState extends State<UpdateProfile> {
   _getUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     token = prefs.getString('accessToken');
-    user = jsonDecode(prefs.getString('user'));
+    // user = jsonDecode(prefs.getString('user'));
+    user = DataProvider().user.toMap();
     bloc.getProfile(token);
   }
 

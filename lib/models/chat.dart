@@ -29,7 +29,7 @@ class ChatModel {
     return ChatModel(
       id: data["id"],
       content: data["content"],
-      sentAt: DateTime.tryParse(data["sent_at"]),
+      sentAt: DateTime.tryParse(data["sent_at"]).add(Duration(hours: 1)),
       type: data["type"] ?? "",
       receiverId: data["receiver_id"],
       senderId: data["sender_id"],
@@ -47,12 +47,12 @@ class ChatModel {
       return formatDate(sentAt, [hh, ':', nn, ' ', am]);
     } 
 
-    return formatDate(sentAt.toLocal(), [dd, ' ', M, ', ', yyyy]);
+    return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
 
   }
 
   String get chatDate {
-    return formatDate(sentAt.toLocal(), [hh, ':', nn, ' ', am]);
+    return formatDate(sentAt, [hh, ':', nn, ' ', am]);
   }
 
   int get timestamp {
@@ -73,6 +73,6 @@ class ChatModel {
       return "Yesterday";
     }
 
-    return formatDate(sentAt.toLocal(), [dd, ' ', M, ', ', yyyy]);
+    return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
   }
 }
