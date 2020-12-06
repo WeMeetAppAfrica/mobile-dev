@@ -317,7 +317,7 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
             children: [
               RawMaterialButton(
                 onPressed: (){
-                  if(swipesLeft <= 0) {
+                  if(swipesLeft == 0) {
                     _showUpgrade();
                     return;
                   }
@@ -331,7 +331,7 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
               ),
               RawMaterialButton(
                 onPressed: () {
-                  if(swipesLeft <= 0) {
+                  if(swipesLeft == 0) {
                     _showUpgrade();
                     return;
                   }
