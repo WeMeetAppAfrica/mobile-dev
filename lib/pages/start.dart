@@ -6,9 +6,10 @@ import 'dart:convert';
 
 import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/user.dart';
+import 'package:wemeet/providers/data.dart';
+import 'package:wemeet/src/blocs/bloc.dart';
 
 class StartPage extends StatefulWidget {
-
   final AppModel model;
   const StartPage({Key key, this.model}) : super(key: key);
 
@@ -17,7 +18,6 @@ class StartPage extends StatefulWidget {
 }
 
 class _StartPageState extends State<StartPage> {
-
   final firebaseMessaging = FirebaseMessaging();
   final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
@@ -27,7 +27,7 @@ class _StartPageState extends State<StartPage> {
   UserModel user;
 
   @override
-  void initState() { 
+  void initState() {
     super.initState();
 
     model = widget.model;
@@ -37,11 +37,9 @@ class _StartPageState extends State<StartPage> {
     configLocalNotification();
 
     created();
-
   }
 
   void created() async {
-
     setState(() {
       isLoading = true;
     });
@@ -51,28 +49,26 @@ class _StartPageState extends State<StartPage> {
     print("//// Model token: ${model.token}");
 
     // if there is no token go to login
-    if(model.token == null || model.token.isEmpty || model.user == null) {
+    if (model.token == null || model.token.isEmpty || model.user == null) {
       // if first launch got to walkthrough
-      if(model.firstLaunch == "yes") {
+      if (model.firstLaunch == "yes") {
         model.setFirstLaunch("no");
         routeTo("/on-boarding");
         return;
-      } 
+      }
 
       routeTo("/login");
       return;
-      
     }
 
     // if user is not verified
-    if(user.profileImage == null) {
+    if (user.profileImage == null) {
       routeTo("kyc");
       return;
     }
 
     routeTo("/home");
     return;
-
   }
 
   void configLocalNotification() {
@@ -87,27 +83,37 @@ class _StartPageState extends State<StartPage> {
   void configurePush() {
     firebaseMessaging.requestNotificationPermissions();
 
-    firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
-      print('onMessage: $message');
-      Platform.isAndroid
-          ? showNotification(message['notification'])
-          : showNotification(message['aps']['alert']);
-      return;
-    }, 
-    onBackgroundMessage: Platform.isAndroid ? myBackgroundMessageHandler : null,
-    onResume: (Map<String, dynamic> message) {
-      print('onResume: $message');
-      return;
-    }, onLaunch: (Map<String, dynamic> message) {
-      print('onLaunch: $message');
-      return;
-    });
+    firebaseMessaging.configure(
+        onMessage: (Map<String, dynamic> message) {
+          print('onMessage: $message');
+          Platform.isAndroid
+              ? showNotification(message['notification'])
+              : showNotification(message['aps']['alert']);
+          return;
+        },
+        onBackgroundMessage:
+            Platform.isAndroid ? myBackgroundMessageHandler : null,
+        onResume: (Map<String, dynamic> message) {
+          print('onResume: $message');
+          return;
+        },
+        onLaunch: (Map<String, dynamic> message) {
+          print('onLaunch: $message');
+          return;
+        });
 
     firebaseMessaging.getToken().then((token) {
       print('pushh $token');
       model.setPushToken(token);
     }).catchError((err) {
       print('err: $err');
+    });
+
+    firebaseMessaging.onTokenRefresh.listen((token) {
+      print('new pushh $token');
+
+      bloc.updateDevice({"old": DataProvider().pushToken, "new": token});
+      model.setPushToken(token);
     });
   }
 
@@ -131,8 +137,7 @@ class _StartPageState extends State<StartPage> {
   }
 
   void routeTo(String route, [bool delay = true]) async {
-
-    if(delay) {
+    if (delay) {
       await Future.delayed(Duration(seconds: 2));
     }
 
@@ -140,14 +145,14 @@ class _StartPageState extends State<StartPage> {
   }
 
   Widget buildBody() {
-
-    if(isLoading) {
+    if (isLoading) {
       return Center(
         child: SizedBox(
-          width: 25.0,
-          height: 25.0,
-          child: CircularProgressIndicator(strokeWidth: 2.0,)
-        ),
+            width: 25.0,
+            height: 25.0,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.0,
+            )),
       );
     }
 

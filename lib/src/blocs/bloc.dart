@@ -462,6 +462,18 @@ class Bloc {
     }
   }
 
+  updateDevice(request) async {
+    print('request');
+    userSink.add(ApiResponse.loading('Loading...'));
+    try {
+      ApiModel user = await _userRepository.updateDevice(request);
+      userSink.add(ApiResponse.updateDevice(user));
+    } catch (e) {
+      userSink.add(ApiResponse.error(e.toString()));
+      print(e);
+    }
+  }
+
   getLoginEmailToken(token) async {
     print('request');
     loginSink.add(ApiResponse.loading('Loading...'));
