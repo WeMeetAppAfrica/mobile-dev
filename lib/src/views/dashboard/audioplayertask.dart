@@ -107,6 +107,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
   @override
   Future<void> onSkipToQueueItem(String mediaId) async {
     final newIndex = _queue.indexWhere((item) => item.id == mediaId);
+    print("New index is: $newIndex");
     print('_queueIndex');
     print(_queueIndex);
     print(newIndex);

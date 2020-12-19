@@ -40,9 +40,11 @@ class _PlaylistState extends State<Playlist> {
   TextEditingController descController = TextEditingController();
 
   StreamSubscription queueStream;
+  StreamSubscription<MediaItem> itemStream;
 
   List<mm.Content> items = [];
   List<MediaItem> queue = [];
+  bool mediaPlaying = false;
 
   @override
   void initState() {
@@ -50,11 +52,13 @@ class _PlaylistState extends State<Playlist> {
     bloc.getMusic(widget.token);
 
     queueStream = AudioService.queueStream.listen(onQueueChanged);
+    itemStream = AudioService.currentMediaItemStream.listen(onMediaItemChanged);
   }
 
   @override
   void dispose() {
     queueStream?.cancel();
+    itemStream?.cancel();
     super.dispose();
   }
 
@@ -63,9 +67,39 @@ class _PlaylistState extends State<Playlist> {
       return;
     }
 
+    if(val == null) {
+      return;
+    }
+    print(" #Playlist don change oo: ${val.length}");
+
+    print(val.map((e) => e.id).toList());
+
     setState(() {
       queue = val ?? [];     
     });
+  }
+
+  void onMediaItemChanged(MediaItem val) {
+    if(!mounted) {
+      return;
+    }
+
+    if(val == null) {
+      return;
+    }
+
+    int index = items.indexWhere((v) => v.id == int.tryParse(val.id));
+
+    setState(() {
+      items.forEach((i){
+        i.isPlaying = false;
+      });   
+      if(index != -1 && mediaPlaying) {
+        items[index].isPlaying = true;
+      }    
+    });
+
+    print("Current song: Artist: ${val.artist}, Title - ${val.title}");
   }
 
   void updateQueue() async {
@@ -75,12 +109,12 @@ class _PlaylistState extends State<Playlist> {
     }
 
     items.forEach((e) async {
-      MediaItem q = queue.firstWhere((i) => i.id == e.songUrl, orElse: () => null);
+      MediaItem q = queue.firstWhere((i) => i.id == "${e.id}", orElse: () => null);
 
       if(q == null) {
         queue.add(MediaItem(
           album: e.title,
-          id: e.songUrl,
+          id: "${e.id}",
           title: e.title,
           artUri: e.artworkUrl,
           artist: e.artist,
@@ -102,10 +136,10 @@ class _PlaylistState extends State<Playlist> {
   }
 
   void _playItem(mm.Content item) async {
-    print("Play: ${item.title} by ${item.artist}");
 
     if(AudioService.running) {
-      AudioService.skipToQueueItem(item.songUrl);
+      await AudioService.updateQueue(queue);
+      await AudioService.skipToQueueItem("${item.id}");
       return;
     }
 
@@ -311,9 +345,9 @@ class _PlaylistState extends State<Playlist> {
                           shape: BoxShape.circle
                         ),
                         child: Container(
-                          margin: EdgeInsets.only(left: 3.0),
+                          margin: EdgeInsets.only(left: item.isPlaying ? 0.0 : 3.0),
                           child: Icon(
-                            FeatherIcons.play,
+                            item.isPlaying ? FeatherIcons.pause : FeatherIcons.play,
                             color: Colors.white,
                             size: 20.0,
                           ),
@@ -393,7 +427,15 @@ class _PlaylistState extends State<Playlist> {
               // ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: MusicWidget(),
+                child: MusicWidget(
+                  onPlayChanged: (val) {
+                    if(val != null && val) {
+                      setState((){
+                        mediaPlaying = val;
+                      });
+                    }
+                  },
+                ),
               ),
             ),
           )
@@ -651,7 +693,6 @@ class _PlaylistState extends State<Playlist> {
                           }
                           break;
                         case Status.SONGREQUEST:
-                          print('done');
                           bloc.songSink.add(ApiResponse.idle('message'));
                           myCallback(() {
                             setState(() {

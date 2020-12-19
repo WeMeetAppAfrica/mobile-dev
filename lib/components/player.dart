@@ -162,7 +162,15 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
   }
 }
 
-class MusicWidget extends StatelessWidget {
+class MusicWidget extends StatefulWidget {
+  final ValueChanged<bool> onPlayChanged;
+
+  const MusicWidget({Key key, @required this.onPlayChanged}) : super(key: key);
+  @override
+  _MusicWidgetState createState() => _MusicWidgetState();
+}
+
+class _MusicWidgetState extends State<MusicWidget> {
   @override
   Widget build(BuildContext context) {
     return AudioServiceWidget(
@@ -176,6 +184,7 @@ class MusicWidget extends StatelessWidget {
           final processingState =
               playbackState?.processingState ?? AudioProcessingState.none;
           final playing = playbackState?.playing ?? false;
+          widget.onPlayChanged(playing);
           if (AudioService.running)
             return Container(
               padding: EdgeInsets.only(right: 20, left: 20),
