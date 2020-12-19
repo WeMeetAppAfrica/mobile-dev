@@ -42,7 +42,7 @@ void main() async {
 
   // start socket service. Uncomment this on live
   // SocketService().init();
-  // BackgroundSocketService().start("https://dev.wemeet.africa/api/messaging-service/socket");
+  BackgroundSocketService().start("https://dev.wemeet.africa/api/messaging-service/socket");
 
   runApp(MyApp(model: model));
 }
