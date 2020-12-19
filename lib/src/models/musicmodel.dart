@@ -118,6 +118,21 @@ class Content {
         "artworkURL": artworkUrl == null ? null : artworkUrl,
         "uploadedBy": uploadedBy == null ? null : uploadedBy.toJson(),
     };
+
+    String get fileUrl {
+      if(songUrl == null || songUrl.isEmpty) {
+        return "";
+      }
+
+      if(songUrl.length > 5) {
+        List ss = songUrl.split(".");
+        if(ss.isEmpty) {
+          return songUrl + ".mp3";
+        }
+      }
+
+      return songUrl;
+    }
 }
 
 class UploadedBy {

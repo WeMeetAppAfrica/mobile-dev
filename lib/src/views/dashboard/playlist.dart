@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
@@ -15,6 +16,9 @@ import 'package:wemeet/values/values.dart';
 import 'package:wemeet/components/player.dart';
 
 import 'package:wemeet/src/models/musicmodel.dart' as mm;
+
+import 'package:wemeet/services/music.dart';
+import 'package:wemeet/utils/utils.dart';
 
 enum PlayerState { stopped, playing, paused }
 enum PlayingRouteState { speakers, earpiece }
@@ -41,25 +45,64 @@ class _PlaylistState extends State<Playlist> {
 
   StreamSubscription queueStream;
   StreamSubscription<MediaItem> itemStream;
+  StreamSubscription<PlaybackState> playStateStream;
+
 
   List<mm.Content> items = [];
   List<MediaItem> queue = [];
   bool mediaPlaying = false;
+  bool isLoading = false;
+  bool isError = false;
+  String errorText;
 
   @override
   void initState() {
     super.initState();
-    bloc.getMusic(widget.token);
+    // bloc.getMusic(widget.token);
 
     queueStream = AudioService.queueStream.listen(onQueueChanged);
     itemStream = AudioService.currentMediaItemStream.listen(onMediaItemChanged);
+    playStateStream = AudioService.playbackStateStream.listen(onPlayStateChanged);
+
+    fetchSongs();
   }
 
   @override
   void dispose() {
     queueStream?.cancel();
     itemStream?.cancel();
+    playStateStream?.cancel();
     super.dispose();
+  }
+
+  void fetchSongs() async {
+    setState(() {
+      isLoading = true;
+      errorText = null;
+    });
+
+    try {
+      var res = await MusicService.getList();
+      List data = res["data"]["content"];
+      setState(() {
+        items = data.map((e) => mm.Content.fromJson(e)).toList();
+      });
+
+      updateQueue();
+
+    } catch (e) {
+      print(e);
+      String err = kTranslateError(e);
+      if(!err.toLowerCase().contains("token")) {
+        setState(() {
+          errorText = "Could not fetch chats";
+        });
+      }
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   void onQueueChanged(List<MediaItem> val) {
@@ -74,9 +117,9 @@ class _PlaylistState extends State<Playlist> {
 
     print(val.map((e) => e.id).toList());
 
-    setState(() {
-      queue = val ?? [];     
-    });
+    // setState(() {
+    //   queue = val ?? [];     
+    // });
   }
 
   void onMediaItemChanged(MediaItem val) {
@@ -88,7 +131,7 @@ class _PlaylistState extends State<Playlist> {
       return;
     }
 
-    int index = items.indexWhere((v) => v.id == int.tryParse(val.id));
+    int index = items.indexWhere((v) => v.fileUrl == val.id);
 
     setState(() {
       items.forEach((i){
@@ -102,19 +145,42 @@ class _PlaylistState extends State<Playlist> {
     print("Current song: Artist: ${val.artist}, Title - ${val.title}");
   }
 
+  void onPlayStateChanged(PlaybackState val) {
+    if(!mounted) {
+      return;
+    }
+
+    if(val == null) {
+      return;
+    }
+
+    print("Playstate changes: ${val.playing}");
+
+    setState(() {
+      mediaPlaying = val.playing;
+    });
+
+    MediaItem i = AudioService?.currentMediaItem;
+    if(i != null) {
+      onMediaItemChanged(i);
+    }
+  }
+
   void updateQueue() async {
 
     if(!mounted || items.isEmpty) {
       return;
     }
 
+    print(items.map((i) => i.id).toList());
+
     items.forEach((e) async {
-      MediaItem q = queue.firstWhere((i) => i.id == "${e.id}", orElse: () => null);
+      MediaItem q = queue.firstWhere((i) => i.id == e.fileUrl, orElse: () => null);
 
       if(q == null) {
         queue.add(MediaItem(
           album: e.title,
-          id: "${e.id}",
+          id: e.fileUrl,
           title: e.title,
           artUri: e.artworkUrl,
           artist: e.artist,
@@ -137,14 +203,16 @@ class _PlaylistState extends State<Playlist> {
 
   void _playItem(mm.Content item) async {
 
+    print("Playing song with url: ${item.fileUrl}");  
+
     if(AudioService.running) {
-      await AudioService.updateQueue(queue);
-      await AudioService.skipToQueueItem("${item.id}");
+      print("Audio length: ${AudioService.queue.length}"); 
+      await AudioService.skipToQueueItem("${item.fileUrl}");
       return;
     }
 
     List<dynamic> list = List();
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < queue.length; i++) {
       var m = queue[i].toJson();
       list.add(m);
     }
@@ -157,7 +225,7 @@ class _PlaylistState extends State<Playlist> {
       params: params,
     );
 
-    await AudioService.playFromMediaId(item.songUrl);
+    await AudioService.playFromMediaId(item.fileUrl);
   }
 
   Widget buildTop() {
@@ -345,9 +413,9 @@ class _PlaylistState extends State<Playlist> {
                           shape: BoxShape.circle
                         ),
                         child: Container(
-                          margin: EdgeInsets.only(left: item.isPlaying ? 0.0 : 3.0),
+                          margin: EdgeInsets.only(left: (item.isPlaying && mediaPlaying) ? 0.0 : 3.0),
                           child: Icon(
-                            item.isPlaying ? FeatherIcons.pause : FeatherIcons.play,
+                            (item.isPlaying && mediaPlaying) ? FeatherIcons.pause : FeatherIcons.play,
                             color: Colors.white,
                             size: 20.0,
                           ),
@@ -412,7 +480,11 @@ class _PlaylistState extends State<Playlist> {
                 children: [
                   buildTop(),
                   SizedBox(height: 20.0),
-                  songsStream()
+                  buildSongRequests(),
+                  SizedBox(height: 25.0),
+                  buildPlaylist(),
+                  SizedBox(height: 90.0),
+                  // songsStream()
                 ],
               ),
             ),
@@ -427,15 +499,7 @@ class _PlaylistState extends State<Playlist> {
               // ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: MusicWidget(
-                  onPlayChanged: (val) {
-                    if(val != null && val) {
-                      setState((){
-                        mediaPlaying = val;
-                      });
-                    }
-                  },
-                ),
+                child: MusicWidget(),
               ),
             ),
           )

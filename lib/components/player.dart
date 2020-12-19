@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:wemeet/src/views/dashboard/audioplayertask.dart';
 
@@ -163,11 +164,18 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
 }
 
 class MusicWidget extends StatefulWidget {
-  final ValueChanged<bool> onPlayChanged;
 
-  const MusicWidget({Key key, @required this.onPlayChanged}) : super(key: key);
+  const MusicWidget({Key key,}) : super(key: key);
   @override
   _MusicWidgetState createState() => _MusicWidgetState();
+}
+
+bool _canPlayPause(PlaybackState p) {
+  if(p == AudioPlaybackState.none || p == AudioPlaybackState.completed) {
+    return false;
+  }
+
+  return true;
 }
 
 class _MusicWidgetState extends State<MusicWidget> {
@@ -184,7 +192,6 @@ class _MusicWidgetState extends State<MusicWidget> {
           final processingState =
               playbackState?.processingState ?? AudioProcessingState.none;
           final playing = playbackState?.playing ?? false;
-          widget.onPlayChanged(playing);
           if (AudioService.running)
             return Container(
               padding: EdgeInsets.only(right: 20, left: 20),
@@ -246,7 +253,7 @@ class _MusicWidgetState extends State<MusicWidget> {
                               AudioService.skipToPrevious();
                             },
                           ),
-                          !playing
+                          (!playing && _canPlayPause(playbackState))
                               ? IconButton(
                                   icon: Icon(
                                     FeatherIcons.playCircle,
