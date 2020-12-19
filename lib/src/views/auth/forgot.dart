@@ -8,9 +8,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
-import 'package:wemeet/src/views/auth/kyc.dart';
-import 'package:wemeet/src/views/auth/register.dart';
-import 'package:wemeet/src/views/dashboard/home.dart';
 
 import 'package:wemeet/values/values.dart';
 

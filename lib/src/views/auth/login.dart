@@ -343,11 +343,8 @@ class _LoginState extends State<Login> {
                             child: Container(
                               margin: EdgeInsets.only(top: 17, right: 38),
                               child: InkWell(
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ForgotPass(),
-                                  ),
+                                onTap: () => Navigator.pushNamed(
+                                  context, "/forgot-password",
                                 ),
                                 child: Text(
                                   "Forgot Password",
