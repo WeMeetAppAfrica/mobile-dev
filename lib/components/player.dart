@@ -5,6 +5,7 @@ import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:wemeet/components/chat_player.dart';
 import 'package:wemeet/src/views/dashboard/audioplayertask.dart';
 
 import 'package:wemeet/values/colors.dart';
@@ -170,17 +171,40 @@ class MusicWidget extends StatefulWidget {
   _MusicWidgetState createState() => _MusicWidgetState();
 }
 
-bool _canPlayPause(PlaybackState p) {
-  if(p == AudioPlaybackState.none || p == AudioPlaybackState.completed) {
+class _MusicWidgetState extends State<MusicWidget> with AutomaticKeepAliveClientMixin {
+
+  bool isPlaying(PlaybackState s) {
+
+    if(s == null) {
+      return false;
+    }
+
+    // chacke playing
+    if(s.playing) {
+      return true;
+    }
+
     return false;
   }
 
-  return true;
-}
+  void pausePlay({List<MediaItem> queue, PlaybackState st}) async {
+   // check that queue is not empty
+   if(queue == null || queue.isEmpty) {
+     return;
+   }
 
-class _MusicWidgetState extends State<MusicWidget> {
+    // check if playing
+    if(st.playing || st.processingState == AudioPlaybackState.connecting) {
+      await AudioService.pause();
+      return;
+    }
+
+    await AudioService.play();
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return AudioServiceWidget(
       child: StreamBuilder<AudioState>(
         stream: _audioStateStream,
@@ -253,23 +277,53 @@ class _MusicWidgetState extends State<MusicWidget> {
                               AudioService.skipToPrevious();
                             },
                           ),
-                          (!playing && _canPlayPause(playbackState))
-                              ? IconButton(
-                                  icon: Icon(
-                                    FeatherIcons.playCircle,
-                                    color: Colors.white,
-                                  ),
-                                  iconSize: 30.0,
-                                  onPressed: AudioService.play,
-                                )
-                              : IconButton(
-                                  icon: Icon(
-                                    FeatherIcons.pauseCircle,
-                                    color: Colors.white,
-                                  ),
-                                  iconSize: 30.0,
-                                  onPressed: AudioService.pause,
-                                ),
+                          IconButton(
+                            icon: Icon(
+                              playing ? FeatherIcons.pauseCircle : FeatherIcons.playCircle,
+                              color: Colors.white,
+                            ),
+                            iconSize: 30.0,
+                            onPressed: () => pausePlay(
+                              queue: queue,
+                              st: playbackState
+                            ),
+                          ),
+                           
+                          // (!playing && _canPlayPause(playbackState)) ? 
+                          // IconButton(
+                          //         icon: Icon(
+                          //           FeatherIcons.playCircle,
+                          //           color: Colors.white,
+                          //         ),
+                          //         iconSize: 30.0,
+                          //         onPressed: AudioService.play,
+                          //       ) : null,
+                          // (playing && _canPlayPause(playbackState)) ?
+                          // IconButton(
+                          //         icon: Icon(
+                          //           FeatherIcons.pauseCircle,
+                          //           color: Colors.white,
+                          //         ),
+                          //         iconSize: 30.0,
+                          //         onPressed: AudioService.pause,
+                          //       ) : null,     
+                          // (!playing && _canPlayPause(playbackState))
+                          //     ? IconButton(
+                          //         icon: Icon(
+                          //           FeatherIcons.playCircle,
+                          //           color: Colors.white,
+                          //         ),
+                          //         iconSize: 30.0,
+                          //         onPressed: AudioService.play,
+                          //       )
+                          //     : IconButton(
+                          //         icon: Icon(
+                          //           FeatherIcons.pauseCircle,
+                          //           color: Colors.white,
+                          //         ),
+                          //         iconSize: 30.0,
+                          //         onPressed: AudioService.pause,
+                          //       ),
                           IconButton(
                             icon: Icon(
                               FeatherIcons.skipForward,
@@ -291,7 +345,7 @@ class _MusicWidgetState extends State<MusicWidget> {
                           //   iconSize: 30.0,
                           //   onPressed: AudioService.stop,
                           // ),
-                        ],
+                        ].where((e) => e != null).toList(),
                       )
                     ]
                   ],
@@ -304,6 +358,10 @@ class _MusicWidgetState extends State<MusicWidget> {
       )
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }
 
 Stream<AudioState> get _audioStateStream {

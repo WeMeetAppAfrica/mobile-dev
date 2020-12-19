@@ -43,7 +43,6 @@ class _PlaylistState extends State<Playlist> {
   bool allowSend = true;
   TextEditingController descController = TextEditingController();
 
-  StreamSubscription queueStream;
   StreamSubscription<MediaItem> itemStream;
   StreamSubscription<PlaybackState> playStateStream;
 
@@ -54,13 +53,13 @@ class _PlaylistState extends State<Playlist> {
   bool isLoading = false;
   bool isError = false;
   String errorText;
+  String currentId;
 
   @override
   void initState() {
     super.initState();
     // bloc.getMusic(widget.token);
 
-    queueStream = AudioService.queueStream.listen(onQueueChanged);
     itemStream = AudioService.currentMediaItemStream.listen(onMediaItemChanged);
     playStateStream = AudioService.playbackStateStream.listen(onPlayStateChanged);
 
@@ -69,7 +68,6 @@ class _PlaylistState extends State<Playlist> {
 
   @override
   void dispose() {
-    queueStream?.cancel();
     itemStream?.cancel();
     playStateStream?.cancel();
     super.dispose();
@@ -105,29 +103,16 @@ class _PlaylistState extends State<Playlist> {
     }
   }
 
-  void onQueueChanged(List<MediaItem> val) {
-    if(!mounted) {
-      return;
-    }
-
-    if(val == null) {
-      return;
-    }
-    print(" #Playlist don change oo: ${val.length}");
-
-    print(val.map((e) => e.id).toList());
-
-    // setState(() {
-    //   queue = val ?? [];     
-    // });
-  }
-
   void onMediaItemChanged(MediaItem val) {
     if(!mounted) {
       return;
     }
 
     if(val == null) {
+      setState(() {
+        currentId = null;    
+      });
+      
       return;
     }
 
@@ -139,10 +124,10 @@ class _PlaylistState extends State<Playlist> {
       });   
       if(index != -1 && mediaPlaying) {
         items[index].isPlaying = true;
-      }    
+      }  
+      currentId = val.id;  
     });
 
-    print("Current song: Artist: ${val.artist}, Title - ${val.title}");
   }
 
   void onPlayStateChanged(PlaybackState val) {
@@ -153,8 +138,6 @@ class _PlaylistState extends State<Playlist> {
     if(val == null) {
       return;
     }
-
-    print("Playstate changes: ${val.playing}");
 
     setState(() {
       mediaPlaying = val.playing;
@@ -172,8 +155,6 @@ class _PlaylistState extends State<Playlist> {
       return;
     }
 
-    print(items.map((i) => i.id).toList());
-
     items.forEach((e) async {
       MediaItem q = queue.firstWhere((i) => i.id == e.fileUrl, orElse: () => null);
 
@@ -189,6 +170,15 @@ class _PlaylistState extends State<Playlist> {
         ));
       }
     });
+
+    // check if something is playing;
+    if(currentId != null) {
+      // find media item
+      int index = queue.indexWhere((e) => e.id == currentId);
+      if(index != -1) {
+        onMediaItemChanged(queue[index]);
+      }
+    }
   }
 
   void initPlayer() async {
@@ -203,10 +193,20 @@ class _PlaylistState extends State<Playlist> {
 
   void _playItem(mm.Content item) async {
 
-    print("Playing song with url: ${item.fileUrl}");  
-
     if(AudioService.running) {
-      print("Audio length: ${AudioService.queue.length}"); 
+      // check if playing, then pause
+      if(mediaPlaying && (currentId == item.fileUrl)){
+        await AudioService.pause();
+        return;
+      }
+
+      // if paused, play
+      if(!mediaPlaying && (currentId == item.fileUrl)){
+        await AudioService.play();
+        return;
+      }
+
+      // skip to item on the playlist
       await AudioService.skipToQueueItem("${item.fileUrl}");
       return;
     }
@@ -396,6 +396,7 @@ class _PlaylistState extends State<Playlist> {
                   ),
                   trailing: InkWell(
                     onTap:  () => _playItem(item),
+                    borderRadius: BorderRadius.circular(22.5),
                     child: Container(
                       width: 45.0,
                       height: 45.0,
