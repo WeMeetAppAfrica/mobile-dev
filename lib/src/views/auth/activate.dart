@@ -93,10 +93,7 @@ class _ActivateState extends State<Activate> {
                   Fluttertoast.showToast(msg: 'Please complete your profile');
 
                   myCallback(() {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => KYC()),
-                    );
+                    Navigator.pushReplacementNamed(context,"/kyc");
                   });
                   break;
                 case Status.RESENDEMAILTOKEN:
