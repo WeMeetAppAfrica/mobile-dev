@@ -8,6 +8,7 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wemeet/components/error.dart';
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/models/MessageModel.dart';
@@ -56,6 +57,8 @@ class _ChatViewState extends State<ChatView> {
 
   StreamSubscription<ChatModel> onChatMessage;
   StreamSubscription chatsSub;
+  bool isLoading = false;
+  bool isError = false;
 
   List<Message> chats;
   
@@ -72,7 +75,8 @@ class _ChatViewState extends State<ChatView> {
   void initState() {
     super.initState();
     
-    bloc.getMessages(widget.peerId, widget.token);
+    fetchMessages();
+
     onChatMessage = socketService?.onChatReceived?.listen(onChatReceive);
     waitJoinRoom();
 
@@ -84,6 +88,15 @@ class _ChatViewState extends State<ChatView> {
     onChatMessage?.cancel();
     chatsSub?.cancel();
     super.dispose();
+  }
+
+  void fetchMessages() {
+    setState(() {
+      isLoading = true;
+      isError = false;      
+    });
+    setId();
+    bloc.getMessages(widget.peerId, widget.token);
   }
 
   void onMessagesReceived(data) async {
@@ -100,11 +113,17 @@ class _ChatViewState extends State<ChatView> {
     final List mL = data.data.data.messages;
 
     if (mL == null) {
+      setState(() {
+        isLoading = false;
+        isError = true;        
+      });
       return;
     }
 
     setState(() {
       chats = mL.reversed.toList();
+      isLoading = false;
+      isError = false;
     });
 
     _scrollToBottom(checkPosition: true);
@@ -112,6 +131,14 @@ class _ChatViewState extends State<ChatView> {
     // if(chats != null && chats.length > 0) {
     //   _indexScrollController.scrollToIndex(0, preferPosition: AutoScrollPosition.end, duration: Duration(seconds: 2));
     // }
+  }
+
+  void setId() {
+    List i = widget.chatId?.split("_");
+    if(i.isEmpty) {
+      return;
+    }
+    id = i.firstWhere((e) => e != widget.peerId, orElse: () => null);
   }
 
   onMessageReceived(data) {
@@ -494,8 +521,17 @@ class _ChatViewState extends State<ChatView> {
   }
 
   Widget buildChatList() {
-    if (chats == null) {
+    // if loading
+    if ((chats ?? []).isEmpty && isLoading) {
       return Center(child: CircularProgressIndicator());
+    }
+
+    if((chats ?? []).isEmpty && isError) {
+      return ErrorComponent(
+        text: "An error occured while fetching your conversation",
+        buttonText: "Try again",
+        callback: fetchMessages,
+      );
     }
 
     return ListView.builder(
