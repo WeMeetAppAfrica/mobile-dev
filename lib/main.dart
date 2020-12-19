@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'dart:convert';
 
-import 'package:wemeet/services/socket.dart';
+// import 'package:wemeet/services/socket.dart';
 import 'package:wemeet/services/socket_bg.dart';
 
 import 'package:wemeet/models/app.dart';

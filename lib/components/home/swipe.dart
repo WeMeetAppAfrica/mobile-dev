@@ -81,6 +81,12 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
     }
   }
 
+  void getMatch() {
+    // TODO get match
+    // data["swipe"]["swipee"]
+    // data["match"] bool
+  }
+
   void postSwipe(int id, String action) {
     
     setState(() {
