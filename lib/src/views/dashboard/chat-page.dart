@@ -58,53 +58,7 @@ class _ChatViewState extends State<ChatView> {
   StreamSubscription chatsSub;
 
   List<Message> chats;
-
-  readLocal() async {
-    prefs = await SharedPreferences.getInstance();
-    id = prefs.getString('id') ?? '';
-
-    // id = prefs.getString('id') ?? '';
-    var ret = await getObject(id, widget.peerId);
-    if (ret != null) messages = ret.messages;
-    // removeObject(id, widget.peerId);
-    setState(() {});
-  }
-
-  String _generateKey(String userId, String peerId) {
-    if (int.parse(userId) <= int.parse(peerId)) {
-      return '$userId/$peerId';
-    } else {
-      return '$peerId/$userId';
-    }
-  }
-
-  void saveObject(String userId, String peerId, object) async {
-    final prefs = await SharedPreferences.getInstance();
-    // 1
-    final string = JsonEncoder().convert(object);
-    // 2
-    print(string);
-    await prefs.setString(_generateKey(userId, peerId), string);
-  }
-
-  Future<dynamic> getObject(String userId, String peerId) async {
-    final prefs = await SharedPreferences.getInstance();
-    // 3
-    final objectString = prefs.getString(_generateKey(userId, peerId));
-    // 4
-    if (objectString != null) {
-      return Data.fromJson(
-          JsonDecoder().convert(objectString) as Map<String, dynamic>);
-    }
-    return null;
-  }
-
-  Future<void> removeObject(String userId, String peerId) async {
-    final prefs = await SharedPreferences.getInstance();
-    // 5
-    prefs.remove(_generateKey(userId, peerId));
-  }
-
+  
   String get chatId {
     List<int> ids = [
       int.tryParse(widget.peerId ?? "") ?? 0,
@@ -117,9 +71,7 @@ class _ChatViewState extends State<ChatView> {
   @override
   void initState() {
     super.initState();
-    readLocal();
-    // G.socketUtils.joinRoom('52_22');
-    // G.socketUtils.setOnChatMessageReceivedListener(onMessageReceived);
+    
     bloc.getMessages(widget.peerId, widget.token);
     onChatMessage = socketService?.onChatReceived?.listen(onChatReceive);
     waitJoinRoom();
@@ -528,90 +480,6 @@ class _ChatViewState extends State<ChatView> {
             ),
           ],
         ),
-        /*body: Column(
-          children: [
-            Flexible(
-              child: Container(
-                  child: StreamBuilder(
-                      stream: bloc.messageStream,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          switch (snapshot.data.status) {
-                            case Status.LOADING:
-                              if (messages.length < 1) {
-                                return Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              } else {
-                                if (_scrollController.hasClients)
-                                  _scrollController.jumpTo(
-                                    _scrollController.position.maxScrollExtent,
-                                  );
-                              }
-
-                              break;
-                            case Status.ADDMESSAGE:
-                              print('snapshot.d');
-                              print(Message.fromJson(JsonDecoder()
-                                  .convert(snapshot.data.message)));
-                              messages.add(Message.fromJson(JsonDecoder()
-                                  .convert(snapshot.data.message)));
-                              if (_scrollController.hasClients)
-                                _scrollController.animateTo(
-                                  _scrollController.position.maxScrollExtent +
-                                      100,
-                                  curve: Curves.easeOut,
-                                  duration: const Duration(milliseconds: 300),
-                                );
-                              break;
-                            case Status.SENDMESSAGE:
-                              bloc.messageSink.add(ApiResponse.idle('message'));
-                              messages.add(snapshot.data.data.data.message);
-                              if (_scrollController.hasClients)
-                                _scrollController.animateTo(
-                                  _scrollController.position.maxScrollExtent +
-                                      100,
-                                  curve: Curves.easeOut,
-                                  duration: const Duration(milliseconds: 300),
-                                );
-
-                              saveObject(id, widget.peerId,
-                                  {"messages": messages, "message": null});
-                              break;
-                            case Status.GETMESSAGES:
-                              bloc.messageSink.add(ApiResponse.idle('message'));
-                              messages = snapshot.data.data.data.messages;
-                              saveObject(
-                                  id, widget.peerId, snapshot.data.data.data);
-                              if (_scrollController.hasClients)
-                                _scrollController.animateTo(
-                                  _scrollController.position.maxScrollExtent,
-                                  curve: Curves.easeOut,
-                                  duration: const Duration(milliseconds: 300),
-                                );
-                              break;
-                            default:
-                          }
-                        }
-                        return ListView.builder(
-                          itemCount: messages.length,
-                          reverse: false,
-                          controller: _scrollController,
-                          itemBuilder: (context, index) =>
-                            AutoScrollTag(
-                              key: ValueKey(index), 
-                              controller: _indexScrollController, 
-                              index: index, 
-                              child: buildItem(messages[index]),
-                              // highlightColor: Colors.black.withOpacity(0.1),
-                            )
-                              // buildItem(messages[index]),
-                        );
-                      })),
-            ),
-            buildInput()
-          ],
-        ),*/
         body: Column(
           children: [
             Expanded(
@@ -621,8 +489,6 @@ class _ChatViewState extends State<ChatView> {
             bottomBarInput()
           ],
         ),
-        // body: buildChatList(),
-        // bottomNavigationBar: bottomBarInput(),
       ),
     );
   }
@@ -669,7 +535,12 @@ class _ChatViewState extends State<ChatView> {
     }
 
     if (message.type == "MEDIA") {
-      return ChatPlayerWidget(url: message.content,);
+      return GestureDetector(
+        onTap: (){
+          print(message.content);
+        },
+        child: ChatPlayerWidget(url: message.content,)
+      );
     }
 
     return SizedBox();
@@ -931,49 +802,4 @@ class _ChatViewState extends State<ChatView> {
       ),
     );
   }
-
-  Widget buildInput() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 5,
-            blurRadius: 7,
-            offset: Offset(0, 3), // changes position of shadow
-          ),
-        ],
-      ),
-      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: TextField(
-              onSubmitted: (value) {
-                onSendMessage(inputTextController.text);
-              },
-              // controller: textEditingController,
-              keyboardType: TextInputType.multiline,
-              maxLength: 1000,
-              minLines: 1,
-              controller: inputTextController,
-              maxLines: 5,
-              decoration: InputDecoration(hintText: 'Say something...'),
-            ),
-          ),
-          IconButton(
-            onPressed: () => onSendMessage(inputTextController.text),
-            icon: Icon(Icons.send),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-void myCallback(Function callback) {
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    callback();
-  });
 }
