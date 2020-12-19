@@ -10,15 +10,13 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
-import 'package:wemeet/src/chat/Global.dart';
 import 'package:wemeet/src/models/MessageModel.dart';
 import 'package:wemeet/src/resources/api_response.dart';
-import 'package:wemeet/src/views/dashboard/player_widget.dart';
 import 'package:wemeet/src/views/dashboard/share-songs.dart';
 import 'package:wemeet/values/values.dart';
 
 import 'package:wemeet/components/chat_player.dart';
-import 'package:wemeet/services/socket.dart';
+import 'package:wemeet/services/socket_bg.dart';
 import 'package:wemeet/models/chat.dart';
 
 class ChatView extends StatefulWidget {
@@ -54,7 +52,7 @@ class _ChatViewState extends State<ChatView> {
   AutoScrollController _indexScrollController =
       AutoScrollController(axis: Axis.vertical);
 
-  SocketService socketService = SocketService();
+  BackgroundSocketService socketService = BackgroundSocketService();
 
   StreamSubscription<ChatModel> onChatMessage;
   StreamSubscription chatsSub;

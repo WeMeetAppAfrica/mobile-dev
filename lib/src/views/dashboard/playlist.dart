@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +10,6 @@ import 'package:rxdart/rxdart.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/dashboard/audioplayertask.dart';
-import 'package:wemeet/src/views/dashboard/bgaudioplayer.dart';
-import 'package:wemeet/src/views/dashboard/musicplayer.dart';
 import 'package:wemeet/values/values.dart';
 
 import 'package:wemeet/components/player.dart';
@@ -189,8 +185,15 @@ class _PlaylistState extends State<Playlist> {
                       child: CachedNetworkImage(
                         imageUrl: item.artworkUrl,
                         placeholder: (context, _) => Container(
-                          color: Colors.black12
-                        )
+                          color: Colors.black12,
+                          alignment: Alignment.center,
+                          child: Icon(
+                            FeatherIcons.music,
+                            color: Colors.white,
+                            size: 60.0
+                          ),
+                        ),
+                        fit: BoxFit.cover,
                       ),
                     ),
                     Container(
