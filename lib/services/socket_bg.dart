@@ -23,7 +23,10 @@ class BackgroundSocketService {
 
   void _sendMessage(Map val) {
     print("=== New message $val");
-    _chatController.add(ChatModel.fromMap(val));
+    if(val["action"] == "message") {
+      _chatController.add(ChatModel.fromMap(val["value"]));
+    }
+    
   }
 
   void start(String baseUrl) async {
