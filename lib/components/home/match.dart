@@ -131,7 +131,7 @@ class MatchComponent extends StatelessWidget {
               ),
               SizedBox(height: 20.0),
               buildBtn(
-                "Work My Magic",
+                "Talk Later ... Keep Swiping",
                 Color.fromRGBO(142, 198, 63, 1),
                 false
               )
