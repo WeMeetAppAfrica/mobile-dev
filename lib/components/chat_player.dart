@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:wemeet/values/colors.dart';
 
+import 'package:wemeet/utils/converters.dart';
+
 enum PlayerState { stopped, playing, paused }
 enum PlayingRouteState { speakers, earpiece }
 
@@ -54,7 +56,7 @@ class _ChatPlayerWidgetState extends State<ChatPlayerWidget> {
   @override
   void initState() {
     super.initState();
-    url = widget.url;
+    url = ensureMp3(widget.url);
     _initAudioPlayer();
   }
 
@@ -98,9 +100,15 @@ class _ChatPlayerWidgetState extends State<ChatPlayerWidget> {
       padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
       decoration: BoxDecoration(
         color: AppColors.secondaryElement,
-            borderRadius: BorderRadius.all(Radius.circular(20))
+        borderRadius: BorderRadius.all(Radius.circular(!isMp3(url) ? 10.0 : 20))
       ),
-      child: Stack(
+      child: !isMp3(url) ? Text(
+        "Error loading music file...",
+        style: TextStyle(
+          color: Colors.white,
+          fontStyle: FontStyle.italic
+        ),
+      ) :  Stack(
         children: [
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -160,8 +168,9 @@ class _ChatPlayerWidgetState extends State<ChatPlayerWidget> {
     );
   }
 
-  void _initAudioPlayer() {
+  void _initAudioPlayer() async {
     _audioPlayer = AudioPlayer(mode: mode);
+    // _audioPlayer = AudioPlayer();
 
     _durationSubscription = _audioPlayer.onDurationChanged.listen((duration) {
       setState(() => _duration = duration);
@@ -230,18 +239,13 @@ class _ChatPlayerWidgetState extends State<ChatPlayerWidget> {
   }
 
   Future<int> _play() async {
-    if(!url.contains("http")){
-      return 0;
-    }
-
-
     final playPosition = (_position != null &&
             _duration != null &&
             _position.inMilliseconds > 0 &&
             _position.inMilliseconds < _duration.inMilliseconds)
         ? _position
         : null;
-    final result = await _audioPlayer.play(widget.url, position: playPosition);
+    final result = await _audioPlayer.play(url, position: playPosition);
     if (result == 1) setState(() => _playerState = PlayerState.playing);
 
     // default playback rate is 1.0
@@ -253,11 +257,6 @@ class _ChatPlayerWidgetState extends State<ChatPlayerWidget> {
   }
 
   Future<int> _pause() async {
-    
-    if(!url.contains("http")){
-      return 0;
-    }
-
     final result = await _audioPlayer.pause();
     if (result == 1) setState(() => _playerState = PlayerState.paused);
     return result;

@@ -129,6 +129,12 @@ class Content {
         if(ss.isEmpty) {
           return songUrl + ".mp3";
         }
+
+        // make sure it is an audio file
+        List<String> formats = ["mp3", "wav", "m3u"];
+        if(!formats.contains(ss.last.toLowerCase())) {
+          return songUrl + ".mp3";
+        }
       }
 
       return songUrl;

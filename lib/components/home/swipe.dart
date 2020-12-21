@@ -24,6 +24,7 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
   int swipesLeft = 0;
   int left = 0;
   List<UserModel> users = [];
+  UserModel match;
   CardController controller = CardController();
 
   DataProvider _dataProvider = DataProvider();
@@ -72,6 +73,8 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
         left = users.length;     
       });
 
+      getMatch(data);
+
     } catch (e) {
 
     } finally {
@@ -81,10 +84,44 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
     }
   }
 
-  void getMatch() {
-    // TODO get match
-    // data["swipe"]["swipee"]
-    // data["match"] bool
+  void getMatch(Map data) {
+    // make sure match and swipe is present
+    if(!data.containsKey("swipe") && !data.containsKey("match")) {
+      setState(() {
+        match = null;        
+      });
+      return;
+    }
+
+    // make sure match is boolean and true
+    if(data["match"] is bool && data["match"] == true) {
+      // if swipe is empty return
+      if(data["swipe"] is Map && data["swipe"].isEmpty) {
+        setState(() {
+          match = null;        
+        });
+        return;
+      }
+
+      // Make sure swipee is Map
+      if(!data["swipe"]["swipee"] is Map) {
+        setState(() {
+          match = null;        
+        });
+        return;
+      }
+
+      Map swipee = data["swipe"]["swipee"];
+      // make sure swipee is not null either
+      if(swipee.isNotEmpty) {
+        setState(() {
+          match = UserModel.fromMap(swipee);          
+        });
+        print("Found a match");
+        return;
+      }
+    }
+
   }
 
   void postSwipe(int id, String action) {

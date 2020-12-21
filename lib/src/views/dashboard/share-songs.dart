@@ -9,6 +9,8 @@ import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/auth/picture.dart';
 import 'package:wemeet/values/values.dart';
 
+import 'package:wemeet/components/circular_button.dart';
+
 class ShareSongs extends StatefulWidget {
   final token;
   final apiToken;
@@ -131,39 +133,28 @@ class _ShareSongsState extends State<ShareSongs> {
                                     FeatherIcons.music,
                                     color: AppColors.secondaryElement,
                                   ),
-                                  trailing: ClipOval(
-                                    child: Material(
-                                      color: AppColors
-                                          .secondaryElement, // button color
-                                      child: InkWell(
-                                        child: SizedBox(
-                                          width: 56,
-                                          height: 56,
-                                          child: SizedBox(
-                                              width: 48,
-                                              height: 48,
-                                              child: Icon(
-                                                FeatherIcons.upload,
-                                                color: Colors.white,
-                                              )),
-                                        ),
-                                        onTap: () {
-                                          var request = {
-                                            "content":
-                                                songs[index].songUrl,
-                                            "receiverId": widget.peerId,
-                                            "type": "MEDIA"
-                                          };
-                                          setState(() {
-                                            content = songs[index];
-                                          });
-                                          bloc.sendMedia(request, widget.token);
-                                        },
-                                      ),
-                                    ),
-                                  ),
                                   title: Text(songs[index].title),
                                   subtitle: Text(songs[index].artist),
+                                  trailing: CircularBtn(
+                                    onTap: () {
+                                      var request = {
+                                        "content":
+                                            songs[index].songUrl,
+                                        "receiverId": widget.peerId,
+                                        "type": "MEDIA"
+                                      };
+                                      setState(() {
+                                        content = songs[index];
+                                      });
+                                      bloc.sendMedia(request, widget.token);
+                                    },
+                                    radius: 40.0,
+                                    icon: Icon(
+                                      FeatherIcons.upload,
+                                      color: Colors.white,
+                                      size: 15.0,
+                                    ),
+                                  ),
                                 );
                               }),
                         );

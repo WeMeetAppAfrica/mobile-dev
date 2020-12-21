@@ -43,17 +43,21 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
   @override
   void onStart(Map<String, dynamic> params) {
+
     _queue.clear();
+    
     List mediaItems = params['data'];
     for (int i = 0; i < mediaItems.length; i++) {
       MediaItem mediaItem = MediaItem.fromJson(mediaItems[i]);
       _queue.add(mediaItem);
     }
+
     _playerStateSubscription = _audioPlayer.playbackStateStream
         .where((state) => state == AudioPlaybackState.completed)
         .listen((state) {
       _handlePlaybackCompleted();
     });
+
     _eventSubscription = _audioPlayer.playbackEventStream.listen((event) {
       final bufferingState =
           event.buffering ? AudioProcessingState.buffering : null;
@@ -77,7 +81,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
       }
     });
     AudioServiceBackground.setQueue(_queue);
-    onSkipToNext();
+    // onSkipToNext();
   }
 
   @override
