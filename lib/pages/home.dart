@@ -28,6 +28,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
   bool isPlayer = false;
+  bool hasMatch = false;
 
   AppModel model;
   UserModel user;
@@ -120,7 +121,13 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           Expanded(
-            child: HomeSwipeComponent(),
+            child: HomeSwipeComponent(
+              onMatch: (val) {
+                setState((){
+                  hasMatch = val;
+                });
+              },
+            ),
           ),
           Center(
             // child: MusicPlayerComponent(
@@ -140,7 +147,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
+      appBar: hasMatch? null : AppBar(
         backgroundColor: Colors.white,
         brightness: Brightness.light,
         iconTheme: new IconThemeData(color: AppColors.primaryText),
@@ -162,7 +169,7 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      drawer: HomeDrawer(),
+      drawer: hasMatch? null : HomeDrawer(),
       body: buildBody(),
     );
   }
