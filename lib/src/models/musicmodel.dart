@@ -104,7 +104,7 @@ class Content {
         isPlaying: json["isPlaying"] == null ? false : json["isPlaying"],
         isSelected: json["isSelected"] == null ? false : json["isSelected"],
         title: json["title"] == null ? null : json["title"],
-        songUrl: ensureMp3(json["songUrl"]),
+        songUrl: json["songUrl"] ?? "",
         artworkUrl: json["artworkURL"] == null ? null : json["artworkURL"],
         uploadedBy: json["uploadedBy"] == null ? null : UploadedBy.fromJson(json["uploadedBy"]),
     );
@@ -125,20 +125,22 @@ class Content {
         return "";
       }
 
-      if(songUrl.length > 5) {
-        List ss = songUrl.split(".");
-        if(ss.isEmpty) {
-          return songUrl + ".mp3";
-        }
-
-        // make sure it is an audio file
-        List<String> formats = ["mp3", "wav", "m3u"];
-        if(!formats.contains(ss.last.toLowerCase())) {
-          return songUrl + ".mp3";
-        }
-      }
-
       return songUrl;
+
+      // if(songUrl.length > 5) {
+      //   List ss = songUrl.split(".");
+      //   if(ss.isEmpty) {
+      //     return songUrl + ".mp3";
+      //   }
+
+      //   // make sure it is an audio file
+      //   List<String> formats = ["mp3", "wav", "m3u"];
+      //   if(!formats.contains(ss.last.toLowerCase())) {
+      //     return songUrl + ".mp3";
+      //   }
+      // }
+
+      // return songUrl;
     }
 }
 

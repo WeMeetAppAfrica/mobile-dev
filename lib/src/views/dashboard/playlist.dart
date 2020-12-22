@@ -115,7 +115,7 @@ class _PlaylistState extends State<Playlist> {
       return;
     }
 
-    int index = items.indexWhere((v) => v.fileUrl == val.id);
+    int index = items.indexWhere((v) => v.songUrl == val.id);
 
     setState(() {
       items.forEach((i){
@@ -155,12 +155,12 @@ class _PlaylistState extends State<Playlist> {
     }
 
     items.forEach((e) async {
-      MediaItem q = queue.firstWhere((i) => i.id == e.fileUrl, orElse: () => null);
+      MediaItem q = queue.firstWhere((i) => i.id == e.songUrl, orElse: () => null);
 
       if(q == null) {
         queue.add(MediaItem(
           album: e.title,
-          id: e.fileUrl,
+          id: e.songUrl,
           title: e.title,
           artUri: e.artworkUrl,
           artist: e.artist,
@@ -192,23 +192,23 @@ class _PlaylistState extends State<Playlist> {
 
   void _playItem(mm.Content item) async {
 
-    print("Song url: ${item.fileUrl}");
+    print("Song url: ${item.songUrl}");
 
     if(AudioService.running) {
       // check if playing, then pause
-      if(mediaPlaying && (currentId == item.fileUrl)){
+      if(mediaPlaying && (currentId == item.songUrl)){
         await AudioService.pause();
         return;
       }
 
       // if paused, play
-      if(!mediaPlaying && (currentId == item.fileUrl)){
+      if(!mediaPlaying && (currentId == item.songUrl)){
         await AudioService.play();
         return;
       }
 
       // skip to item on the playlist
-      await AudioService.skipToQueueItem("${item.fileUrl}");
+      await AudioService.skipToQueueItem("${item.songUrl}");
       return;
     }
 
@@ -226,7 +226,7 @@ class _PlaylistState extends State<Playlist> {
       params: params,
     );
 
-    await AudioService.playFromMediaId(item.fileUrl);
+    await AudioService.playFromMediaId(item.songUrl);
   }
 
   Widget buildTop() {

@@ -171,7 +171,7 @@ class MusicWidget extends StatefulWidget {
   _MusicWidgetState createState() => _MusicWidgetState();
 }
 
-class _MusicWidgetState extends State<MusicWidget> with AutomaticKeepAliveClientMixin {
+class _MusicWidgetState extends State<MusicWidget> {
 
   bool isPlaying(PlaybackState s) {
 
@@ -204,7 +204,6 @@ class _MusicWidgetState extends State<MusicWidget> with AutomaticKeepAliveClient
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return AudioServiceWidget(
       child: StreamBuilder<AudioState>(
         stream: _audioStateStream,
@@ -216,7 +215,7 @@ class _MusicWidgetState extends State<MusicWidget> with AutomaticKeepAliveClient
           final processingState =
               playbackState?.processingState ?? AudioProcessingState.none;
           final playing = playbackState?.playing ?? false;
-          if (AudioService.running)
+          if (AudioService.running && mediaItem != null)
             return Container(
               padding: EdgeInsets.only(right: 20, left: 20),
               // padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 7.0),
@@ -358,10 +357,6 @@ class _MusicWidgetState extends State<MusicWidget> with AutomaticKeepAliveClient
       )
     );
   }
-
-  @override
-  // TODO: implement wantKeepAlive
-  bool get wantKeepAlive => true;
 }
 
 Stream<AudioState> get _audioStateStream {
