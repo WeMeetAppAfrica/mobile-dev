@@ -1,4 +1,4 @@
-package com.wemeetng.wemeet
+package com.africa.wemeet
 
 import io.flutter.app.FlutterApplication
 import io.flutter.plugin.common.PluginRegistry
