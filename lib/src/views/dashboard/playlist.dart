@@ -192,6 +192,8 @@ class _PlaylistState extends State<Playlist> {
 
   void _playItem(mm.Content item) async {
 
+    print("Song url: ${item.fileUrl}");
+
     if(AudioService.running) {
       // check if playing, then pause
       if(mediaPlaying && (currentId == item.fileUrl)){

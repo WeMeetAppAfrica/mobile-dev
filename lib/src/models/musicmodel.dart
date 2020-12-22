@@ -3,6 +3,7 @@
 //     final musicModel = musicModelFromJson(jsonString);
 
 import 'dart:convert';
+import 'package:wemeet/utils/converters.dart';
 
 MusicModel musicModelFromJson(String str) => MusicModel.fromJson(json.decode(str));
 
@@ -103,7 +104,7 @@ class Content {
         isPlaying: json["isPlaying"] == null ? false : json["isPlaying"],
         isSelected: json["isSelected"] == null ? false : json["isSelected"],
         title: json["title"] == null ? null : json["title"],
-        songUrl: json["songUrl"] == null ? null : json["songUrl"],
+        songUrl: ensureMp3(json["songUrl"]),
         artworkUrl: json["artworkURL"] == null ? null : json["artworkURL"],
         uploadedBy: json["uploadedBy"] == null ? null : UploadedBy.fromJson(json["uploadedBy"]),
     );
