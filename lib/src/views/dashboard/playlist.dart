@@ -178,6 +178,8 @@ class _PlaylistState extends State<Playlist> {
         onMediaItemChanged(queue[index]);
       }
     }
+
+    setState(() {});
   }
 
   void initPlayer() async {
@@ -197,17 +199,20 @@ class _PlaylistState extends State<Playlist> {
     if(AudioService.running) {
       // check if playing, then pause
       if(mediaPlaying && (currentId == item.songUrl)){
+        print("Pausing the song..");
         await AudioService.pause();
         return;
       }
 
       // if paused, play
       if(!mediaPlaying && (currentId == item.songUrl)){
+        print("Playing the song..");
         await AudioService.play();
         return;
       }
 
       // skip to item on the playlist
+      print("Skipping to item");
       await AudioService.skipToQueueItem("${item.songUrl}");
       return;
     }

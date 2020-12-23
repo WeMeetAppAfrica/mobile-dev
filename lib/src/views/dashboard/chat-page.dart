@@ -17,6 +17,8 @@ import 'package:wemeet/src/views/dashboard/share-songs.dart';
 import 'package:wemeet/values/values.dart';
 import 'package:wemeet/utils/converters.dart';
 
+import 'package:wemeet/components/message/message_item.dart';
+
 import 'package:wemeet/components/chat_player.dart';
 import 'package:wemeet/services/socket_bg.dart';
 import 'package:wemeet/models/chat.dart';
@@ -539,13 +541,18 @@ class _ChatViewState extends State<ChatView> {
       itemCount: chats.length,
       reverse: true,
       controller: _indexScrollController,
-      itemBuilder: (context, index) => AutoScrollTag(
-            key: ValueKey(index),
-            controller: _indexScrollController,
-            index: index,
-            child: buildItem(chats[index], index),
-            // highlightColor: Colors.black.withOpacity(0.1),
-          ),
+      itemBuilder: (context, index){
+         Message after = (index == 0) ? null : chats[index - 1];
+         Message before = (index == chats.length - 1) ? null : chats[index + 1];
+        return AutoScrollTag(
+          key: ValueKey(index),
+          controller: _indexScrollController,
+          index: index,
+          // child: buildItem(chats[index], index),
+          child: MessageItemComponent(mssg: chats[index], before: before, after: after),
+          // highlightColor: Colors.black.withOpacity(0.1),
+        );
+      },
       padding: EdgeInsets.only(bottom: 20.0),
     );
   }
