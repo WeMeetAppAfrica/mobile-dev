@@ -81,7 +81,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
       }
     });
     AudioServiceBackground.setQueue(_queue);
-    // onSkipToNext();
+    onSkipToNext();
   }
 
   @override

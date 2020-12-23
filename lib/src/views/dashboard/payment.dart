@@ -12,6 +12,7 @@ import 'package:wemeet/src/views/dashboard/home.dart';
 import 'package:wemeet/values/values.dart';
 
 import 'package:wemeet/providers/data.dart';
+import 'package:wemeet/config.dart';
 
 class Payment extends StatefulWidget {
   final token;
@@ -36,7 +37,7 @@ class _PaymentState extends State<Payment> {
     super.initState();
 
     PaystackPlugin.initialize(
-        publicKey: 'pk_test_1ee70468f4f53355ca5b88f3f4d4ac0dd9504749');
+        publicKey: WeMeetConfig.payStackPublickKey);
     _getUser();
     bloc.getPlans(widget.token);
   }
