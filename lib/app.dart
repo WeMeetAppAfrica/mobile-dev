@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/login.dart';
+import 'package:wemeet/src/views/auth/forgot.dart';
 
 // # my pages
 import 'package:wemeet/pages/home.dart';
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
       "/on-boarding": (context) => OnBoardingPage(),
       "/home": (context) => HomePage(model: model,),
       "/login": (context) => Login(model: model,),
+      "/forgot-password": (context) => ForgotPass(),
       "/kyc": (context) => KYC(),
       "/messages": (context) => MessagesPage(model: model)
     };

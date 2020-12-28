@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
@@ -12,13 +10,14 @@ import 'package:rxdart/rxdart.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/dashboard/audioplayertask.dart';
-import 'package:wemeet/src/views/dashboard/bgaudioplayer.dart';
-import 'package:wemeet/src/views/dashboard/musicplayer.dart';
 import 'package:wemeet/values/values.dart';
 
 import 'package:wemeet/components/player.dart';
 
 import 'package:wemeet/src/models/musicmodel.dart' as mm;
+
+import 'package:wemeet/services/music.dart';
+import 'package:wemeet/utils/utils.dart';
 
 enum PlayerState { stopped, playing, paused }
 enum PlayingRouteState { speakers, earpiece }
@@ -43,33 +42,110 @@ class _PlaylistState extends State<Playlist> {
   bool allowSend = true;
   TextEditingController descController = TextEditingController();
 
-  StreamSubscription queueStream;
+  StreamSubscription<MediaItem> itemStream;
+  StreamSubscription<PlaybackState> playStateStream;
+
 
   List<mm.Content> items = [];
   List<MediaItem> queue = [];
+  bool mediaPlaying = false;
+  bool isLoading = false;
+  bool isError = false;
+  String errorText;
+  String currentId;
 
   @override
   void initState() {
     super.initState();
-    bloc.getMusic(widget.token);
+    // bloc.getMusic(widget.token);
 
-    queueStream = AudioService.queueStream.listen(onQueueChanged);
+    itemStream = AudioService.currentMediaItemStream.listen(onMediaItemChanged);
+    playStateStream = AudioService.playbackStateStream.listen(onPlayStateChanged);
+
+    fetchSongs();
   }
 
   @override
   void dispose() {
-    queueStream?.cancel();
+    itemStream?.cancel();
+    playStateStream?.cancel();
     super.dispose();
   }
 
-  void onQueueChanged(List<MediaItem> val) {
+  void fetchSongs() async {
+    setState(() {
+      isLoading = true;
+      errorText = null;
+    });
+
+    try {
+      var res = await MusicService.getList();
+      List data = res["data"]["content"];
+      setState(() {
+        items = data.map((e) => mm.Content.fromJson(e)).toList();
+      });
+
+      updateQueue();
+
+    } catch (e) {
+      print(e);
+      String err = kTranslateError(e);
+      if(!err.toLowerCase().contains("token")) {
+        setState(() {
+          errorText = "Could not fetch chats";
+        });
+      }
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void onMediaItemChanged(MediaItem val) {
     if(!mounted) {
       return;
     }
 
+    if(val == null) {
+      setState(() {
+        currentId = null;    
+      });
+      
+      return;
+    }
+
+    int index = items.indexWhere((v) => v.songUrl == val.id);
+
     setState(() {
-      queue = val ?? [];     
+      items.forEach((i){
+        i.isPlaying = false;
+      });   
+      if(index != -1 && mediaPlaying) {
+        items[index].isPlaying = true;
+      }  
+      currentId = val.id;  
     });
+
+  }
+
+  void onPlayStateChanged(PlaybackState val) {
+    if(!mounted) {
+      return;
+    }
+
+    if(val == null) {
+      return;
+    }
+
+    setState(() {
+      mediaPlaying = val.playing;
+    });
+
+    MediaItem i = AudioService?.currentMediaItem;
+    if(i != null) {
+      onMediaItemChanged(i);
+    }
   }
 
   void updateQueue() async {
@@ -93,6 +169,17 @@ class _PlaylistState extends State<Playlist> {
         ));
       }
     });
+
+    // check if something is playing;
+    if(currentId != null) {
+      // find media item
+      int index = queue.indexWhere((e) => e.id == currentId);
+      if(index != -1) {
+        onMediaItemChanged(queue[index]);
+      }
+    }
+
+    setState(() {});
   }
 
   void initPlayer() async {
@@ -106,15 +193,32 @@ class _PlaylistState extends State<Playlist> {
   }
 
   void _playItem(mm.Content item) async {
-    print("Play: ${item.title} by ${item.artist}");
+
+    print("Song url: ${item.songUrl}");
 
     if(AudioService.running) {
-      AudioService.skipToQueueItem(item.songUrl);
+      // check if playing, then pause
+      if(mediaPlaying && (currentId == item.songUrl)){
+        print("Pausing the song..");
+        await AudioService.pause();
+        return;
+      }
+
+      // if paused, play
+      if(!mediaPlaying && (currentId == item.songUrl)){
+        print("Playing the song..");
+        await AudioService.play();
+        return;
+      }
+
+      // skip to item on the playlist
+      print("Skipping to item");
+      await AudioService.skipToQueueItem("${item.songUrl}");
       return;
     }
 
     List<dynamic> list = List();
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < queue.length; i++) {
       var m = queue[i].toJson();
       list.add(m);
     }
@@ -189,8 +293,15 @@ class _PlaylistState extends State<Playlist> {
                       child: CachedNetworkImage(
                         imageUrl: item.artworkUrl,
                         placeholder: (context, _) => Container(
-                          color: Colors.black12
-                        )
+                          color: Colors.black12,
+                          alignment: Alignment.center,
+                          child: Icon(
+                            FeatherIcons.music,
+                            color: Colors.white,
+                            size: 60.0
+                          ),
+                        ),
+                        fit: BoxFit.cover,
                       ),
                     ),
                     Container(
@@ -291,6 +402,7 @@ class _PlaylistState extends State<Playlist> {
                   ),
                   trailing: InkWell(
                     onTap:  () => _playItem(item),
+                    borderRadius: BorderRadius.circular(22.5),
                     child: Container(
                       width: 45.0,
                       height: 45.0,
@@ -308,9 +420,9 @@ class _PlaylistState extends State<Playlist> {
                           shape: BoxShape.circle
                         ),
                         child: Container(
-                          margin: EdgeInsets.only(left: 3.0),
+                          margin: EdgeInsets.only(left: (item.isPlaying && mediaPlaying) ? 0.0 : 3.0),
                           child: Icon(
-                            FeatherIcons.play,
+                            (item.isPlaying && mediaPlaying) ? FeatherIcons.pause : FeatherIcons.play,
                             color: Colors.white,
                             size: 20.0,
                           ),
@@ -375,7 +487,11 @@ class _PlaylistState extends State<Playlist> {
                 children: [
                   buildTop(),
                   SizedBox(height: 20.0),
-                  songsStream()
+                  buildSongRequests(),
+                  SizedBox(height: 25.0),
+                  buildPlaylist(),
+                  SizedBox(height: 90.0),
+                  // songsStream()
                 ],
               ),
             ),
@@ -648,7 +764,6 @@ class _PlaylistState extends State<Playlist> {
                           }
                           break;
                         case Status.SONGREQUEST:
-                          print('done');
                           bloc.songSink.add(ApiResponse.idle('message'));
                           myCallback(() {
                             setState(() {
@@ -754,19 +869,4 @@ Stream<AudioState> get _audioStateStream {
 
 void _audioPlayerTaskEntrypoint() async {
   AudioServiceBackground.run(() => AudioPlayerTask());
-}
-
-class _SystemPadding extends StatelessWidget {
-  final Widget child;
-
-  _SystemPadding({Key key, this.child}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    var mediaQuery = MediaQuery.of(context);
-    return new AnimatedContainer(
-        padding: mediaQuery.viewInsets,
-        duration: const Duration(milliseconds: 300),
-        child: child);
-  }
 }

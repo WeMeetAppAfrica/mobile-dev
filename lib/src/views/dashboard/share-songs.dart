@@ -9,6 +9,10 @@ import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/views/auth/picture.dart';
 import 'package:wemeet/values/values.dart';
 
+import 'package:wemeet/src/models/musicmodel.dart';
+
+import 'package:wemeet/components/circular_button.dart';
+
 class ShareSongs extends StatefulWidget {
   final token;
   final apiToken;
@@ -66,14 +70,56 @@ class _ShareSongsState extends State<ShareSongs> {
     }
   }
 
+  Widget buildList(List<Content> songs) {
+    return ListView.separated(
+      itemBuilder: (context, index) {
+        Content song = songs[index];
+        return ListTile(
+          leading: Icon(
+            FeatherIcons.music,
+            color: AppColors.secondaryElement,
+          ),
+          title: Text(song.title),
+          subtitle: Text(song.artist),
+          trailing: CircularBtn(
+            onTap: () {
+              var request = {
+                "content":
+                    song.songUrl,
+                "receiverId": widget.peerId,
+                "type": "MEDIA"
+              };
+              setState(() {
+                content = song;
+              });
+              bloc.sendMedia(request, widget.token);
+            },
+            radius: 40.0,
+            icon: Icon(
+              FeatherIcons.upload,
+              color: Colors.white,
+              size: 15.0,
+            ),
+          ),
+        );
+      },
+      separatorBuilder: (context, index){
+        return Divider(indent: 70.0, endIndent: 20.0,);
+      },
+      itemCount: songs.length,
+      padding: EdgeInsets.symmetric(vertical: 15.0),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         iconTheme: new IconThemeData(color: AppColors.primaryText),
         backgroundColor: Colors.white,
         brightness: Brightness.light,
-        elevation: 0.0,
+        elevation: 1.0,
         title: Text(
           'Share Song',
           style: TextStyle(
@@ -121,7 +167,8 @@ class _ShareSongsState extends State<ShareSongs> {
                             default:
                           }
                         }
-                        return Container(
+                        return buildList(songs);
+                        /*return Container(
                           child: ListView.builder(
                               scrollDirection: Axis.vertical,
                               itemCount: songs.length,
@@ -131,42 +178,31 @@ class _ShareSongsState extends State<ShareSongs> {
                                     FeatherIcons.music,
                                     color: AppColors.secondaryElement,
                                   ),
-                                  trailing: ClipOval(
-                                    child: Material(
-                                      color: AppColors
-                                          .secondaryElement, // button color
-                                      child: InkWell(
-                                        child: SizedBox(
-                                          width: 56,
-                                          height: 56,
-                                          child: SizedBox(
-                                              width: 48,
-                                              height: 48,
-                                              child: Icon(
-                                                FeatherIcons.upload,
-                                                color: Colors.white,
-                                              )),
-                                        ),
-                                        onTap: () {
-                                          var request = {
-                                            "content":
-                                                songs[index].songUrl,
-                                            "receiverId": widget.peerId,
-                                            "type": "MEDIA"
-                                          };
-                                          setState(() {
-                                            content = songs[index];
-                                          });
-                                          bloc.sendMedia(request, widget.token);
-                                        },
-                                      ),
-                                    ),
-                                  ),
                                   title: Text(songs[index].title),
                                   subtitle: Text(songs[index].artist),
+                                  trailing: CircularBtn(
+                                    onTap: () {
+                                      var request = {
+                                        "content":
+                                            songs[index].songUrl,
+                                        "receiverId": widget.peerId,
+                                        "type": "MEDIA"
+                                      };
+                                      setState(() {
+                                        content = songs[index];
+                                      });
+                                      bloc.sendMedia(request, widget.token);
+                                    },
+                                    radius: 40.0,
+                                    icon: Icon(
+                                      FeatherIcons.upload,
+                                      color: Colors.white,
+                                      size: 15.0,
+                                    ),
+                                  ),
                                 );
                               }),
-                        );
+                        );*/
                       });
 
                   break;

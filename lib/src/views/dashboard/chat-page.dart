@@ -8,17 +8,19 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wemeet/components/error.dart';
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
-import 'package:wemeet/src/chat/Global.dart';
 import 'package:wemeet/src/models/MessageModel.dart';
 import 'package:wemeet/src/resources/api_response.dart';
-import 'package:wemeet/src/views/dashboard/player_widget.dart';
 import 'package:wemeet/src/views/dashboard/share-songs.dart';
 import 'package:wemeet/values/values.dart';
+import 'package:wemeet/utils/converters.dart';
+
+import 'package:wemeet/components/message/message_item.dart';
 
 import 'package:wemeet/components/chat_player.dart';
-import 'package:wemeet/services/socket.dart';
+import 'package:wemeet/services/socket_bg.dart';
 import 'package:wemeet/models/chat.dart';
 
 class ChatView extends StatefulWidget {
@@ -54,59 +56,15 @@ class _ChatViewState extends State<ChatView> {
   AutoScrollController _indexScrollController =
       AutoScrollController(axis: Axis.vertical);
 
-  SocketService socketService = SocketService();
+  BackgroundSocketService socketService = BackgroundSocketService();
 
   StreamSubscription<ChatModel> onChatMessage;
   StreamSubscription chatsSub;
+  bool isLoading = false;
+  bool isError = false;
 
   List<Message> chats;
-
-  readLocal() async {
-    prefs = await SharedPreferences.getInstance();
-    id = prefs.getString('id') ?? '';
-
-    // id = prefs.getString('id') ?? '';
-    var ret = await getObject(id, widget.peerId);
-    if (ret != null) messages = ret.messages;
-    // removeObject(id, widget.peerId);
-    setState(() {});
-  }
-
-  String _generateKey(String userId, String peerId) {
-    if (int.parse(userId) <= int.parse(peerId)) {
-      return '$userId/$peerId';
-    } else {
-      return '$peerId/$userId';
-    }
-  }
-
-  void saveObject(String userId, String peerId, object) async {
-    final prefs = await SharedPreferences.getInstance();
-    // 1
-    final string = JsonEncoder().convert(object);
-    // 2
-    print(string);
-    await prefs.setString(_generateKey(userId, peerId), string);
-  }
-
-  Future<dynamic> getObject(String userId, String peerId) async {
-    final prefs = await SharedPreferences.getInstance();
-    // 3
-    final objectString = prefs.getString(_generateKey(userId, peerId));
-    // 4
-    if (objectString != null) {
-      return Data.fromJson(
-          JsonDecoder().convert(objectString) as Map<String, dynamic>);
-    }
-    return null;
-  }
-
-  Future<void> removeObject(String userId, String peerId) async {
-    final prefs = await SharedPreferences.getInstance();
-    // 5
-    prefs.remove(_generateKey(userId, peerId));
-  }
-
+  
   String get chatId {
     List<int> ids = [
       int.tryParse(widget.peerId ?? "") ?? 0,
@@ -119,10 +77,9 @@ class _ChatViewState extends State<ChatView> {
   @override
   void initState() {
     super.initState();
-    readLocal();
-    // G.socketUtils.joinRoom('52_22');
-    // G.socketUtils.setOnChatMessageReceivedListener(onMessageReceived);
-    bloc.getMessages(widget.peerId, widget.token);
+    
+    fetchMessages();
+
     onChatMessage = socketService?.onChatReceived?.listen(onChatReceive);
     waitJoinRoom();
 
@@ -134,6 +91,15 @@ class _ChatViewState extends State<ChatView> {
     onChatMessage?.cancel();
     chatsSub?.cancel();
     super.dispose();
+  }
+
+  void fetchMessages() {
+    setState(() {
+      isLoading = true;
+      isError = false;      
+    });
+    setId();
+    bloc.getMessages(widget.peerId, widget.token);
   }
 
   void onMessagesReceived(data) async {
@@ -150,11 +116,17 @@ class _ChatViewState extends State<ChatView> {
     final List mL = data.data.data.messages;
 
     if (mL == null) {
+      setState(() {
+        isLoading = false;
+        isError = true;        
+      });
       return;
     }
 
     setState(() {
       chats = mL.reversed.toList();
+      isLoading = false;
+      isError = false;
     });
 
     _scrollToBottom(checkPosition: true);
@@ -162,6 +134,14 @@ class _ChatViewState extends State<ChatView> {
     // if(chats != null && chats.length > 0) {
     //   _indexScrollController.scrollToIndex(0, preferPosition: AutoScrollPosition.end, duration: Duration(seconds: 2));
     // }
+  }
+
+  void setId() {
+    List i = widget.chatId?.split("_");
+    if(i.isEmpty) {
+      return;
+    }
+    id = i.firstWhere((e) => e != widget.peerId, orElse: () => null);
   }
 
   onMessageReceived(data) {
@@ -530,90 +510,6 @@ class _ChatViewState extends State<ChatView> {
             ),
           ],
         ),
-        /*body: Column(
-          children: [
-            Flexible(
-              child: Container(
-                  child: StreamBuilder(
-                      stream: bloc.messageStream,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          switch (snapshot.data.status) {
-                            case Status.LOADING:
-                              if (messages.length < 1) {
-                                return Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              } else {
-                                if (_scrollController.hasClients)
-                                  _scrollController.jumpTo(
-                                    _scrollController.position.maxScrollExtent,
-                                  );
-                              }
-
-                              break;
-                            case Status.ADDMESSAGE:
-                              print('snapshot.d');
-                              print(Message.fromJson(JsonDecoder()
-                                  .convert(snapshot.data.message)));
-                              messages.add(Message.fromJson(JsonDecoder()
-                                  .convert(snapshot.data.message)));
-                              if (_scrollController.hasClients)
-                                _scrollController.animateTo(
-                                  _scrollController.position.maxScrollExtent +
-                                      100,
-                                  curve: Curves.easeOut,
-                                  duration: const Duration(milliseconds: 300),
-                                );
-                              break;
-                            case Status.SENDMESSAGE:
-                              bloc.messageSink.add(ApiResponse.idle('message'));
-                              messages.add(snapshot.data.data.data.message);
-                              if (_scrollController.hasClients)
-                                _scrollController.animateTo(
-                                  _scrollController.position.maxScrollExtent +
-                                      100,
-                                  curve: Curves.easeOut,
-                                  duration: const Duration(milliseconds: 300),
-                                );
-
-                              saveObject(id, widget.peerId,
-                                  {"messages": messages, "message": null});
-                              break;
-                            case Status.GETMESSAGES:
-                              bloc.messageSink.add(ApiResponse.idle('message'));
-                              messages = snapshot.data.data.data.messages;
-                              saveObject(
-                                  id, widget.peerId, snapshot.data.data.data);
-                              if (_scrollController.hasClients)
-                                _scrollController.animateTo(
-                                  _scrollController.position.maxScrollExtent,
-                                  curve: Curves.easeOut,
-                                  duration: const Duration(milliseconds: 300),
-                                );
-                              break;
-                            default:
-                          }
-                        }
-                        return ListView.builder(
-                          itemCount: messages.length,
-                          reverse: false,
-                          controller: _scrollController,
-                          itemBuilder: (context, index) =>
-                            AutoScrollTag(
-                              key: ValueKey(index), 
-                              controller: _indexScrollController, 
-                              index: index, 
-                              child: buildItem(messages[index]),
-                              // highlightColor: Colors.black.withOpacity(0.1),
-                            )
-                              // buildItem(messages[index]),
-                        );
-                      })),
-            ),
-            buildInput()
-          ],
-        ),*/
         body: Column(
           children: [
             Expanded(
@@ -623,28 +519,40 @@ class _ChatViewState extends State<ChatView> {
             bottomBarInput()
           ],
         ),
-        // body: buildChatList(),
-        // bottomNavigationBar: bottomBarInput(),
       ),
     );
   }
 
   Widget buildChatList() {
-    if (chats == null) {
+    // if loading
+    if ((chats ?? []).isEmpty && isLoading) {
       return Center(child: CircularProgressIndicator());
+    }
+
+    if((chats ?? []).isEmpty && isError) {
+      return ErrorComponent(
+        text: "An error occured while fetching your conversation",
+        buttonText: "Try again",
+        callback: fetchMessages,
+      );
     }
 
     return ListView.builder(
       itemCount: chats.length,
       reverse: true,
       controller: _indexScrollController,
-      itemBuilder: (context, index) => AutoScrollTag(
-            key: ValueKey(index),
-            controller: _indexScrollController,
-            index: index,
-            child: buildItem(chats[index], index),
-            // highlightColor: Colors.black.withOpacity(0.1),
-          ),
+      itemBuilder: (context, index){
+         Message after = (index == 0) ? null : chats[index - 1];
+         Message before = (index == chats.length - 1) ? null : chats[index + 1];
+        return AutoScrollTag(
+          key: ValueKey(index),
+          controller: _indexScrollController,
+          index: index,
+          // child: buildItem(chats[index], index),
+          child: MessageItemComponent(mssg: chats[index], before: before, after: after),
+          // highlightColor: Colors.black.withOpacity(0.1),
+        );
+      },
       padding: EdgeInsets.only(bottom: 20.0),
     );
   }
@@ -671,7 +579,12 @@ class _ChatViewState extends State<ChatView> {
     }
 
     if (message.type == "MEDIA") {
-      return ChatPlayerWidget(url: message.content,);
+      return GestureDetector(
+        onTap: (){
+          print(message.content);
+        },
+        child: ChatPlayerWidget(url: message.content,)
+      );
     }
 
     return SizedBox();
@@ -933,49 +846,4 @@ class _ChatViewState extends State<ChatView> {
       ),
     );
   }
-
-  Widget buildInput() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 5,
-            blurRadius: 7,
-            offset: Offset(0, 3), // changes position of shadow
-          ),
-        ],
-      ),
-      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: TextField(
-              onSubmitted: (value) {
-                onSendMessage(inputTextController.text);
-              },
-              // controller: textEditingController,
-              keyboardType: TextInputType.multiline,
-              maxLength: 1000,
-              minLines: 1,
-              controller: inputTextController,
-              maxLines: 5,
-              decoration: InputDecoration(hintText: 'Say something...'),
-            ),
-          ),
-          IconButton(
-            onPressed: () => onSendMessage(inputTextController.text),
-            icon: Icon(Icons.send),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-void myCallback(Function callback) {
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    callback();
-  });
 }

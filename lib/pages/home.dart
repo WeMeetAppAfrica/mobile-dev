@@ -1,6 +1,4 @@
 import 'dart:async';
-
-import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
@@ -15,7 +13,7 @@ import 'package:wemeet/components/player.dart';
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/match.dart';
 import 'package:wemeet/services/message.dart';
-import 'package:wemeet/services/socket.dart';
+import 'package:wemeet/services/socket_bg.dart';
 import 'package:wemeet/services/user.dart';
 import 'package:wemeet/values/values.dart';
 
@@ -30,6 +28,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
   bool isPlayer = false;
+  bool hasMatch = false;
 
   AppModel model;
   UserModel user;
@@ -98,7 +97,7 @@ class _HomePageState extends State<HomePage> {
       model.setMessageToken(data);
 
       List list = (model.chatList ?? {}).keys.toList();
-      SocketService().joinRooms(list);
+      BackgroundSocketService().joinRooms(list);
     });
   }
 
@@ -122,7 +121,13 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           Expanded(
-            child: HomeSwipeComponent(),
+            child: HomeSwipeComponent(
+              onMatch: (val) {
+                setState((){
+                  hasMatch = val;
+                });
+              },
+            ),
           ),
           Center(
             // child: MusicPlayerComponent(
@@ -142,7 +147,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
+      appBar: hasMatch? null : AppBar(
         backgroundColor: Colors.white,
         brightness: Brightness.light,
         iconTheme: new IconThemeData(color: AppColors.primaryText),
@@ -164,7 +169,7 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      drawer: HomeDrawer(),
+      drawer: hasMatch? null : HomeDrawer(),
       body: buildBody(),
     );
   }

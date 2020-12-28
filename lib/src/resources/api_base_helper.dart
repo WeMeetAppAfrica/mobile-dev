@@ -8,10 +8,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/app_exceptions.dart';
 
+import 'package:wemeet/config.dart';
+
 class ApiBaseHelper {
-  final String _baseUrl = "https://prod.wemeet.africa/api/backend-service/v1/";
+  final String _baseUrl = "${WeMeetConfig.baseUrl}backend-service/v1/";
   final String _messageBaseUrl =
-      "https://prod.wemeet.africa/api/messaging-service/v1/";
+      "${WeMeetConfig.baseUrl}messaging-service/v1/";
 
   Future<dynamic> get(String url, [token]) async {
     var responseJson;

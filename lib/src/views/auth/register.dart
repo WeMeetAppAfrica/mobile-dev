@@ -438,12 +438,7 @@ class _RegisterState extends State<Register> {
                             children: [
                               FlatButton(
                                 onPressed: () => {
-                                  Navigator.pop(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Login(),
-                                    ),
-                                  )
+                                  Navigator.pop(context)
                                 },
                                 color: Color.fromARGB(255, 245, 253, 237),
                                 textColor: Color.fromARGB(255, 141, 198, 63),

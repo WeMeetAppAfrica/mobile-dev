@@ -4,4 +4,7 @@ class WeMeetConfig {
   static const String baseUrl = "https://prod.wemeet.africa/api/";
 
   static const String messageBase = "messaging-service/v1/";
+
+  //Paystack public key
+  static const String payStackPublickKey = "pk_test_1ee70468f4f53355ca5b88f3f4d4ac0dd9504749";
 }

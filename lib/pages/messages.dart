@@ -10,7 +10,7 @@ import 'package:wemeet/models/user.dart';
 
 import 'package:wemeet/services/message.dart';
 import 'package:wemeet/services/match.dart';
-import 'package:wemeet/services/socket.dart';
+import 'package:wemeet/services/socket_bg.dart';
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/views/dashboard/chat-page.dart';
 import 'package:wemeet/utils/utils.dart';
@@ -36,7 +36,7 @@ class _MessagesPageState extends State<MessagesPage> {
   String errorText;
   List<ChatModel> items = [];
 
-  SocketService socketService = SocketService();
+  BackgroundSocketService socketService = BackgroundSocketService();
   DataProvider _dataProvider = DataProvider();
 
   StreamSubscription<ChatModel> onChatMessage;

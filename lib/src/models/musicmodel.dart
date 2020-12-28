@@ -3,6 +3,7 @@
 //     final musicModel = musicModelFromJson(jsonString);
 
 import 'dart:convert';
+import 'package:wemeet/utils/converters.dart';
 
 MusicModel musicModelFromJson(String str) => MusicModel.fromJson(json.decode(str));
 
@@ -103,7 +104,7 @@ class Content {
         isPlaying: json["isPlaying"] == null ? false : json["isPlaying"],
         isSelected: json["isSelected"] == null ? false : json["isSelected"],
         title: json["title"] == null ? null : json["title"],
-        songUrl: json["songUrl"] == null ? null : json["songUrl"],
+        songUrl: json["songUrl"] ?? "",
         artworkUrl: json["artworkURL"] == null ? null : json["artworkURL"],
         uploadedBy: json["uploadedBy"] == null ? null : UploadedBy.fromJson(json["uploadedBy"]),
     );
@@ -118,6 +119,29 @@ class Content {
         "artworkURL": artworkUrl == null ? null : artworkUrl,
         "uploadedBy": uploadedBy == null ? null : uploadedBy.toJson(),
     };
+
+    String get fileUrl {
+      if(songUrl == null || songUrl.isEmpty) {
+        return "";
+      }
+
+      return songUrl;
+
+      // if(songUrl.length > 5) {
+      //   List ss = songUrl.split(".");
+      //   if(ss.isEmpty) {
+      //     return songUrl + ".mp3";
+      //   }
+
+      //   // make sure it is an audio file
+      //   List<String> formats = ["mp3", "wav", "m3u"];
+      //   if(!formats.contains(ss.last.toLowerCase())) {
+      //     return songUrl + ".mp3";
+      //   }
+      // }
+
+      // return songUrl;
+    }
 }
 
 class UploadedBy {
