@@ -9,9 +9,9 @@ import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/app_exceptions.dart';
 
 class ApiBaseHelper {
-  final String _baseUrl = "https://dev.wemeet.africa/api/backend-service/v1/";
+  final String _baseUrl = "https://prod.wemeet.africa/api/backend-service/v1/";
   final String _messageBaseUrl =
-      "https://dev.wemeet.africa/api/messaging-service/v1/";
+      "https://prod.wemeet.africa/api/messaging-service/v1/";
 
   Future<dynamic> get(String url, [token]) async {
     var responseJson;

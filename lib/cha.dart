@@ -25,7 +25,7 @@ class _ChatPageState extends State<ChatPage> {
     scrollController = ScrollController();
     //Creating the socket
     socketIO = SocketIOManager().createSocketIO(
-      'http://dev.wemeet.africa/api/messaging-service/socket',
+      'http://prod.wemeet.africa/api/messaging-service/socket',
       '/',
     );
     //Call init before doing anything with socket

@@ -83,7 +83,7 @@ class SocketService {
   void _connect() async {
     // print("...connecting");
     _socket = io(
-      'https://dev.wemeet.africa/api/messaging-service/socket',
+      'https://prod.wemeet.africa/api/messaging-service/socket',
       OptionBuilder()
         .setTransports(['websocket'])
         // .setTimeout(20000)

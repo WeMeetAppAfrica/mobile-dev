@@ -189,6 +189,6 @@ class AppModel extends Model with _MainModel, _UserData, _Chat {}
 
 /**
 
-https://dev.wemeet.africa/api/messaging-service/v1/30
+https://prod.wemeet.africa/api/messaging-service/v1/30
 
 */
