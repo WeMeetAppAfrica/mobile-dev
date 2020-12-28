@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:io';
 import 'dart:convert';
 
@@ -88,7 +89,7 @@ class _StartPageState extends State<StartPage> {
           print('onMessage: $message');
           Platform.isAndroid
               ? showNotification(message['notification'])
-              : showNotification(message['aps']['alert']);
+              : showNotification(message['notification']);
           return;
         },
         onBackgroundMessage:
@@ -111,15 +112,20 @@ class _StartPageState extends State<StartPage> {
 
     firebaseMessaging.onTokenRefresh.listen((token) {
       print('new pushh $token');
-
-      bloc.updateDevice({"old": DataProvider().pushToken, "new": token});
+      if (DataProvider().pushToken != null)
+        bloc.updateDevice({
+          "newDeviceToken": token,
+          "oldDeviceToken": DataProvider().pushToken
+        });
       model.setPushToken(token);
     });
   }
 
   void showNotification(message) async {
+    print('show notes');
+    print(message['title']);
     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-      Platform.isAndroid ? 'com.wemeetng.wemeet' : 'com.wemeetng.wemeet',
+      Platform.isAndroid ? 'com.africa.wemeet' : 'com.africa.wemeet',
       'WeMeet',
       'swipe, meet',
       playSound: true,
@@ -134,6 +140,7 @@ class _StartPageState extends State<StartPage> {
     await flutterLocalNotificationsPlugin.show(0, message['title'].toString(),
         message['body'].toString(), platformChannelSpecifics,
         payload: jsonEncode(message));
+    Fluttertoast.showToast(msg: message['title'].toString());
   }
 
   void routeTo(String route, [bool delay = true]) async {

@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:wemeet/components/chat_player.dart';
 import 'package:wemeet/src/views/dashboard/audioplayertask.dart';
 
 import 'package:wemeet/values/colors.dart';
@@ -162,7 +164,44 @@ class _MusicPlayerComponentState extends State<MusicPlayerComponent> {
   }
 }
 
-class MusicWidget extends StatelessWidget {
+class MusicWidget extends StatefulWidget {
+
+  const MusicWidget({Key key,}) : super(key: key);
+  @override
+  _MusicWidgetState createState() => _MusicWidgetState();
+}
+
+class _MusicWidgetState extends State<MusicWidget> {
+
+  bool isPlaying(PlaybackState s) {
+
+    if(s == null) {
+      return false;
+    }
+
+    // chacke playing
+    if(s.playing) {
+      return true;
+    }
+
+    return false;
+  }
+
+  void pausePlay({List<MediaItem> queue, PlaybackState st}) async {
+   // check that queue is not empty
+   if(queue == null || queue.isEmpty) {
+     return;
+   }
+
+    // check if playing
+    if(st.playing || st.processingState == AudioPlaybackState.connecting) {
+      await AudioService.pause();
+      return;
+    }
+
+    await AudioService.play();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AudioServiceWidget(
@@ -176,7 +215,7 @@ class MusicWidget extends StatelessWidget {
           final processingState =
               playbackState?.processingState ?? AudioProcessingState.none;
           final playing = playbackState?.playing ?? false;
-          if (AudioService.running)
+          if (AudioService.running && mediaItem != null)
             return Container(
               padding: EdgeInsets.only(right: 20, left: 20),
               // padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 7.0),
@@ -237,23 +276,53 @@ class MusicWidget extends StatelessWidget {
                               AudioService.skipToPrevious();
                             },
                           ),
-                          !playing
-                              ? IconButton(
-                                  icon: Icon(
-                                    FeatherIcons.playCircle,
-                                    color: Colors.white,
-                                  ),
-                                  iconSize: 30.0,
-                                  onPressed: AudioService.play,
-                                )
-                              : IconButton(
-                                  icon: Icon(
-                                    FeatherIcons.pauseCircle,
-                                    color: Colors.white,
-                                  ),
-                                  iconSize: 30.0,
-                                  onPressed: AudioService.pause,
-                                ),
+                          IconButton(
+                            icon: Icon(
+                              playing ? FeatherIcons.pauseCircle : FeatherIcons.playCircle,
+                              color: Colors.white,
+                            ),
+                            iconSize: 30.0,
+                            onPressed: () => pausePlay(
+                              queue: queue,
+                              st: playbackState
+                            ),
+                          ),
+                           
+                          // (!playing && _canPlayPause(playbackState)) ? 
+                          // IconButton(
+                          //         icon: Icon(
+                          //           FeatherIcons.playCircle,
+                          //           color: Colors.white,
+                          //         ),
+                          //         iconSize: 30.0,
+                          //         onPressed: AudioService.play,
+                          //       ) : null,
+                          // (playing && _canPlayPause(playbackState)) ?
+                          // IconButton(
+                          //         icon: Icon(
+                          //           FeatherIcons.pauseCircle,
+                          //           color: Colors.white,
+                          //         ),
+                          //         iconSize: 30.0,
+                          //         onPressed: AudioService.pause,
+                          //       ) : null,     
+                          // (!playing && _canPlayPause(playbackState))
+                          //     ? IconButton(
+                          //         icon: Icon(
+                          //           FeatherIcons.playCircle,
+                          //           color: Colors.white,
+                          //         ),
+                          //         iconSize: 30.0,
+                          //         onPressed: AudioService.play,
+                          //       )
+                          //     : IconButton(
+                          //         icon: Icon(
+                          //           FeatherIcons.pauseCircle,
+                          //           color: Colors.white,
+                          //         ),
+                          //         iconSize: 30.0,
+                          //         onPressed: AudioService.pause,
+                          //       ),
                           IconButton(
                             icon: Icon(
                               FeatherIcons.skipForward,
@@ -275,7 +344,7 @@ class MusicWidget extends StatelessWidget {
                           //   iconSize: 30.0,
                           //   onPressed: AudioService.stop,
                           // ),
-                        ],
+                        ].where((e) => e != null).toList(),
                       )
                     ]
                   ],

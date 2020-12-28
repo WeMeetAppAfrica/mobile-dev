@@ -6,7 +6,7 @@ class SocketUtils {
     /*
     print('connecting...');
     socket = IO.io(
-        'https://dev.wemeet.africa/api/messaging-service/socket',
+        'https://prod.wemeet.africa/api/messaging-service/socket',
         <String, dynamic>{
           'transports': ['websocket'],
           // 'extraHeaders': {'foo': 'bar'} // optional

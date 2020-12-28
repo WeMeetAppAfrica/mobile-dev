@@ -299,13 +299,23 @@ class _ProfilePageState extends State<ProfilePage>
                                             borderRadius: BorderRadius.vertical(
                                               bottom: Radius.circular(30),
                                             ),
-                                            child: Image(
+                                            // child: Image(
+                                            //   fit: BoxFit.cover,
+                                            //   image: NetworkImage(
+                                            //     details.profileImage != null
+                                            //         ? details.profileImage
+                                            //         : 'https://via.placeholder.com/1080',
+                                            //   ),
+                                            // ),
+                                            child: CachedNetworkImage(
+                                              imageUrl: details.profileImage,
+                                              placeholder: (context, i) {
+                                                return Image.asset(
+                                                  "assets/images/profile_avatar.png",
+                                                  fit: BoxFit.cover,
+                                                );
+                                              },
                                               fit: BoxFit.cover,
-                                              image: NetworkImage(
-                                                details.profileImage != null
-                                                    ? details.profileImage
-                                                    : 'https://via.placeholder.com/1080',
-                                              ),
                                             ),
                                           ),
                                           top: 0,

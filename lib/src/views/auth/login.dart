@@ -8,6 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -119,11 +120,9 @@ class _LoginState extends State<Login> {
   }
 
   _setUser(user, token) async {
-
     // set model user data
     model.setUserMap(user.jsonData);
     model.setToken(token);
-
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('accessToken', token);
@@ -176,15 +175,12 @@ class _LoginState extends State<Login> {
                           msg: 'Please complete your profile');
                     }
                     myCallback(() {
-
-                      if(snapshot.data.data.data.user.profileImage == null) {
-
-                      }
+                      if (snapshot.data.data.data.user.profileImage == null) {}
 
                       Navigator.of(context).pushReplacementNamed(
-                        snapshot.data.data.data.user.profileImage == null ? "/kyc" : "/home"
-                      );
-
+                          snapshot.data.data.data.user.profileImage == null
+                              ? "/kyc"
+                              : "/home");
 
                       // Navigator.pushReplacement(
                       //   context,
@@ -343,11 +339,8 @@ class _LoginState extends State<Login> {
                             child: Container(
                               margin: EdgeInsets.only(top: 17, right: 38),
                               child: InkWell(
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ForgotPass(),
-                                  ),
+                                onTap: () => Navigator.pushNamed(
+                                  context, "/forgot-password",
                                 ),
                                 child: Text(
                                   "Forgot Password",
@@ -371,9 +364,10 @@ class _LoginState extends State<Login> {
                                     onTap: () {
                                       if (_formKey.currentState.validate()) {
                                         final data = {
-                                          "deviceId": pushToken,
+                                          "deviceId": DataProvider().pushToken,
                                           "email": emailController.text,
-                                          "latitude": _currentPosition?.latitude,
+                                          "latitude":
+                                              _currentPosition?.latitude,
                                           "longitude":
                                               _currentPosition?.longitude,
                                           "password": passwordController.text,
@@ -429,7 +423,9 @@ class _LoginState extends State<Login> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => Register(currentPosition: _currentPosition,),
+                                      builder: (context) => Register(
+                                        currentPosition: _currentPosition,
+                                      ),
                                     ),
                                   )
                                 },

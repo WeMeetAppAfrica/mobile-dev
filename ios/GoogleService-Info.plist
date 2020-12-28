@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>277983141718-ofcia7h48lsp9mmbspiphelsj0hbompi.apps.googleusercontent.com</string>
+	<string>277983141718-dvoblid7c9lv35aut7li4lp4dvdffnm4.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.277983141718-ofcia7h48lsp9mmbspiphelsj0hbompi</string>
+	<string>com.googleusercontent.apps.277983141718-dvoblid7c9lv35aut7li4lp4dvdffnm4</string>
 	<key>API_KEY</key>
 	<string>AIzaSyDrFI4tLBOADCFQjPDUAF335anYcQj0_N8</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.wemeetng.wemeet</string>
+	<string>com.africa.wemeet</string>
 	<key>PROJECT_ID</key>
 	<string>wemeet-293821</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,7 +29,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:277983141718:ios:60559dee572f7dc851c0f7</string>
+	<string>1:277983141718:ios:5302d2dd355f1f4551c0f7</string>
 	<key>DATABASE_URL</key>
 	<string>https://wemeet-293821.firebaseio.com</string>
 </dict>

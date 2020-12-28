@@ -9,11 +9,17 @@ import 'package:wemeet/providers/data.dart';
 
 import 'package:wemeet/services/match.dart';
 import 'package:wemeet/src/SwipeAnimation/detail.dart';
+import 'package:wemeet/src/views/dashboard/chat-page.dart';
 import 'package:wemeet/src/views/dashboard/payment.dart';
 import 'package:wemeet/utils/errors.dart';
 import 'package:wemeet/values/colors.dart';
+import 'package:wemeet/components/circular_button.dart';
+import 'package:wemeet/components/home/match.dart';
 
 class HomeSwipeComponent extends StatefulWidget {
+  final ValueChanged<bool> onMatch;
+  const HomeSwipeComponent({Key key, this.onMatch}) : super(key: key);
+
   @override
   _HomeSwipeComponentState createState() => _HomeSwipeComponentState();
 }
@@ -24,6 +30,7 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
   int swipesLeft = 0;
   int left = 0;
   List<UserModel> users = [];
+  UserModel match;
   CardController controller = CardController();
 
   DataProvider _dataProvider = DataProvider();
@@ -72,6 +79,8 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
         left = users.length;     
       });
 
+      getMatch(data);
+
     } catch (e) {
 
     } finally {
@@ -79,6 +88,50 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
         isLoading = false;
       });
     }
+  }
+
+  void getMatch(Map data) {
+    // make sure match and swipe is present
+    if(!data.containsKey("swipe") && !data.containsKey("match")) {
+      setState(() {
+        match = null;        
+      });
+      showMatch(false);
+      return;
+    }
+
+    // make sure match is boolean and true
+    if(data["match"] is bool && data["match"] == true) {
+      // if swipe is empty return
+      if(data["swipe"] is Map && data["swipe"].isEmpty) {
+        setState(() {
+          match = null;        
+        });
+        showMatch(false);
+        return;
+      }
+
+      // Make sure swipee is Map
+      if(!data["swipe"]["swipee"] is Map) {
+        setState(() {
+          match = null;        
+        });
+        showMatch(false);
+        return;
+      }
+
+      Map swipee = data["swipe"]["swipee"];
+      // make sure swipee is not null either
+      if(swipee.isNotEmpty) {
+        setState(() {
+          match = UserModel.fromMap(swipee);          
+        });
+        print("Found a match");
+        showMatch(true);
+        return;
+      }
+    }
+
   }
 
   void postSwipe(int id, String action) {
@@ -101,6 +154,18 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
     });
   }
 
+  void showMatch(bool val) {
+    // remove the match component anyways
+    setState(() {
+      if(val){
+        match = null; 
+      }            
+    });
+    if(widget.onMatch == null) {
+      return;
+    }
+    widget.onMatch(val);
+  }
   _showUpgrade() async {
     await showDialog<String>(
       context: context,
@@ -317,7 +382,7 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
             children: [
               RawMaterialButton(
                 onPressed: (){
-                  if(swipesLeft <= 0) {
+                  if(swipesLeft == 0) {
                     _showUpgrade();
                     return;
                   }
@@ -331,7 +396,7 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
               ),
               RawMaterialButton(
                 onPressed: () {
-                  if(swipesLeft <= 0) {
+                  if(swipesLeft == 0) {
                     _showUpgrade();
                     return;
                   }
@@ -356,31 +421,39 @@ class _HomeSwipeComponentState extends State<HomeSwipeComponent> {
       );
     }
 
+    if(match != null) {
+      return Center(
+        child: MatchComponent(
+          onTap: (val) {
+            if(val) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChatView(
+                    apiToken: _dataProvider.token,
+                    token: _dataProvider.messageToken,
+                    peerAvatar: match.profileImage,
+                    peerId: match.id.toString(),
+                    peerName: match.fullName,
+                  ),
+                ));
+            }
+            showMatch(false);
+          },
+          match: match,
+        ),
+      );
+    }
+
     if(users.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            InkWell(
+            CircularBtn(
               onTap: fetchData,
-              child: Container(
-                width: 90.0,
-                height: 90.0,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.secondaryElement.withOpacity(0.2),
-                  shape: BoxShape.circle
-                ),
-                child: Container(
-                  width: 75.0,
-                  height: 75.0,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryElement,
-                    shape: BoxShape.circle
-                  ),
-                  child: Icon(FeatherIcons.heart, color: Colors.white)
-                )
-              ),
+              radius: 90.0,
+              icon: Icon(FeatherIcons.heart, color: Colors.white),
             ),
             SizedBox(height: 10.0),
             Text(

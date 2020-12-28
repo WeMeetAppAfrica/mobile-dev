@@ -21,7 +21,7 @@ class UpdateProfile extends StatefulWidget {
 }
 
 class _UpdateProfileState extends State<UpdateProfile> {
-  bool _isChecked = true;
+  // bool _isChecked = true;
   List<RadioModel> gender = new List<RadioModel>();
   List<RadioModel> interest = new List<RadioModel>();
   String selectedGender;
