@@ -15,6 +15,8 @@ import 'package:wemeet/src/views/auth/login.dart';
 import 'package:wemeet/values/values.dart';
 import 'package:device_info/device_info.dart';
 
+import 'package:wemeet/utils/validators.dart';
+
 class Register extends StatefulWidget {
   final currentPosition;
   Register({Key key, this.currentPosition}) : super(key: key);
@@ -64,6 +66,51 @@ class _RegisterState extends State<Register> {
     setState(() {
       _obscureText = !_obscureText;
     });
+  }
+
+  void sendData() async {
+    // check if checked
+    if(!_isChecked) {
+      await Fluttertoast.showToast(msg: "Please accept terms and privacy policy");
+      return;
+    }
+
+
+    final data = {
+      "deviceId": pushToken,
+      "dateOfBirth": parseDate,
+      "email": emailController.text,
+      "userName": emailController.text,
+      "firstName": nameController.text
+                  .split(' ')
+                  .length >
+              0
+          ? nameController.text
+              .split(' ')[0]
+          : null,
+      "lastName": nameController.text
+                  .split(' ')
+                  .length >
+              1
+          ? nameController.text
+              .split(' ')[1]
+          : null,
+      "latitude": _currentPosition.latitude,
+      "longitude":
+          _currentPosition.longitude,
+      "password": passwordController.text,
+      "phone": phoneController.text
+    };
+    // print(parseDate);
+    bloc.signup(data);
+  }
+
+  void submit() {
+    final form = _formKey.currentState;
+    if(form.validate()) {
+      form.save();
+      sendData();
+    }
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -203,12 +250,7 @@ class _RegisterState extends State<Register> {
                                 right: 16.0,
                                 bottom: 8.0),
                             child: TextFormField(
-                                validator: (value) {
-                                  if (value.isEmpty) {
-                                    return 'Please enter full name';
-                                  }
-                                  return null;
-                                },
+                                validator: (val) => NotEmptyValidator.validate(val, "Please enter your full name"),
                                 controller: nameController,
                                 obscureText: false,
                                 decoration: InputDecoration(
@@ -240,15 +282,10 @@ class _RegisterState extends State<Register> {
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: TextFormField(
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Please enter phone number';
-                                }
-                                return null;
-                              },
+                              validator: PhoneValidator.validate,
                               controller: phoneController,
-                              maxLength: 11,
-                              keyboardType: TextInputType.number,
+                              maxLength: 12,
+                              keyboardType: TextInputType.phone,
                               inputFormatters: <TextInputFormatter>[
                                 FilteringTextInputFormatter.digitsOnly
                               ],
@@ -270,12 +307,7 @@ class _RegisterState extends State<Register> {
                               onTap: () => _selectDate(context),
                               child: AbsorbPointer(
                                 child: TextFormField(
-                                    validator: (value) {
-                                      if (value.isEmpty) {
-                                        return 'Please select Date of Birth';
-                                      }
-                                      return null;
-                                    },
+                                    validator: (val) => NotEmptyValidator.validate(val, "Please select Date of Birth"),
                                     obscureText: false,
                                     controller: dob,
                                     decoration: InputDecoration(
@@ -294,14 +326,10 @@ class _RegisterState extends State<Register> {
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: TextFormField(
-                                validator: (value) {
-                                  if (value.isEmpty) {
-                                    return 'Please enter email';
-                                  }
-                                  return null;
-                                },
+                                validator: EmailValidator.validate,
                                 controller: emailController,
                                 obscureText: false,
+                                keyboardType: TextInputType.emailAddress,
                                 decoration: InputDecoration(
                                   prefixIcon: Icon(Icons.mail_outline),
                                   contentPadding: EdgeInsets.fromLTRB(
@@ -316,12 +344,7 @@ class _RegisterState extends State<Register> {
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: TextFormField(
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Please enter password';
-                                }
-                                return null;
-                              },
+                              validator: PasswordValidator.validate,
                               controller: passwordController,
                               obscureText: _obscureText,
                               decoration: InputDecoration(
@@ -363,38 +386,7 @@ class _RegisterState extends State<Register> {
                                     backgroundColor: AppColors.secondaryElement,
                                   )
                                 : InkWell(
-                                    onTap: () {
-                                      if (_formKey.currentState.validate() &&
-                                          _isChecked) {
-                                        final data = {
-                                          "deviceId": pushToken,
-                                          "dateOfBirth": parseDate,
-                                          "email": emailController.text,
-                                          "userName": emailController.text,
-                                          "firstName": nameController.text
-                                                      .split(' ')
-                                                      .length >
-                                                  0
-                                              ? nameController.text
-                                                  .split(' ')[0]
-                                              : null,
-                                          "lastName": nameController.text
-                                                      .split(' ')
-                                                      .length >
-                                                  1
-                                              ? nameController.text
-                                                  .split(' ')[1]
-                                              : null,
-                                          "latitude": _currentPosition.latitude,
-                                          "longitude":
-                                              _currentPosition.longitude,
-                                          "password": passwordController.text,
-                                          "phone": phoneController.text
-                                        };
-                                        // print(parseDate);
-                                        bloc.signup(data);
-                                      }
-                                    },
+                                    onTap: submit,
                                     child: Container(
                                       width: 72,
                                       height: 72,
