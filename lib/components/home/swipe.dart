@@ -11,7 +11,6 @@ import 'package:wemeet/services/match.dart';
 import 'package:wemeet/src/SwipeAnimation/detail.dart';
 import 'package:wemeet/src/views/dashboard/chat-page.dart';
 import 'package:wemeet/src/views/dashboard/payment.dart';
-import 'package:wemeet/utils/errors.dart';
 import 'package:wemeet/values/colors.dart';
 import 'package:wemeet/components/circular_button.dart';
 import 'package:wemeet/components/home/match.dart';

@@ -4,7 +4,6 @@ import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:wemeet/src/views/dashboard/player_widget.dart';
 
 const kUrl1 = 'https://luan.xyz/files/audio/ambient_c_motion.mp3';

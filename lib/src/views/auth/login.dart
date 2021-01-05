@@ -19,6 +19,8 @@ import 'package:wemeet/src/views/dashboard/home.dart';
 
 import 'package:wemeet/values/values.dart';
 
+import 'package:wemeet/utils/validators.dart';
+
 import 'package:wemeet/models/app.dart';
 
 class Login extends StatefulWidget {
@@ -282,12 +284,7 @@ class _LoginState extends State<Login> {
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: TextFormField(
-                                validator: (value) {
-                                  if (value.isEmpty) {
-                                    return 'Please enter email address';
-                                  }
-                                  return null;
-                                },
+                                validator: EmailValidator.validate,
                                 keyboardType: TextInputType.emailAddress,
                                 controller: emailController,
                                 decoration: InputDecoration(
@@ -307,12 +304,7 @@ class _LoginState extends State<Login> {
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: TextFormField(
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Please enter password';
-                                }
-                                return null;
-                              },
+                              validator: PasswordValidator.validate,
                               obscureText: _obscureText,
                               controller: passwordController,
                               decoration: InputDecoration(

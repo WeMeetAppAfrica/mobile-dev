@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:wemeet/models/user.dart';
-import 'package:wemeet/models/app.dart';
 
 class DataProvider {
 

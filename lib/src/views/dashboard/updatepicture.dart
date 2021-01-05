@@ -99,11 +99,6 @@ class _UpdatePhotosState extends State<UpdatePhotos> {
     }
   }
 
-  _setPassKYC() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('passKYC', true);
-  }
-
   @override
   Widget build(BuildContext context) {
     void _showPicker(context, picture) {

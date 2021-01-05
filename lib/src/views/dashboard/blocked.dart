@@ -1,11 +1,9 @@
 import 'dart:convert';
 
-import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
-import 'package:wemeet/src/views/dashboard/profile.dart';
 import 'package:wemeet/values/values.dart';
 
 class Blocked extends StatefulWidget {
