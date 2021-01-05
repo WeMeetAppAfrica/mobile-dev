@@ -5,6 +5,13 @@ class WeMeetConfig {
   // Messaging base url
   static const String messageBase = "messaging-service/v1/";
 
+  static String get socketUrl {
+    if(kReleaseMode) {
+      return "http://prod.wemeet.africa/api/messaging-service/socket";
+    }
+    return "http://dev.wemeet.africa/api/messaging-service/socket";
+  }
+
   // base url
   static String get baseUrl {
     if(kReleaseMode) {

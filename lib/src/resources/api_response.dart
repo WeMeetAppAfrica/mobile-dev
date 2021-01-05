@@ -57,6 +57,7 @@ class ApiResponse<T> {
   ApiResponse.sendMedia(this.data) : status = Status.SENDMEDIA;
   ApiResponse.songRequest(this.data) : status = Status.SONGREQUEST;
   ApiResponse.done(this.data) : status = Status.DONE;
+  ApiResponse.updateDevice(this.data) : status = Status.UPDATEDEVICE;
   ApiResponse.selfDelete(this.data) : status = Status.SELFDELETE;
   ApiResponse.play(this.songs) : status = Status.PLAY;
   ApiResponse.getMusicList(this.data) : status = Status.GETMUSICLIST;
@@ -92,6 +93,7 @@ enum Status {
   UNBLOCKED,
   GETCHATS,
   SELFDELETE,
+  UPDATEDEVICE,
   PLAY,
   SONGREQUEST,
   ADDMESSAGE,

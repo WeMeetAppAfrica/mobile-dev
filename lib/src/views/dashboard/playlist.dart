@@ -451,7 +451,7 @@ class _PlaylistState extends State<Playlist> {
           switch (snapshot.data.status) {
             case Status.LOADING:
               return Center(
-                child: Container(),
+                child: CircularProgressIndicator(),
               );
               break;
             case Status.DONE:

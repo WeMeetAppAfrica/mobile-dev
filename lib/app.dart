@@ -15,10 +15,9 @@ import 'package:wemeet/models/app.dart';
 import 'package:wemeet/values/colors.dart';
 
 class MyApp extends StatelessWidget {
-
   final AppModel model;
 
-  const MyApp({Key key, this.model}) : super(key: key); 
+  const MyApp({Key key, this.model}) : super(key: key);
 
   Map<String, WidgetBuilder> _buildRoutes() {
     final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
