@@ -6,6 +6,7 @@ import 'dart:convert';
 // import 'package:wemeet/services/socket.dart';
 import 'package:wemeet/services/socket_bg.dart';
 
+import 'package:wemeet/config.dart';
 import 'package:wemeet/models/app.dart';
 import 'package:wemeet/providers/data.dart';
 
@@ -42,7 +43,7 @@ void main() async {
 
   // start socket service. Uncomment this on live
   // SocketService().init();
-  BackgroundSocketService().start("https://dev.wemeet.africa/api/messaging-service/socket");
+  BackgroundSocketService().start(WeMeetConfig.socketUrl);
 
   runApp(MyApp(model: model));
 }
