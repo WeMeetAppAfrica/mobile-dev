@@ -1,12 +1,23 @@
+import 'package:flutter/foundation.dart';
+
 class WeMeetConfig {
   
-  // The app's base url
-  // static const String baseUrl = "https://dev.wemeet.africa/api/";
-  static const String baseUrl = "https://prod.wemeet.africa/api/"; // production
-
+  // Messaging base url
   static const String messageBase = "messaging-service/v1/";
 
-  //Paystack public key
-  // static const String payStackPublickKey = "pk_test_1ee70468f4f53355ca5b88f3f4d4ac0dd9504749";
-  static const String payStackPublickKey = "pk_live_b747bf32e4fb87b0824a49f3dc4abb831ac64764";
+  // base url
+  static String get baseUrl {
+    if(kReleaseMode) {
+      return "https://prod.wemeet.africa/api/";
+    }
+    return "https://dev.wemeet.africa/api/";
+  }
+
+  // Paystack key
+  static String get payStackPublickKey {
+    if(kReleaseMode) {
+      return "pk_live_b747bf32e4fb87b0824a49f3dc4abb831ac64764";
+    }
+    return "pk_test_1ee70468f4f53355ca5b88f3f4d4ac0dd9504749";
+  }
 }
