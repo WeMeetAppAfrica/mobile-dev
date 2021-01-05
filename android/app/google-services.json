@@ -1,49 +1,113 @@
 {
   "project_info": {
-    "project_number": "271301618675",
-    "firebase_url": "https://wemeet-19cb4.firebaseio.com",
-    "project_id": "wemeet-19cb4",
-    "storage_bucket": "wemeet-19cb4.appspot.com"
+    "project_number": "277983141718",
+    "firebase_url": "https://wemeet-293821.firebaseio.com",
+    "project_id": "wemeet-293821",
+    "storage_bucket": "wemeet-293821.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:271301618675:android:9b7988fca975006ab98086",
+        "mobilesdk_app_id": "1:277983141718:android:3537e76094dadc9251c0f7",
         "android_client_info": {
-          "package_name": "com.wemeetng.wemeet"
+          "package_name": "africa.wemeet.dev"
         }
       },
       "oauth_client": [
         {
-          "client_id": "271301618675-ckkisbfguf8j2hfh8d8ebpvomccljgti.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.wemeetng.wemeet",
-            "certificate_hash": "17627f7e8a70cbb9f4966e00a6acfda7eef5aceb"
-          }
-        },
-        {
-          "client_id": "271301618675-unv4avpueo52e15e68e1fc4cllk845ep.apps.googleusercontent.com",
+          "client_id": "277983141718-1ri66qgem90bh35iqmlpf35k32cjm11k.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDhO2tpYGSApQqIKKuU6LSNxuZJs-a80dU"
+          "current_key": "AIzaSyA8H-Y_8OCNbfAUnc0ySjBDP5NAyUVRXxs"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "271301618675-unv4avpueo52e15e68e1fc4cllk845ep.apps.googleusercontent.com",
+              "client_id": "277983141718-1ri66qgem90bh35iqmlpf35k32cjm11k.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "271301618675-atgn2kqa18bqbeevgca60mnnipqo0n6g.apps.googleusercontent.com",
+              "client_id": "277983141718-dvoblid7c9lv35aut7li4lp4dvdffnm4.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.wemeetng.wemeet"
+                "bundle_id": "com.africa.wemeet"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:277983141718:android:83a16bd8287e239c51c0f7",
+        "android_client_info": {
+          "package_name": "com.africa.wemeet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "277983141718-1ri66qgem90bh35iqmlpf35k32cjm11k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8H-Y_8OCNbfAUnc0ySjBDP5NAyUVRXxs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "277983141718-1ri66qgem90bh35iqmlpf35k32cjm11k.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "277983141718-dvoblid7c9lv35aut7li4lp4dvdffnm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.africa.wemeet"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:277983141718:android:013c0c5de2ccc48b51c0f7",
+        "android_client_info": {
+          "package_name": "com.wemeetng.wemeet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "277983141718-1ri66qgem90bh35iqmlpf35k32cjm11k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8H-Y_8OCNbfAUnc0ySjBDP5NAyUVRXxs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "277983141718-1ri66qgem90bh35iqmlpf35k32cjm11k.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "277983141718-dvoblid7c9lv35aut7li4lp4dvdffnm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.africa.wemeet"
               }
             }
           ]

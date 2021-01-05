@@ -75,9 +75,9 @@ class ConfirmPasswordValidator {
 
 class NotEmptyValidator {
   
-  static String validate(String value, [String name]) {
+  static String validate(String value, [String message]) {
     if(value.isEmpty) {
-      return  "${name ?? 'Field'} can not be empty";
+      return  message ?? "Field can not be empty";
     }
     return null;
   }
