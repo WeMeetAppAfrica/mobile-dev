@@ -5,18 +5,12 @@ import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http_parser/http_parser.dart';
-import 'package:http/http.dart' as http;
 import 'package:wemeet/src/blocs/bloc.dart';
 import 'package:wemeet/src/resources/api_response.dart';
 import 'package:wemeet/src/resources/app_exceptions.dart';
-import 'package:wemeet/src/resources/repository.dart';
 import 'package:wemeet/src/views/auth/kyc.dart';
 import 'package:wemeet/src/views/auth/login.dart';
-import 'package:wemeet/src/views/dashboard/home.dart';
-import 'package:wemeet/src/views/dashboard/messages.dart';
 import 'package:wemeet/values/values.dart';
 
 class Picture extends StatefulWidget {
@@ -224,13 +218,9 @@ class _PictureState extends State<Picture> {
                               bloc.profileSink.add(ApiResponse.idle('message'));
                               _setPassKYC(proImage);
                               myCallback(() {
-                                Navigator.pushReplacement(
+                                Navigator.pushReplacementNamed(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (context) => Home(
-                                      token: widget.token,
-                                    ),
-                                  ),
+                                  "/home",
                                 );
                               });
                               // myCallback(() {

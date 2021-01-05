@@ -3,7 +3,7 @@ class PhoneValidator{
 
     print(value);
 
-    RegExp _phone = new RegExp(r"^\+[0-9]{3}[0-9]{10,11}$");
+    RegExp _phone = new RegExp(r"^[0-9]{2,3}[0-9]{10,11}$");
 
     if(value.isEmpty) {
       return  message ?? "Please enter phone number" ;
@@ -14,7 +14,7 @@ class PhoneValidator{
     }
 
     if(!_phone.hasMatch(value)){
-      return "Please enter a valid phone no";
+      return "Please enter a valid phone no e.g 2348012345678";
     }
 
     return null;

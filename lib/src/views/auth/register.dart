@@ -101,11 +101,11 @@ class _RegisterState extends State<Register> {
       "password": passwordController.text,
       "phone": phoneController.text
     };
-    // print(parseDate);
     bloc.signup(data);
   }
 
   void submit() {
+    FocusScope.of(context).requestFocus(FocusNode());
     final form = _formKey.currentState;
     if(form.validate()) {
       form.save();
@@ -120,11 +120,11 @@ class _RegisterState extends State<Register> {
         firstDate: DateTime(1910),
         lastDate: DateTime(date.year - 18, date.month, date.day));
     if (picked != null && picked != selectedDate)
+    dob.text = DateFormat('dd-MMM-yyyy').format(selectedDate.toLocal());
       setState(() {
         selectedDate = picked;
         parseDate = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
             .format(selectedDate.toLocal());
-        dob.text = DateFormat('dd-MMM-yyyy').format(selectedDate.toLocal());
       });
   }
 
@@ -284,8 +284,8 @@ class _RegisterState extends State<Register> {
                             child: TextFormField(
                               validator: PhoneValidator.validate,
                               controller: phoneController,
-                              maxLength: 12,
-                              keyboardType: TextInputType.phone,
+                              maxLength: 13,
+                              keyboardType: TextInputType.number,
                               inputFormatters: <TextInputFormatter>[
                                 FilteringTextInputFormatter.digitsOnly
                               ],
