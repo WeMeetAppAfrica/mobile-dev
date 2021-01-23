@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/user.dart';
+import 'package:wemeet/utils/colors.dart';
 
 class StartPage extends StatefulWidget {
 
@@ -38,14 +39,15 @@ class _StartPageState extends State<StartPage> {
     });
 
     if(model.token == null || model.token.isEmpty) {
-      // if first launch got to walkthrough
-      if (model.firstLaunch == "yes") {
-        model.setFirstLaunch("no");
-        routeTo("/on-boarding");
-        return;
-      }
+      // // if first launch got to walkthrough
+      // if (model.firstLaunch == "yes") {
+      //   model.setFirstLaunch("no");
+      //   routeTo("/on-boarding");
+      //   return;
+      // }
 
-      routeTo("/login");
+      // routeTo("/login");
+      routeTo("/on-boarding");
       return;
     }
 
@@ -58,13 +60,24 @@ class _StartPageState extends State<StartPage> {
     Navigator.of(context).pushNamedAndRemoveUntil(route, (route) => false);
   }
 
+  void fetchProfile() {
 
+  }
+
+  Widget buildBody() {
+    return Container();
+  }
 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      body: Container(
+        decoration: BoxDecoration(
+          color: AppColors.color1
+        ),
+        child: buildBody(),
+      ),
     );
   }
 }
