@@ -1,7 +1,9 @@
-import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:wemeet/components/wide_button.dart';
+import 'package:feather_icons_flutter/feather_icons_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:wemeet/utils/colors.dart';
+import 'package:wemeet/utils/svg_content.dart';
 
 class OnBoardingPage extends StatefulWidget {
   @override
@@ -28,6 +30,11 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          SvgPicture.string(
+            item["image"],
+            height: 150.0,
+          ),
+          SizedBox(height: 30.0),
           Text(
             item["title"],
             style: TextStyle(
@@ -102,9 +109,14 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
               borderRadius: BorderRadius.circular(8.0)
             ),
           ),
-        ) : IconButton(
-          onPressed: (){},
-          icon: Icon(FeatherIcons.arrowRight, color: AppColors.color1),
+        ) : InkWell(
+          onTap: (){
+            _controller.animateToPage(_currentIndex + 1, duration: Duration(milliseconds: 200), curve: Curves.linear);
+          },
+          child: SvgPicture.string(
+            WemeetSvgContent.arrow,
+            width: 80.0,
+          ),
         ),
       ),
     );
@@ -114,17 +126,17 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
 
     List<Map> items = [
       {
-        "image": "",
+        "image": WemeetSvgContent.onboarding1,
         "title": "Find the person",
         "subtitle": "made just for you"
       },
       {
-        "image": "",
+        "image": WemeetSvgContent.onboarding2,
         "title": "Entertain friends",
         "subtitle": "with our daily playlists"
       },
       {
-        "image": "",
+        "image": WemeetSvgContent.onboarding3,
         "title": "Real-time chatting",
         "subtitle": "to keep you connected"
       }
