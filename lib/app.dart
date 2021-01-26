@@ -7,6 +7,7 @@ import 'package:wemeet/pages/start.dart';
 import 'package:wemeet/pages/404.dart';
 import 'package:wemeet/pages/on_boarding.dart';
 import 'package:wemeet/pages/register.dart';
+import 'package:wemeet/pages/login.dart';
 
 import 'package:wemeet/utils/colors.dart';
 
@@ -23,7 +24,7 @@ class WeMeetApp extends StatelessWidget {
       "/start": (context) => StartPage(model: model),
       "/on-boarding": (context) => OnBoardingPage(),
       // "/home": (context) => HomePage(model: model,),
-      // "/login": (context) => Login(model: model,),
+      "/login": (context) => LoginPage(model: model,),
       "/register": (context) => RegisterPage(),
       // "/forgot-password": (context) => ForgotPass(),
       // "/kyc": (context) => KYC(),

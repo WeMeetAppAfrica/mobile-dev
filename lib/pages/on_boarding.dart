@@ -24,6 +24,12 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
 
   }
 
+  @override
+  void dispose() { 
+    _controller.dispose();
+    super.dispose();
+  }
+
   Widget buildItem(Map item, int index) {
     return Center(
       child: Column(

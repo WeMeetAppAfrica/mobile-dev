@@ -20,7 +20,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  bool checked = true;
+  bool checked = false;
   bool isLoading = false;
 
   void doSubmit() async {
@@ -45,6 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
       key: formKey,
       child: ListView(
         children: [
+          SizedBox(height: kToolbarHeight + 10.0),
           Center(
             child: SvgPicture.string(WemeetSvgContent.logoYB),
           ),
@@ -103,7 +104,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: TextDecoration.underline
                     ),
                     recognizer: TapGestureRecognizer()..onTap = (){
-                      openPage("https://wemeet.africa/termsandconditions.pdf");
+                      openURL("https://wemeet.africa/termsandconditions.pdf");
                     }
                   ),
                   TextSpan(
@@ -115,7 +116,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: TextDecoration.underline
                     ),
                     recognizer: TapGestureRecognizer()..onTap = (){
-                      openPage("https://wemeet.africa/privacypolicy.pdf");
+                      openURL("https://wemeet.africa/privacypolicy.pdf");
                     }
                   )
                 ]
@@ -162,12 +163,12 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.color3,
-      ),
-      body: Container(
-        color: AppColors.color3,
-        child: buildForm()
+      backgroundColor: AppColors.color3,
+      body: SafeArea(
+        child: Container(
+          color: AppColors.color3,
+          child: buildForm()
+        ),
       ),
     );
   }
