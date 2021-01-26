@@ -44,6 +44,7 @@ class WeMeetApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primaryColor: Colors.white,
+          accentColor: AppColors.color1,
           visualDensity: VisualDensity.adaptivePlatformDensity,
           scaffoldBackgroundColor: Colors.white,
           buttonColor: AppColors.color1,

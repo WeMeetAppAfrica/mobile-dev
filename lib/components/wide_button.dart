@@ -16,6 +16,7 @@ class WWideButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
+        height: 45.0,
         width: wemeetScreenWidth(context) * 0.90,
         constraints: BoxConstraints(
           maxWidth: 400.0
