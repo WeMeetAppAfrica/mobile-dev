@@ -39,15 +39,14 @@ class _StartPageState extends State<StartPage> {
     });
 
     if(model.token == null || model.token.isEmpty) {
-      // // if first launch got to walkthrough
-      // if (model.firstLaunch == "yes") {
-      //   model.setFirstLaunch("no");
-      //   routeTo("/on-boarding");
-      //   return;
-      // }
+      // if first launch got to walkthrough
+      if (model.firstLaunch == "yes") {
+        model.setFirstLaunch("no");
+        routeTo("/on-boarding");
+        return;
+      }
 
-      // routeTo("/login");
-      routeTo("/on-boarding");
+      routeTo("/login");
       return;
     }
 

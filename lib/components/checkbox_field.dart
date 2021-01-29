@@ -15,21 +15,38 @@ class CheckboxFormField extends FormField<bool> {
             initialValue: initialValue,
             autovalidateMode: autovalidateMode,
             builder: (FormFieldState<bool> state) {
-              return CheckboxListTile(
-                dense: state.hasError,
-                title: title,
-                value: state.value,
-                onChanged: state.didChange,
-                subtitle: state.hasError
-                    ? Builder(
-                        builder: (BuildContext context) => Text(
-                          state.errorText,
-                          style: TextStyle(color: errorColor ?? Theme.of(context).errorColor),
-                        ),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: state.value,
+                        onChanged: state.didChange,
+                      ),
+                      Expanded(
+                        child: title,
                       )
-                    : null,
-                controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: padding ?? EdgeInsets.symmetric(horizontal: 5.0, vertical: 10.0),
+                    ],
+                  ),
+                  if(state.hasError) Builder(
+                    builder: (BuildContext context) => Row(
+                      children: [
+                        SizedBox(width: 45.0),
+                        Expanded(
+                          child: Text(
+                            state.errorText,
+                            style: TextStyle(
+                              color: errorColor ?? Theme.of(context).errorColor,
+                              fontWeight: FontWeight.w300,
+                              fontSize: 11.0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                ],
               );
             });
 }
