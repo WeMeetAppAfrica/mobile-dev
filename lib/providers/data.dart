@@ -11,6 +11,14 @@ class DataProvider {
     return _dataProvider;
   }
 
+  String _deviceId;
+  String get deviceId => _deviceId;
+
+  void setDeviceId(String val){
+    print("Setting Device Id: $val");
+    _deviceId = val;
+  }
+
   String _token;
   String get token => _token;
 

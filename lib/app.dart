@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:bot_toast/bot_toast.dart';
 
 import 'package:wemeet/models/app.dart';
 
@@ -8,6 +9,7 @@ import 'package:wemeet/pages/404.dart';
 import 'package:wemeet/pages/on_boarding.dart';
 import 'package:wemeet/pages/register.dart';
 import 'package:wemeet/pages/login.dart';
+import 'package:wemeet/pages/forgot_password.dart';
 
 import 'package:wemeet/utils/colors.dart';
 
@@ -26,7 +28,7 @@ class WeMeetApp extends StatelessWidget {
       // "/home": (context) => HomePage(model: model,),
       "/login": (context) => LoginPage(model: model,),
       "/register": (context) => RegisterPage(),
-      // "/forgot-password": (context) => ForgotPass(),
+      "/forgot-password": (context) => ForgotPasswordPage(),
       // "/kyc": (context) => KYC(),
       // "/messages": (context) => MessagesPage(model: model)
     };
@@ -42,6 +44,7 @@ class WeMeetApp extends StatelessWidget {
       model: model,
       child: MaterialApp(
         title: "WeMeet",
+        builder: BotToastInit(),
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primaryColor: Colors.white,
@@ -66,6 +69,7 @@ class WeMeetApp extends StatelessWidget {
           )
         ),
         routes: _buildRoutes(),
+        navigatorObservers: [BotToastNavigatorObserver()],
         onUnknownRoute: (settings) {
           return MaterialPageRoute(builder: (_) => NotFoundPage());
         },

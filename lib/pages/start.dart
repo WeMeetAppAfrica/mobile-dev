@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:device_info/device_info.dart';
 
 import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/user.dart';
+import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/utils/colors.dart';
 
 class StartPage extends StatefulWidget {
@@ -38,6 +41,9 @@ class _StartPageState extends State<StartPage> {
       isLoading = false;      
     });
 
+    // Get device id
+    getDeviceId();
+
     if(model.token == null || model.token.isEmpty) {
       // if first launch got to walkthrough
       if (model.firstLaunch == "yes") {
@@ -57,6 +63,18 @@ class _StartPageState extends State<StartPage> {
       await Future.delayed(Duration(seconds: 2));
     }
     Navigator.of(context).pushNamedAndRemoveUntil(route, (route) => false);
+  }
+
+  void getDeviceId() async {
+    var deviceInfo = DeviceInfoPlugin();
+    if (Platform.isIOS) {
+      // import 'dart:io'
+      IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
+      DataProvider().setDeviceId(iosDeviceInfo.identifierForVendor);
+    } else {
+      AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
+      DataProvider().setDeviceId(androidDeviceInfo.androidId);
+    }
   }
 
   void fetchProfile() {
