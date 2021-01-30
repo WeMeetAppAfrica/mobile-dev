@@ -292,5 +292,74 @@ class WemeetSvgContent {
     </g>
   </svg>
   """;
+
+  static const String home = """<svg xmlns="http://www.w3.org/2000/svg" width="22.473" height="25.138" viewBox="0 0 22.473 25.138">
+  <g id="Group_104" data-name="Group 104" transform="translate(-2.96 -2.325)">
+    <path id="Path_71" data-name="Path 71" d="M24.934,26.963H3.46V11.488L14.2,2.963l10.737,8.525Z" transform="translate(0 0)" fill="#4c00be" stroke="#4c00be" stroke-miterlimit="10" stroke-width="1"/>
+    <rect id="Rectangle_27" data-name="Rectangle 27" width="7.26" height="7.26" transform="translate(7.159 14.45)" fill="#fff"/>
+  </g>
+</svg>
+""";
+
+static const String homeOutline = """<svg xmlns="http://www.w3.org/2000/svg" width="22.973" height="25.708" viewBox="0 0 22.973 25.708">
+  <g id="Group_104" data-name="Group 104" transform="translate(-2.71 -2.006)">
+    <path id="Path_71" data-name="Path 71" d="M24.934,26.963H3.46V11.488L14.2,2.963l10.737,8.525Z" transform="translate(0 0)" fill="#fff" stroke="#000" stroke-miterlimit="10" stroke-width="1.5"/>
+    <rect id="Rectangle_27" data-name="Rectangle 27" width="7.26" height="7.26" transform="translate(7.159 14.45)" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="1.5"/>
+  </g>
+</svg>
+""";
+
+static const String user = """<svg xmlns="http://www.w3.org/2000/svg" width="20.873" height="24.002" viewBox="0 0 20.873 24.002">
+  <g id="Group_105" data-name="Group 105" transform="translate(-3.651 -3.532)">
+    <circle id="Ellipse_25" data-name="Ellipse 25" cx="6.041" cy="6.041" r="6.041" transform="translate(8.047 3.532)" fill="#4c00be"/>
+    <path id="Rectangle_28" data-name="Rectangle 28" d="M8.594,0h3.684a8.594,8.594,0,0,1,8.594,8.594v0a0,0,0,0,1,0,0H0a0,0,0,0,1,0,0v0A8.594,8.594,0,0,1,8.594,0Z" transform="translate(3.651 18.939)" fill="#4c00be"/>
+  </g>
+</svg>
+""";
+
+static const String userOutline = """<svg xmlns="http://www.w3.org/2000/svg" width="22.373" height="25.502" viewBox="0 0 22.373 25.502">
+  <g id="Group_105" data-name="Group 105" transform="translate(-2.901 -2.782)">
+    <circle id="Ellipse_25" data-name="Ellipse 25" cx="6.041" cy="6.041" r="6.041" transform="translate(8.047 3.532)" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="1.5"/>
+    <path id="Rectangle_28" data-name="Rectangle 28" d="M8.594,0h3.684a8.594,8.594,0,0,1,8.594,8.594v0a0,0,0,0,1,0,0H0a0,0,0,0,1,0,0v0A8.594,8.594,0,0,1,8.594,0Z" transform="translate(3.651 18.939)" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="1.5"/>
+  </g>
+</svg>
+""";
+
+static const String playlist = """<svg xmlns="http://www.w3.org/2000/svg" width="25.5" height="25.569" viewBox="0 0 25.5 25.569">
+  <g id="Group_106" data-name="Group 106" transform="translate(-1.455 -2.218)">
+    <circle id="Ellipse_26" data-name="Ellipse 26" cx="3.988" cy="3.988" r="3.988" transform="translate(2.205 19.061)" fill="#4c00be" stroke="#4c00be" stroke-miterlimit="10" stroke-width="1.5"/>
+    <circle id="Ellipse_27" data-name="Ellipse 27" cx="3.988" cy="3.988" r="3.988" transform="translate(18.229 16.211)" fill="#4c00be" stroke="#4c00be" stroke-miterlimit="10" stroke-width="1.5"/>
+    <path id="Path_72" data-name="Path 72" d="M5.834,23.1,5.526,7.442,21.863,3.188V20.2" transform="translate(4.342)" fill="none" stroke="#4c00be" stroke-miterlimit="10" stroke-width="1.5"/>
+  </g>
+</svg>
+""";
+
+static const String playlistOutline = """<svg xmlns="http://www.w3.org/2000/svg" width="25.5" height="25.569" viewBox="0 0 25.5 25.569">
+  <g id="Group_106" data-name="Group 106" transform="translate(-1.455 -2.218)">
+    <circle id="Ellipse_26" data-name="Ellipse 26" cx="3.988" cy="3.988" r="3.988" transform="translate(2.205 19.061)" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="1.5"/>
+    <circle id="Ellipse_27" data-name="Ellipse 27" cx="3.988" cy="3.988" r="3.988" transform="translate(18.229 16.211)" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="1.5"/>
+    <path id="Path_72" data-name="Path 72" d="M5.834,23.1,5.526,7.442,21.863,3.188V20.2" transform="translate(4.342)" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="1.5"/>
+  </g>
+</svg>
+""";
+
+static const String card = """<svg xmlns="http://www.w3.org/2000/svg" width="27" height="19.587" viewBox="0 0 27 19.587">
+  <g id="Group_107" data-name="Group 107" transform="translate(-1.12 -4.067)">
+    <rect id="Rectangle_29" data-name="Rectangle 29" width="24" height="18.087" transform="translate(2.62 4.817)" fill="#4c00be" stroke="#4c00be" stroke-miterlimit="10" stroke-width="1.5"/>
+    <line id="Line_21" data-name="Line 21" x2="27" transform="translate(1.12 11.044)" fill="none" stroke="#fff" stroke-miterlimit="10" stroke-width="1.5"/>
+    <rect id="Rectangle_30" data-name="Rectangle 30" width="3" height="3" transform="translate(6.794 16.042)" fill="#fff"/>
+  </g>
+</svg>
+""";
+
+static const String cardOutline = """<svg xmlns="http://www.w3.org/2000/svg" width="25.5" height="19.587" viewBox="0 0 25.5 19.587">
+  <g id="Group_107" data-name="Group 107" transform="translate(-1.87 -4.067)">
+    <rect id="Rectangle_29" data-name="Rectangle 29" width="24" height="18.087" transform="translate(2.62 4.817)" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="1.5"/>
+    <line id="Line_21" data-name="Line 21" x2="25" transform="translate(2.12 11.044)" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="1.5"/>
+    <rect id="Rectangle_30" data-name="Rectangle 30" width="3" height="3" transform="translate(6.794 16.042)"/>
+  </g>
+</svg>
+""";
+
 }
 

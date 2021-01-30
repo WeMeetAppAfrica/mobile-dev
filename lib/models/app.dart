@@ -141,9 +141,7 @@ mixin _UserData on _MainModel {
   void logOut() async {
     _token = null;
     _user = null;
-    _localStorage = {
-      "@first_launch": _firstLaunch
-    };
+    _localStorage.removeWhere((k, v) => ["@user", "@token", "@message_token", "@match_list", "@chat_list"].contains(k));
     _dataProvider.setToken(null);
     _dataProvider.setUser(_user);
     notifyListeners();

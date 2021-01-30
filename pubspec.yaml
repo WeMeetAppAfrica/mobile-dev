@@ -21,7 +21,7 @@ environment:
   sdk: ">=2.8.0 <3.0.0"
 
 dependencies:
-  flutter_svg: ^0.18.1
+  ionicons: ^0.1.1
   http: ^0.12.2
   flutter_paystack: ^1.0.4+1
   rxdart: ^0.24.0
@@ -40,7 +40,7 @@ dependencies:
   geolocator: ^6.1.1
   google_maps_webservice: ^0.0.18
   flutter_local_notifications: ^3.0.0
-  place_picker: ^0.9.16
+  place_picker: ^0.9.17
   cached_network_image: ^2.3.2+1
   flutter_tindercard: ^0.2.0
   audioplayers: ^0.16.1
@@ -57,12 +57,15 @@ dependencies:
   flutter_cupertino_date_picker:
     git: https://github.com/lakexyde/flutter-cupertino-date-picker.git
   flutter_spinkit: ^4.1.2
+  location_permissions: ^3.0.0+1
+  
 
 
   flutter:
     sdk: flutter
 dependency_overrides:
-  flutter_svg: ^0.18.0
+  flutter_svg: ^0.18.1
+  location: ^3.2.4
 
 
   # The following adds the Cupertino Icons font to your application.

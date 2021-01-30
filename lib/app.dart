@@ -5,6 +5,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:wemeet/models/app.dart';
 
 import 'package:wemeet/pages/start.dart';
+import 'package:wemeet/pages/home.dart';
 import 'package:wemeet/pages/404.dart';
 import 'package:wemeet/pages/on_boarding.dart';
 import 'package:wemeet/pages/register.dart';
@@ -25,7 +26,7 @@ class WeMeetApp extends StatelessWidget {
       "/": (context) => StartPage(model: model),
       "/start": (context) => StartPage(model: model),
       "/on-boarding": (context) => OnBoardingPage(),
-      // "/home": (context) => HomePage(model: model,),
+      "/home": (context) => HomePage(model: model,),
       "/login": (context) => LoginPage(model: model,),
       "/register": (context) => RegisterPage(),
       "/forgot-password": (context) => ForgotPasswordPage(),

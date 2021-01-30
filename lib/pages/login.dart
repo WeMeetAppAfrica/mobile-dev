@@ -7,6 +7,7 @@ import 'package:wemeet/components/wide_button.dart';
 import 'package:wemeet/models/app.dart';
 
 import 'package:wemeet/components/text_field.dart';
+import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/auth.dart';
 
 import 'package:wemeet/utils/colors.dart';
@@ -60,7 +61,12 @@ class _LoginPageState extends State<LoginPage> {
 
     WeMeetLoader.showLoadingModal(context);
 
+    DataProvider _dp = DataProvider();
+
     Map data = {
+      "deviceId": _dp.pushToken,
+      "latitude": _dp.location.latitude,
+      "longitude": _dp.location.longitude,
       "email": _emailC.text,
       "password": _passwordC.text
     };

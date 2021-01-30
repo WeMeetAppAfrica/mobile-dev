@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:location/location.dart' show LocationData;
 
 import 'package:wemeet/models/user.dart';
 
@@ -41,6 +42,14 @@ class DataProvider {
   void setPushToken(String t){
     print(t);
     _pushToken = t;
+  }
+
+  LocationData _location;
+  LocationData get location => _location;
+
+  void setLocation(LocationData t){
+    print(t);
+    _location = t;
   }
 
   // Location filter

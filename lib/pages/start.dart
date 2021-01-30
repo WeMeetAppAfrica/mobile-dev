@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
 import 'package:device_info/device_info.dart';
+import 'package:location_permissions/location_permissions.dart' as ph;
+import 'package:location/location.dart';
+import 'package:wemeet/components/loader.dart';
+import 'dart:io';
+
 
 import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/user.dart';
 import 'package:wemeet/providers/data.dart';
+import 'package:wemeet/services/push.dart';
 import 'package:wemeet/utils/colors.dart';
+import 'package:wemeet/utils/toast.dart';
 
 class StartPage extends StatefulWidget {
 
@@ -20,6 +26,8 @@ class StartPage extends StatefulWidget {
 class _StartPageState extends State<StartPage> {
 
   bool isLoading = false;
+
+  Location location = Location();
 
   AppModel model;
   UserModel user;
@@ -44,6 +52,12 @@ class _StartPageState extends State<StartPage> {
     // Get device id
     getDeviceId();
 
+    // Configure Push
+    PushService().configure(model);
+
+    // get location
+    getLocation();
+
     if(model.token == null || model.token.isEmpty) {
       // if first launch got to walkthrough
       if (model.firstLaunch == "yes") {
@@ -55,6 +69,15 @@ class _StartPageState extends State<StartPage> {
       routeTo("/login");
       return;
     }
+
+    // if user is not verified
+    if (user.profileImage == null) {
+      routeTo("/edit-profile");
+      return;
+    }
+
+    routeTo("/home");
+    return;
 
   }
 
@@ -77,11 +100,41 @@ class _StartPageState extends State<StartPage> {
     }
   }
 
+  void getLocation() async {
+    // Check permission
+    PermissionStatus ps = await location.requestPermission();
+
+    if(ps != PermissionStatus.granted) {
+      WeMeetToast.toast("Location persmission is required");
+      await Future.delayed(Duration(seconds: 1));
+      await ph.LocationPermissions().openAppSettings();
+
+      // Start the app again
+
+      return;
+    }
+
+    setLocation(ps);
+  }
+
+  void setLocation(PermissionStatus status) async {
+    if(status == PermissionStatus.granted) {
+      location.getLocation().then((val) {
+        DataProvider().setLocation(val);
+      });
+    }
+  }
+
   void fetchProfile() {
 
   }
 
   Widget buildBody() {
+
+    if(isLoading) {
+      return WeMeetLoader.showBusyLoader();
+    }
+
     return Container();
   }
 
