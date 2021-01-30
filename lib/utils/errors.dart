@@ -31,6 +31,10 @@ String kTranslateError(dynamic e){
   }
 
   if(e is Map && e["message"] != null && e["message"] is String){
+    String mssg = e["message"].toLowerCase();
+    if(mssg.contains("expire") && mssg.contains("token")) {
+      return "Your session has expired. Please sign in again.";
+    }
     return e["message"];
   }
 

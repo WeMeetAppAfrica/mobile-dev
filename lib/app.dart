@@ -65,7 +65,11 @@ class WeMeetApp extends StatelessWidget {
               color: AppColors.color1,
             ),
             textTheme: TextTheme(
-
+              headline6: TextStyle(
+                color: AppColors.deepPurpleColor,
+                fontSize: 18.0,
+                fontWeight: FontWeight.w600
+              ) 
             )
           )
         ),
