@@ -45,8 +45,6 @@ class WeMeetAPI {
     Uri uri = Uri.parse(url);
     print("GET: " + uri.toString());
 
-    print("##########TOKEN" + _dP.token);
-
     var request = await _httpClient.openUrl("GET", uri);
     request.headers.set(HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
     if(token){

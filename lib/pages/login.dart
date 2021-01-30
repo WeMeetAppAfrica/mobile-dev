@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:wemeet/components/loader.dart';
 import 'package:wemeet/components/wide_button.dart';
 
@@ -77,6 +78,9 @@ class _LoginPageState extends State<LoginPage> {
       var res = await AuthService.postLogin(data);
       
       Map resData = res["data"] as Map;
+
+      print(resData);
+
       // set user 
       model.setUserMap(resData["user"]);
       // set user token
@@ -104,6 +108,18 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void verifyUser() {
+
+    if(!model.user.active) {
+      Navigator.pushNamedAndRemoveUntil(context, "/activate", (route) => false);
+      return;
+    }
+
+    if(model.user.profileImage == null) {
+      Navigator.pushNamedAndRemoveUntil(context, "/complete-profile", (route) => false);
+      return;
+    }
+
+
     Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
   }
 
@@ -247,6 +263,7 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: AppColors.color1,
       body: SafeArea(
         child: Container(
+          color: AppColors.color3,
           child: buildForm()
         ),
       ),

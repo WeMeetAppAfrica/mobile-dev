@@ -32,6 +32,7 @@ class WeMeetTextField extends StatefulWidget {
   final Color textColor;
   final Color errorColor;
   final bool showPasswordToggle;
+  final bool enabled;
 
   WeMeetTextField({
     Key key,
@@ -63,7 +64,8 @@ class WeMeetTextField extends StatefulWidget {
     this.textColor = Colors.black87,
     this.subHelperColor = Colors.black45,
     this.errorColor = Colors.red,
-    this.showPasswordToggle = false
+    this.showPasswordToggle = false,
+    this.enabled = true,
   }) : super(key: key);
 
   @override
@@ -151,6 +153,7 @@ class _WeMeetTextFieldState extends State<WeMeetTextField> {
               inputFormatters: widget.inputFormatters,
               autocorrect: widget.autocorrect,
               autofillHints: widget.autofillHints,
+              enabled: widget.enabled,
               style: TextStyle(
                 color: widget.textColor
               ),

@@ -58,6 +58,7 @@ dependencies:
     git: https://github.com/lakexyde/flutter-cupertino-date-picker.git
   flutter_spinkit: ^4.1.2
   location_permissions: ^3.0.0+1
+  flutter_keyboard_visibility: ^4.0.0
   
 
 

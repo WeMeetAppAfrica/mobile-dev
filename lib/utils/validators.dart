@@ -59,7 +59,7 @@ class ConfirmPasswordValidator {
   
   static String validate(String value, String val) {
     if(value.isEmpty) {
-      return  'Password field can not be empty';
+      return  'Password can not be empty';
     }
     if(value != val) {
       return  'Passwords do not match';

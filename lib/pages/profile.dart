@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ionicons/ionicons.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -11,6 +12,14 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Profile"),
+        actions: [
+          IconButton(
+            icon: Icon(Ionicons.cog_outline),
+            onPressed: (){
+              Navigator.pushNamed(context, "/settings");
+            }
+          )
+        ],
       ),
     );
   }

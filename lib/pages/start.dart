@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:device_info/device_info.dart';
 import 'package:location_permissions/location_permissions.dart' as ph;
 import 'package:location/location.dart';
-import 'package:wemeet/components/loader.dart';
 import 'dart:io';
 
 
@@ -10,8 +10,12 @@ import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/user.dart';
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/push.dart';
+
+import 'package:wemeet/components/loader.dart';
+
 import 'package:wemeet/utils/colors.dart';
 import 'package:wemeet/utils/toast.dart';
+import 'package:wemeet/utils/svg_content.dart';
 
 class StartPage extends StatefulWidget {
 
@@ -70,8 +74,15 @@ class _StartPageState extends State<StartPage> {
       return;
     }
 
-    // if user is not verified
+    // if user has not activated account
+    if (!user.active) {
+      routeTo("/activate");
+      return;
+    }
+
+    // if user has not completed profile
     if (user.profileImage == null) {
+      print(user.profileImage);
       routeTo("/edit-profile");
       return;
     }
@@ -135,7 +146,9 @@ class _StartPageState extends State<StartPage> {
       return WeMeetLoader.showBusyLoader();
     }
 
-    return Container();
+    return Center(
+      child: SvgPicture.string(WemeetSvgContent.logoWY),
+    );
   }
 
 
