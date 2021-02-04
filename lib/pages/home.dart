@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:wemeet/models/app.dart';
+import 'package:wemeet/models/user.dart';
 import 'package:wemeet/services/message.dart';
+import 'package:wemeet/services/match.dart';
 import 'package:wemeet/services/socket_bg.dart';
 
 import 'package:wemeet/utils/svg_content.dart';
@@ -32,7 +34,11 @@ class _HomePageState extends State<HomePage> {
   void initState() { 
     super.initState();
 
+    // get message token
     getMessageToken();
+
+    // update user matches
+    updateMatches();
     
   }
 
@@ -44,6 +50,20 @@ class _HomePageState extends State<HomePage> {
 
       List list = (widget.model.chatList ?? {}).keys.toList();
       BackgroundSocketService().joinRooms(list);
+    });
+  }
+
+  void updateMatches() {
+    MatchService.getMatches().then((res){
+      List data = res["data"]["content"] as List;
+
+      Map mtL = widget.model.matchList ?? {};
+
+      data.map((e) => UserModel.fromMap(e)).toList().forEach((u) {
+        mtL["${u.id}"] = {"name": u.fullName, "image": u.profileImage};
+      });
+
+      widget.model.setMatchList(mtL);
     });
   }
 

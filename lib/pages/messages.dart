@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:wemeet/components/loader.dart';
 import 'dart:async';
 
 import 'package:wemeet/models/app.dart';
@@ -11,11 +12,13 @@ import 'package:wemeet/services/message.dart';
 import 'package:wemeet/services/match.dart';
 import 'package:wemeet/services/socket_bg.dart';
 import 'package:wemeet/providers/data.dart';
+import 'package:wemeet/utils/colors.dart';
 
 import 'package:wemeet/utils/errors.dart';
 
 import 'package:wemeet/components/search_field.dart';
 import 'package:wemeet/components/error.dart';
+import 'package:wemeet/components/message_item.dart';
 
 class MessagesPage extends StatefulWidget {
   @override
@@ -62,6 +65,7 @@ class _MessagesPageState extends State<MessagesPage> {
     try {
       var res = await MessageService.getChats();
       List data = res["data"]["messages"];
+      // print(data);
       setState(() {
         items = data.map((e) => ChatModel.fromMap(e)).toList();
       });
@@ -89,6 +93,7 @@ class _MessagesPageState extends State<MessagesPage> {
     Map cL = model.chatList ?? {};
 
     items.forEach((e) { 
+      print(e.chatId);
       if(!cL.containsKey(e.chatId)) {
         cL[e.chatId] = 0;
       }
@@ -210,17 +215,16 @@ class _MessagesPageState extends State<MessagesPage> {
 
   Widget buildList() {
     return ListView.separated(
-      itemBuilder: (context, index) => Container(),
+      itemBuilder: (context, index) => MessageItem(message: chats[index]),
       separatorBuilder: (context, index) => Divider(indent: 80.0,),
       itemCount: chats.length,
+      padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
     );
   }
 
   Widget buildBody() {
     if(isLoading && chats.isEmpty) {
-      return Center(
-        child: CircularProgressIndicator(),
-      );
+      return WeMeetLoader.showBusyLoader(color: AppColors.color1);
     }
 
     if(isError && chats.isEmpty) {
@@ -235,7 +239,6 @@ class _MessagesPageState extends State<MessagesPage> {
 
     return buildList();
   }
-
 
   Widget buildAppBar() {
     return AppBar(

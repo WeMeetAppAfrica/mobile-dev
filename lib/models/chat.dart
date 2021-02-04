@@ -29,7 +29,7 @@ class ChatModel {
     return ChatModel(
       id: data["id"],
       content: data["content"],
-      sentAt: DateTime.tryParse(data["sent_at"]).add(Duration(hours: 1)),
+      sentAt: DateTime.tryParse(data["sent_at"]).toLocal().add(Duration(hours: 1)),
       type: data["type"] ?? "",
       receiverId: data["receiver_id"],
       senderId: data["sender_id"],
@@ -49,6 +49,28 @@ class ChatModel {
 
     return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
 
+  }
+
+  String get ago {
+    int mill = DateTime.now().toLocal().millisecondsSinceEpoch - sentAt.millisecondsSinceEpoch;
+    if(mill < 0) {
+      return "just now";
+    }
+
+    Duration dur = Duration(milliseconds: mill);
+
+    int hrs = dur.inHours;
+    // check if minutes
+    if(hrs < 1) {
+      return "${dur.inMinutes} mins ago";
+    }
+
+    // if more than just an hour
+    if(hrs > 0 && hrs < 20) {
+      return formatDate(sentAt, [hh, ':', nn, ' ', am]);
+    }
+
+    return formatDate(sentAt, [dd, ' ', M, ', ', yyyy]);
   }
 
   String get chatDate {
