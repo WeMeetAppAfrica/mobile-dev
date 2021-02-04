@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:wemeet/models/chat.dart';
+import 'package:wemeet/pages/chat.dart';
 
 class MessageItem extends StatelessWidget {
 
@@ -12,6 +13,11 @@ class MessageItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       child: ListTile(
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => ChatPage(uid: message.chatId)
+          ));
+        },
         leading: Container(
           width: 60.0,
           height: 60.0,

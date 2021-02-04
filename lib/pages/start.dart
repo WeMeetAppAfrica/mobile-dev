@@ -53,7 +53,7 @@ class _StartPageState extends State<StartPage> {
   void created() async {
 
     setState(() {
-      isLoading = false;  
+      isLoading = true;  
       errorText = null;    
     });
 
@@ -128,6 +128,11 @@ class _StartPageState extends State<StartPage> {
   }
 
   void fetchProfile() {
+
+    setState(() {
+      isLoading = true;
+      errorText = null;      
+    });
     UserService.getProfile().then((res){
       Map data = res["data"] as Map;
       model.setUserMap(data);
@@ -160,6 +165,10 @@ class _StartPageState extends State<StartPage> {
         });
       }
 
+    }).whenComplete((){
+      setState((){
+        isLoading = false;
+      });
     });
   }
 
@@ -169,11 +178,37 @@ class _StartPageState extends State<StartPage> {
       return WeMeetLoader.showBusyLoader();
     }
 
+    // TODO Handle error
+    if(errorText != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.string(WemeetSvgContent.logoWY),
+            SizedBox(height: 30.0),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
+              child: Text(
+                errorText,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white
+                ),
+              ),
+            ),
+            FlatButton(
+              onPressed: fetchProfile,
+              child: Text("Try again"),
+              textColor: Colors.yellowAccent,
+            )
+          ],
+        ),
+      );
+    }
+
     return Center(
       child: SvgPicture.string(WemeetSvgContent.logoWY),
     );
-
-    // TODO Handle error
   }
 
 

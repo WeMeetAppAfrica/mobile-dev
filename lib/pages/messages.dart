@@ -95,7 +95,10 @@ class _MessagesPageState extends State<MessagesPage> {
     items.forEach((e) { 
       print(e.chatId);
       if(!cL.containsKey(e.chatId)) {
-        cL[e.chatId] = 0;
+        cL[e.chatId] = {
+          "message": (e.type == "TEXT") ? e.content : "audio...",
+          "timestamp": 0
+        };
       }
     });
 
@@ -143,7 +146,10 @@ class _MessagesPageState extends State<MessagesPage> {
     // update chatList if in the same room
     if(chat.chatId == socketService.room) {
       Map cL = model.chatList;
-      cL[chat.chatId] = chat.timestamp;
+      cL[chat.chatId] = {
+        "message": (chat.type == "TEXT") ? chat.content : "audio...",
+        "timestamp": chat.timestamp
+      };
     }
 
     // check if user is a match
@@ -166,7 +172,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
     if (index >= 0) {
       Map cL = model.chatList;
-      cL[roomId] = items[index].timestamp;
+      cL[roomId]["timestamp"] = items[index].timestamp;
       setState(() {
         items[index].withBubble = false;
       });
@@ -202,7 +208,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
       // check if key is present
       if(mcL.containsKey(el.chatId)){
-        el.withBubble = el.timestamp > mcL[el.chatId];
+        el.withBubble = el.timestamp > mcL[el.chatId]["timestamp"];
       }
 
     });
