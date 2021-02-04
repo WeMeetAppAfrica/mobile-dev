@@ -55,7 +55,55 @@ class _MessagesPageState extends State<MessagesPage> {
     super.dispose();
   }
 
+  void getDbChats() async {
+    await Future.delayed(Duration(milliseconds: 100));
+    Map cL = model.chatList ?? {};
+    Map mL = model.matchList ?? {};
+
+    List<ChatModel> ic = [];
+
+    // fix broken values
+    cL.forEach((k, v) {
+      if(!(v is Map)) {
+        v = {
+          "message": "...",
+          "timestamp": v
+        };
+        cL[k] = v;
+      }
+
+      int t = v["timestamp"];
+      
+      String m = k.toString().split("_").firstWhere((e) => e != user.id.toString(), orElse: () => user.id.toString());
+
+      Map match = mL[m];
+
+      if(match != null) {
+        ChatModel c = ChatModel(
+          chatId: k,
+          content: v["message"],
+          type: "TEXT",
+          sentAt: (t is int && t != 0) ? DateTime.fromMillisecondsSinceEpoch(t) : DateTime.now().toLocal()
+        );
+
+        c.avatar = match["image"];
+        c.name = match["name"];
+        ic.add(c);
+      }
+    });
+
+    // update chatList
+    model.setChatList(cL);
+
+    setState(() {
+      items = ic;      
+    });
+
+  }
+
   void fetchChats() async {
+
+    await getDbChats();
 
     setState(() {
       isLoading = true;
@@ -93,13 +141,11 @@ class _MessagesPageState extends State<MessagesPage> {
     Map cL = model.chatList ?? {};
 
     items.forEach((e) { 
-      print(e.chatId);
-      if(!cL.containsKey(e.chatId)) {
-        cL[e.chatId] = {
-          "message": (e.type == "TEXT") ? e.content : "audio...",
-          "timestamp": 0
-        };
-      }
+
+      cL[e.chatId] = {
+        "message": (e.type == "TEXT") ? e.content : "audio...",
+        "timestamp": (!cL.containsKey(e.chatId)) ? 0 : e.timestamp
+      };
     });
 
     model.setChatList(cL);
