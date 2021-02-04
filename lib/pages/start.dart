@@ -10,10 +10,12 @@ import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/user.dart';
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/push.dart';
+import 'package:wemeet/services/user.dart';
 
 import 'package:wemeet/components/loader.dart';
 
 import 'package:wemeet/utils/colors.dart';
+import 'package:wemeet/utils/errors.dart';
 import 'package:wemeet/utils/toast.dart';
 import 'package:wemeet/utils/svg_content.dart';
 
@@ -30,6 +32,7 @@ class StartPage extends StatefulWidget {
 class _StartPageState extends State<StartPage> {
 
   bool isLoading = false;
+  String errorText;
 
   Location location = Location();
 
@@ -50,7 +53,8 @@ class _StartPageState extends State<StartPage> {
   void created() async {
 
     setState(() {
-      isLoading = false;      
+      isLoading = false;  
+      errorText = null;    
     });
 
     // Get device id
@@ -74,20 +78,7 @@ class _StartPageState extends State<StartPage> {
       return;
     }
 
-    // if user has not activated account
-    if (!user.active) {
-      routeTo("/activate");
-      return;
-    }
-
-    // if user has not completed profile
-    if (user.profileImage == null) {
-      print(user.profileImage);
-      routeTo("/edit-profile");
-      return;
-    }
-
-    routeTo("/home");
+    fetchProfile();
     return;
 
   }
@@ -137,7 +128,39 @@ class _StartPageState extends State<StartPage> {
   }
 
   void fetchProfile() {
+    UserService.getProfile().then((res){
+      Map data = res["data"] as Map;
+      model.setUserMap(data);
+      user = UserModel.fromMap(data);
 
+      // if user has not activated account
+      if (!user.active) {
+        routeTo("/activate");
+        return;
+      }
+
+      // if user has not completed profile
+      if (user.profileImage == null) {
+        routeTo("/complete-profile");
+        return;
+      }
+
+      routeTo("/home");
+      return;
+
+    }).catchError((e){
+      String err = kTranslateError(e);
+      WeMeetToast.toast(err, true);
+      if(err.contains("session has expired")) {
+        routeTo("/login");
+        return;
+      } else {
+        setState(() {
+          errorText = err;          
+        });
+      }
+
+    });
   }
 
   Widget buildBody() {
@@ -149,6 +172,8 @@ class _StartPageState extends State<StartPage> {
     return Center(
       child: SvgPicture.string(WemeetSvgContent.logoWY),
     );
+
+    // TODO Handle error
   }
 
 

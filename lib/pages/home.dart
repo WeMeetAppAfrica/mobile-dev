@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:wemeet/models/app.dart';
+import 'package:wemeet/services/message.dart';
+import 'package:wemeet/services/socket_bg.dart';
+
 import 'package:wemeet/utils/svg_content.dart';
 
 import 'package:wemeet/pages/match.dart';
@@ -28,7 +31,20 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() { 
     super.initState();
+
+    getMessageToken();
     
+  }
+
+  void getMessageToken() {
+    MessageService.postLogin().then((res){
+      String data = res["data"]["accessToken"] as String;
+      print("Message Token: $data");
+      widget.model.setMessageToken(data);
+
+      List list = (widget.model.chatList ?? {}).keys.toList();
+      BackgroundSocketService().joinRooms(list);
+    });
   }
 
   Widget buildBody() {
@@ -102,6 +118,7 @@ class _HomePageState extends State<HomePage> {
       elevation: 0.0,
       selectedItemColor: theme.accentColor,
       onTap: (index){
+        FocusScope.of(context).requestFocus(FocusNode());
         setState(() {
           _currentPage = index;
         });

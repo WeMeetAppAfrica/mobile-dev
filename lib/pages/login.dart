@@ -263,7 +263,6 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: AppColors.color1,
       body: SafeArea(
         child: Container(
-          color: AppColors.color3,
           child: buildForm()
         ),
       ),

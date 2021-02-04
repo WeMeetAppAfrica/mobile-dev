@@ -180,11 +180,11 @@ mixin _Data on _MainModel {
 mixin _Chat on _MainModel {
 
   Map get chatList {
-    return jsonDecode(_localStorage["@chat_list"] ?? {});
+    return jsonDecode(_localStorage["@chat_list"] ?? "{}");
   }
 
   Map get matchList {
-    return jsonDecode(_localStorage["@match_list"] ?? {});
+    return jsonDecode(_localStorage["@match_list"] ?? "{}");
   }
 
   // Set the user token

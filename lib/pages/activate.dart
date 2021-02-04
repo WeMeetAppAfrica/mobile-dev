@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:wemeet/components/dismissable_keyboard.dart';
 
@@ -11,7 +12,6 @@ import 'package:wemeet/services/auth.dart';
 import 'package:wemeet/services/user.dart';
 import 'package:wemeet/utils/errors.dart';
 
-import 'package:wemeet/utils/svg_content.dart';
 import 'package:wemeet/utils/colors.dart';
 import 'package:wemeet/utils/toast.dart';
 import 'package:wemeet/utils/validators.dart';
@@ -141,6 +141,22 @@ class _ActivatePageState extends State<ActivatePage> {
           WWideButton(
             title: "Activate Account",
             onTap: submit,
+          ),
+          SizedBox(height: 30.0),
+          Text.rich(
+            TextSpan(
+              text: "Login with another account.",
+              recognizer: TapGestureRecognizer()..onTap = (){
+                Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
+                model.logOut();
+              }
+            ),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13.0,
+              decoration: TextDecoration.underline,
+              // color: AppColors.color4
+            ),
           ),
         ],
         padding: EdgeInsets.symmetric(horizontal: 30.0),
