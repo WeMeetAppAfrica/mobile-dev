@@ -29,7 +29,7 @@ class ChatModel {
     return ChatModel(
       id: data["id"],
       content: data["content"],
-      sentAt: DateTime.tryParse(data["sent_at"]).toLocal().add(Duration(hours: 1)),
+      sentAt: DateTime.tryParse(data["sent_at"]).toLocal(),
       type: data["type"] ?? "",
       receiverId: data["receiver_id"],
       senderId: data["sender_id"],

@@ -130,10 +130,19 @@ class _SongsPageState extends State<SongsPage> {
 
   Widget buildItem(SongModel song) {
     return ListTile(
+      onTap: () {
+        if(widget.onSelect != null) {
+          widget.onSelect(song.url);
+          return;
+        }
+      },
       leading: Icon(
         FeatherIcons.music,
         color: AppColors.color1,
       ),
+      title: Text(song.title),
+      subtitle: Text(song.artist,),
+      trailing: Icon(FeatherIcons.upload, color: Colors.black54),
     );
   }
 
@@ -169,7 +178,7 @@ class _SongsPageState extends State<SongsPage> {
 
   Widget buildAppBar() {
     return AppBar(
-
+      title: Text("Share Songs"),
     );
   }
 

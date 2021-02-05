@@ -347,7 +347,14 @@ class _ChatPageState extends State<ChatPage> {
             );
           },
           icon: Icon(FeatherIcons.music, color: Colors.black87,),
-        )
+        ),
+        IconButton(
+          icon: Icon(FeatherIcons.flag),
+          color: AppColors.orangeColor,
+          onPressed: () {
+            // _showBottom(context);
+          },
+        ),
       ],
     );
   }
