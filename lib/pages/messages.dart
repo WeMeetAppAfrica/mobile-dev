@@ -31,12 +31,14 @@ class _MessagesPageState extends State<MessagesPage> {
   bool isError = false;
   String errorText;
   List<ChatModel> items = [];
+  String query = "";
 
   BackgroundSocketService socketService = BackgroundSocketService();
   DataProvider _dataProvider = DataProvider();
 
   StreamSubscription<ChatModel> onChatMessage;
   StreamSubscription<String> onRoom;
+  Timer _debounce;
 
   AppModel model;
   UserModel user;
@@ -226,6 +228,21 @@ class _MessagesPageState extends State<MessagesPage> {
     }
   }
 
+  void search(String val){
+
+    //Delay Api call by a second
+    bool active = _debounce?.isActive ?? false;
+    if (active) {
+      _debounce.cancel();
+    } 
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      if(!mounted) return;
+      setState(() {
+        query = val;        
+      });;
+    });
+  }
+
   List<ChatModel> get chats {
 
     if(items.isEmpty) {
@@ -262,7 +279,14 @@ class _MessagesPageState extends State<MessagesPage> {
     i.sort((a, b) => b.timestamp.compareTo(a.timestamp));
     i.retainWhere((e) => e.avatar != null);
 
-    return i;
+    return i.where((e){
+      if(query == null || query.isEmpty) return true;
+
+      String name = e.name.toLowerCase();
+      return name.contains(query.toLowerCase());
+
+    }).toList();
+
   }
 
   Widget buildList() {
@@ -301,6 +325,7 @@ class _MessagesPageState extends State<MessagesPage> {
           padding: EdgeInsets.symmetric(horizontal: 15.0),
           child: WSearchField(
             hintText: "Search by name",
+            onChanged: search,
           ),
         ),
       ),
