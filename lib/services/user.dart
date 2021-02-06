@@ -6,5 +6,8 @@ class UserService {
   
   static Future getProfile() => api.get("backend-service/v1/user/profile");
 
+  static Future postUpdateProfile(dynamic data) => api.post("backend-service/v1/user/profile", data: data);
+
   static Future postUpdateDevice(dynamic data) => api.post("backend-service/v1/auth/device", data: data);
+
 }

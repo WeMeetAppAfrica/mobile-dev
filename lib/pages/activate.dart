@@ -10,6 +10,7 @@ import 'package:wemeet/components/loader.dart';
 import 'package:wemeet/components/wide_button.dart';
 import 'package:wemeet/services/auth.dart';
 import 'package:wemeet/services/user.dart';
+import 'package:wemeet/utils/converters.dart';
 import 'package:wemeet/utils/errors.dart';
 
 import 'package:wemeet/utils/colors.dart';
@@ -97,8 +98,14 @@ class _ActivatePageState extends State<ActivatePage> {
       Map data = res["data"] as Map;
       model.setUserMap(data);
 
+      if(ensureInt(data["dateOfBirth"]) < 10000000000) {
+        Navigator.of(context).pushNamedAndRemoveUntil("/preference", (route) => false);
+        return;
+      }
+
       if(data["profileImage"] == null) {
         Navigator.of(context).pushNamedAndRemoveUntil("/complete-profile", (route) => false);
+        return;
       }
     });
   }

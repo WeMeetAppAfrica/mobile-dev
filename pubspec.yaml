@@ -60,6 +60,7 @@ dependencies:
   location_permissions: ^3.0.0+1
   flutter_keyboard_visibility: ^4.0.0
   pull_to_refresh: "1.6.2"
+  flutter_xlider: ^3.4.0
 
 
   flutter:

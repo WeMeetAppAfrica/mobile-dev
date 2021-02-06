@@ -121,6 +121,7 @@ class _WeMeetTextFieldState extends State<WeMeetTextField> {
                   widget.helperText,
                   style: TextStyle(
                     fontWeight: FontWeight.w400,
+                    color: widget.helperColor
                   )
                 ),
                 Text(

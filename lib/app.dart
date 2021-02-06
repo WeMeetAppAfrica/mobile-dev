@@ -14,6 +14,8 @@ import 'package:wemeet/pages/forgot_password.dart';
 import 'package:wemeet/pages/settings.dart';
 import 'package:wemeet/pages/activate.dart';
 import 'package:wemeet/pages/messages.dart';
+import 'pages/preference.dart';
+import 'pages/complete_profile.dart';
 
 import 'package:wemeet/utils/colors.dart';
 
@@ -35,6 +37,8 @@ class WeMeetApp extends StatelessWidget {
       "/forgot-password": (context) => ForgotPasswordPage(),
       "/settings": (context) => SettingsPage(),
       "/activate": (context) => ActivatePage(model: model),
+      "/preference": (context) => UserPreferencePage(model: model),
+      "/complete-profile": (context) => CompleteProfilePage(model: model),
       "/messages": (context) => MessagesPage()
     };
 

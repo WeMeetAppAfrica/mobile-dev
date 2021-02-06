@@ -23,6 +23,7 @@ class UserModel {
   int minAge;
   int maxAge;
   int distanceInKm;
+  int swipeRadius;
   List additionalImages;
 
   Map data;
@@ -51,6 +52,7 @@ class UserModel {
     this.maxAge,
     this.distanceInKm,
     this.additionalImages,
+    this.swipeRadius,
 
     this.data
   });
@@ -80,7 +82,8 @@ class UserModel {
       maxAge: ensureInt(res["maxAge"]),
       distanceInKm: ensureInt(res["distanceInKm"]) ?? 1,
       additionalImages: res["additionalImages"] ?? [],
-
+      swipeRadius: ensureInt(res["swipeRadius"]),
+      
       data: res
     );
   }
@@ -104,7 +107,8 @@ class UserModel {
       "type": type,
       "distanceInKm": distanceInKm,
       "minAge": minAge,
-      "maxAge": maxAge
+      "maxAge": maxAge,
+      "swipeRadius": swipeRadius
     };
 
     return entry;
