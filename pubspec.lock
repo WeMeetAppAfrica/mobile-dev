@@ -225,6 +225,13 @@ packages:
       url: "https://github.com/lakexyde/flutter-cupertino-date-picker.git"
     source: git
     version: "1.0.26+2"
+  flutter_image_compress:
+    dependency: "direct main"
+    description:
+      name: flutter_image_compress
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.7.0"
   flutter_isolate:
     dependency: transitive
     description:

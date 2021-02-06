@@ -10,4 +10,6 @@ class UserService {
 
   static Future postUpdateDevice(dynamic data) => api.post("backend-service/v1/auth/device", data: data);
 
+  static Future postPhoto(String filePath, String imageType) => api.upload("backend-service/v1/file/upload", filePath, imageType);
+
 }

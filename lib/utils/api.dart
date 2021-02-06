@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:http_parser/src/media_type.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:wemeet/config.dart';
 import 'package:wemeet/providers/data.dart';
@@ -137,6 +139,39 @@ class WeMeetAPI {
       throw dataResponse;
     }
 
+    return dataResponse;
+  }
+
+  // Upload a file
+  Future upload(String endpoint, String filePath, String imageType) async {
+    String u = _getUrl(endpoint);
+    Uri uri = Uri.parse(u);
+    print("UPLOAD: " + uri.toString());
+
+    String ext = filePath.split(".").last;
+
+    var request = http.MultipartRequest('POST', uri);
+    request.headers.addAll({
+      "Authorization": 'Bearer ' + _dP.token,
+      "accept": "application/json",
+      "Content-Type": 'multipart/form-data'
+    });
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        "file", 
+        filePath,
+        contentType: MediaType('image', ext)
+      )
+    );
+    request.fields['imageType'] = imageType;
+    var response = await request.send();
+    final res = await http.Response.fromStream(response);
+    var responseBody = utf8.decode(res.bodyBytes);
+    var dataResponse = await jsonDecode(responseBody);
+
+    if(response.statusCode >= 300){
+      throw dataResponse;
+    }
     return dataResponse;
   }
 
