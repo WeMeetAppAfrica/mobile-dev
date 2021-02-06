@@ -76,4 +76,14 @@ class DataProvider {
   void reloadData() {
     _reloadController.add(true);
   }
+
+  // new chat stream controller
+  StreamController<String> _reloadPageController =
+      StreamController<String>.broadcast();
+  Stream<String> get onReloadPage =>
+      _reloadPageController.stream;
+  
+  void reloadPage(String page) {
+    _reloadPageController.add(page);
+  }
 }

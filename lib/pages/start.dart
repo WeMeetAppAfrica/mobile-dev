@@ -138,14 +138,15 @@ class _StartPageState extends State<StartPage> {
       model.setUserMap(data);
       user = UserModel.fromMap(data);
 
-      // test phase
-      routeTo("/complete-profile");
-      return;
-
-
       // if user has not activated account
       if (!user.active) {
         routeTo("/activate");
+        return;
+      }
+
+      // if user has set date of birth
+      if (user.dob < 1000000000) {
+        routeTo("/preference");
         return;
       }
 
