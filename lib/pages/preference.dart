@@ -513,6 +513,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
           WeMeetTextField(
             helperText: "Talk about yourself",
             helperColor: Colors.grey,
+            controller: bioC,
             maxLines: 6,
             validator: (val) => NotEmptyValidator.validateWithMessage(val, "Please tell us about yourself"),
           ),

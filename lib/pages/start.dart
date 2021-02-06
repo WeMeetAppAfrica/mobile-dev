@@ -139,7 +139,7 @@ class _StartPageState extends State<StartPage> {
       user = UserModel.fromMap(data);
 
       // test phase
-      routeTo("/preference");
+      routeTo("/complete-profile");
       return;
 
 
