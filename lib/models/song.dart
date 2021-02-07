@@ -25,6 +25,8 @@ class SongModel {
     );
   }
 
+  @override
+  bool operator ==(covariant SongModel other)  => id == other?.id;
 
 }
 

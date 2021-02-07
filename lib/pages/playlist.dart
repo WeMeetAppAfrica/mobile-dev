@@ -1,9 +1,9 @@
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
+import 'dart:async';
+
 import 'package:wemeet/components/error.dart';
-
-
 import 'package:wemeet/components/loader.dart';
 import 'package:wemeet/components/playlist_item.dart';
 import 'package:wemeet/components/song_cover.dart';
@@ -11,6 +11,7 @@ import 'package:wemeet/components/song_cover.dart';
 import 'package:wemeet/models/song.dart';
 
 import 'package:wemeet/services/music.dart';
+import 'package:wemeet/services/audio.dart';
 
 class PlaylistPage extends StatefulWidget {
   @override
@@ -21,15 +22,28 @@ class _PlaylistPageState extends State<PlaylistPage> {
 
   List<SongModel> items = []; 
 
+  SongModel currentMedia;
+  WeMeetAudioService _audioService = WeMeetAudioService();
+
+  StreamSubscription<SongModel> mediaStream;
+
   bool isLoading = false;
   String errorText;
 
   @override
   void initState() { 
     super.initState();
+
+    mediaStream = _audioService.mediaStream.listen(onMedia);
     
     fetchData();
 
+  }
+
+  @override
+  void dispose() { 
+    mediaStream?.cancel();
+    super.dispose();
   }
 
   void fetchData() async {
@@ -46,6 +60,9 @@ class _PlaylistPageState extends State<PlaylistPage> {
       setState(() {
         items = data.map((e) => SongModel.fromMap(e)).toList();        
       });
+
+      _prepareQueue(items);
+
     } catch (e) { 
       print(e);
     } finally {
@@ -53,6 +70,21 @@ class _PlaylistPageState extends State<PlaylistPage> {
         isLoading = false;        
       });
     }
+  }
+
+  void onMedia(SongModel s) {
+    if(!mounted) {
+      return;
+    }
+    
+    setState(() {
+      currentMedia = s;      
+    });
+  }
+
+  void _prepareQueue(List<SongModel> val) {
+    _audioService?.start();
+    _audioService.setQueue(val);
   }
 
   Widget buildRequest() {
@@ -106,7 +138,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
           ),
           SizedBox(height: 20.0),
           ListView.separated(
-            itemBuilder: (context, index) => WPlaylisItem(song: items[index],),
+            itemBuilder: (context, index) => WPlaylisItem(song: items[index], isPlaying: items[index] == currentMedia,),
             separatorBuilder: (context, index) => Divider(
               indent: 60.0,
             ),

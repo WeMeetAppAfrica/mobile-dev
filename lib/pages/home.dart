@@ -6,6 +6,7 @@ import 'package:wemeet/models/user.dart';
 import 'package:wemeet/services/message.dart';
 import 'package:wemeet/services/match.dart';
 import 'package:wemeet/services/socket_bg.dart';
+import 'package:wemeet/services/audio.dart';
 
 import 'package:wemeet/utils/svg_content.dart';
 
@@ -27,6 +28,8 @@ class _HomePageState extends State<HomePage> {
 
   int _currentPage = 0;
 
+  WeMeetAudioService _audioService = WeMeetAudioService();
+
   ThemeData theme;
   MediaQueryData mQuery;
 
@@ -40,6 +43,13 @@ class _HomePageState extends State<HomePage> {
     // update user matches
     updateMatches();
     
+  }
+
+  @override
+  void dispose() { 
+    _audioService?.stop();
+    _audioService?.dispose();
+    super.dispose();
   }
 
   void getMessageToken() {
