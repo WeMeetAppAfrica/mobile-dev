@@ -12,7 +12,11 @@ class AuthService {
 
   static Future postResetPassword(dynamic body) => api.post("backend-service/v1/auth/accounts/reset-password", data: body);
 
+  static Future postChangedPassword(dynamic body) => api.post("backend-service/v1/auth/change-password", data: body);
+
   static Future postResendEmailToken() => api.post("backend-service/v1/auth/resend-email");
 
   static Future postVerifyEmail(String token) => api.post("backend-service/v1/auth/verify/email?token=$token");
+
+  static Future postSelfDelete() => api.post("backend-service/v1/auth/self-delete");
 }

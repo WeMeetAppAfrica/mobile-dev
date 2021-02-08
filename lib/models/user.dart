@@ -26,6 +26,8 @@ class UserModel {
   int distanceInKm;
   int swipeRadius;
   List additionalImages;
+  double longitude;
+  double latitude;
 
   Map data;
 
@@ -54,6 +56,8 @@ class UserModel {
     this.distanceInKm,
     this.additionalImages,
     this.swipeRadius,
+    this.latitude,
+    this.longitude,
 
     this.data
   });
@@ -84,6 +88,8 @@ class UserModel {
       distanceInKm: ensureInt(res["distanceInKm"]) ?? 1,
       additionalImages: res["additionalImages"] ?? [],
       swipeRadius: ensureInt(res["swipeRadius"]),
+      latitude: ensureDouble(res["latitude"]),
+      longitude: ensureDouble(res["longitude"]),
       
       data: res
     );
@@ -113,7 +119,11 @@ class UserModel {
       "distanceInKm": distanceInKm,
       "minAge": minAge,
       "maxAge": maxAge,
-      "swipeRadius": swipeRadius
+      "swipeRadius": swipeRadius,
+      "hideLocation": hideLocation,
+      "hideProfile": hideProfile,
+      "longitude": 18.720183,
+      "latitude": -33.832253,
     };
 
     return entry;

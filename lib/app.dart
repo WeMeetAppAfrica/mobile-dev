@@ -16,6 +16,8 @@ import 'package:wemeet/pages/activate.dart';
 import 'package:wemeet/pages/messages.dart';
 import 'pages/preference.dart';
 import 'pages/complete_profile.dart';
+import 'pages/matches.dart';
+import 'pages/change_password.dart';
 
 import 'package:wemeet/utils/colors.dart';
 
@@ -35,11 +37,13 @@ class WeMeetApp extends StatelessWidget {
       "/login": (context) => LoginPage(model: model,),
       "/register": (context) => RegisterPage(),
       "/forgot-password": (context) => ForgotPasswordPage(),
-      "/settings": (context) => SettingsPage(),
+      "/change-password": (context) => ChangePasswordPage(),
+      "/settings": (context) => SettingsPage(model: model),
       "/activate": (context) => ActivatePage(model: model),
       "/preference": (context) => UserPreferencePage(model: model),
       "/complete-profile": (context) => CompleteProfilePage(model: model),
-      "/messages": (context) => MessagesPage()
+      "/messages": (context) => MessagesPage(),
+      "/matches": (context) => MatchesPage(model: model)
     };
 
     return routes;

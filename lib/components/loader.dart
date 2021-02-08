@@ -38,7 +38,7 @@ class WeMeetLoader{
     );
   }
 
-  static Future<bool> showBottomModalSheet(BuildContext context, String title, {String content, String cancelText, String okText, VoidCallback cancelCallback, VoidCallback okCallback}) async {
+  static Future<bool> showBottomModalSheet(BuildContext context, String title, {String content, String cancelText, String okText, VoidCallback cancelCallback, VoidCallback okCallback, Color okColor = AppColors.color1, Color cancelColor = AppColors.redColor}) async {
     return await showModalBottomSheet(
       context: context, 
       shape: RoundedRectangleBorder(
@@ -75,6 +75,7 @@ class WeMeetLoader{
                   child: cancelText != null ? FlatButton(
                     onPressed: () {Navigator.pop(context);},
                     child: Text(cancelText),
+                    textColor: cancelColor,
                   ) : SizedBox(),
                 ),
                 SizedBox(width: 10.0),
@@ -82,6 +83,7 @@ class WeMeetLoader{
                   child: okText != null ? RaisedButton(
                     onPressed: (){Navigator.pop(context, true);},
                     child: Text(okText),
+                    color: okColor,
                     elevation: 0.0,
                   ) : SizedBox(),
                 )

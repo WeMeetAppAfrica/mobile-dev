@@ -134,12 +134,33 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             SizedBox(height: 20.0),
             _buildAddImgs(),
-            SizedBox(height: 20.0),
-            WWideButton(
-              title: "Edit Profile Photos",
-              color: AppColors.color1.withOpacity(0.2),
-              textColor: AppColors.color1,
-              onTap: () => routeTo("/complete-profile"),
+            SizedBox(height: 30.0),
+            Row(
+              children: [
+                Expanded(
+                  child: RaisedButton(
+                    onPressed: () => routeTo("/complete-profile"),
+                    child: Text("Edit Photos"),
+                    textColor: AppColors.color1,
+                    color: AppColors.color1.withOpacity(0.2),
+                    highlightColor: Colors.transparent,
+                    highlightElevation: 0.0,
+                    elevation: 0.0,
+                  ),
+                ),
+                SizedBox(width: 15.0),
+                Expanded(
+                  child: RaisedButton(
+                    onPressed: () => routeTo("/preference"),
+                    child: Text("Edit Preference"),
+                    textColor: AppColors.color1,
+                    color: AppColors.orangeColor.withOpacity(0.2),
+                    highlightColor: Colors.transparent,
+                    highlightElevation: 0.0,
+                    elevation: 0.0,
+                  ),
+                )
+              ],
             ),
             SizedBox(height: 30.0),
             _tile(
@@ -189,13 +210,6 @@ class _ProfilePageState extends State<ProfilePage> {
               Text(
                 "${user.dobF}"
               )
-            ),
-            SizedBox(height: 30.0),
-            WWideButton(
-              title: "Edit Match Preference",
-              color: AppColors.orangeColor.withOpacity(0.2),
-              textColor: AppColors.color1,
-              onTap: () => routeTo("/preference"),
             ),
             SizedBox(height: 30.0),
           ],

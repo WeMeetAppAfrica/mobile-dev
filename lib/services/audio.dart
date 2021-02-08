@@ -4,6 +4,73 @@ import 'package:just_audio/just_audio.dart';
 import 'package:wemeet/models/song.dart';
 
 class WeMeetAudioService {
+  
+  WeMeetAudioService._internal() {}
+
+  static final WeMeetAudioService _audioService = WeMeetAudioService._internal();
+
+  factory WeMeetAudioService(){
+    return _audioService;
+  }
+
+  // AudioPlayer _player = AudioPlayer();
+
+  String _playerMode = "none";
+  String get playerMode => _playerMode;
+  List<SongModel> _songs = [];
+  List<SongModel> get songs => _songs;
+  SongModel _currentSong;
+  String _currentUrl;
+  String get currentUrl => _currentUrl;
+  SongModel get currentMedia => _currentSong;
+  StreamController<List<String>> _controlsController =
+      StreamController<List<String>>.broadcast();
+  Stream<List<String>> get controlsStream =>
+      _controlsController.stream;
+  
+  StreamController<String> _playerModeController =
+      StreamController<String>.broadcast();
+  Stream<String> get playerModeStream =>
+      _playerModeController.stream;
+
+  // set the playlist
+  void setQueue(List<SongModel> val) {}
+
+  // clear Queue
+  void clearQueue() {}
+
+  bool get canNext {
+    return false;
+  }
+
+  bool get canPrevious {
+    return false;
+  }
+
+  // play from url
+  void playFromUrl(String val) async {}
+
+  void play() {}
+
+  // Play a song from model
+  void playSong(SongModel val) async {}
+
+  void pause() async {}
+
+  // stop player
+  void stop() async {}
+
+  // dispose player
+  void dispose() {}
+
+  void start({List<SongModel> queue, bool play = false}) async {}
+
+  void skipToNext() async {}
+
+  void skipToPrevious() async {}
+}
+
+/* class WeMeetAudioService {
 
   WeMeetAudioService._internal() {
     _init();
@@ -351,4 +418,4 @@ class WeMeetAudioService {
     }
   }
 
-}
+} */
