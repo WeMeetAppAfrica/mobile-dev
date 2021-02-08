@@ -27,6 +27,8 @@ class WWideButton extends StatelessWidget {
           color: color,
           textColor: textColor ?? AppColors.color3,
           elevation: 0.0,
+          highlightColor: Colors.transparent,
+          highlightElevation: 0.0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0)
           ),

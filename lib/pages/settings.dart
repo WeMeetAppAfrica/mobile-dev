@@ -13,6 +13,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   AppModel model;
 
+  void routeTo(String page) {
+    Navigator.pushNamed(context, page);
+  }
+
   Widget buildBody() {
     return ListView(
       children: [

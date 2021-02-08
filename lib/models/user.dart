@@ -1,3 +1,4 @@
+import 'package:date_format/date_format.dart';
 import 'package:wemeet/utils/converters.dart';
 
 class UserModel {
@@ -90,6 +91,10 @@ class UserModel {
 
   String get fullName {
     return "$firstName $lastName".trim();
+  }
+
+  String get dobF {
+    return formatDate(DateTime.fromMillisecondsSinceEpoch(dob ?? 10000), [dd, " ", MM, ", ", yyyy]);
   }
 
   Map toMap() {
