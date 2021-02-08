@@ -6,6 +6,7 @@ import 'package:wemeet/components/loader.dart';
 
 import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/user.dart';
+import 'package:wemeet/providers/data.dart';
 
 import 'package:wemeet/services/auth.dart';
 import 'package:wemeet/services/user.dart';
@@ -25,6 +26,7 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
 
+  Map userData = {};
 
   AppModel model;
   UserModel user;
@@ -36,10 +38,33 @@ class _SettingsPageState extends State<SettingsPage> {
     model = widget.model;
     user = model.user;
 
+    userData = {
+      "hideLocation": user.hideLocation,
+      "hideProfile": user.hideProfile
+    };
+
   }
 
   void routeTo(String page) {
     Navigator.pushNamed(context, page);
+  }
+
+  void updateProfile() {
+
+    if(!hasChanged()) {
+      return;
+    }
+
+    Map data = {
+      "hideLocation": user.hideLocation,
+      "hideProfile": user.hideProfile
+    };
+
+    UserService.postUpdateProfile(data).then((res) {
+      Map userMap = res["data"];
+      model.setUserMap(userMap);
+      DataProvider().reloadPage("match");
+    });
   }
 
   void deleteAccount() async {
@@ -69,6 +94,10 @@ class _SettingsPageState extends State<SettingsPage> {
         Navigator.pop(context);
       }
     }
+  }
+
+  bool hasChanged() {
+    return (user.hideLocation != userData["hideLocation"] || user.hideProfile != userData["hideProfile"]);
   }
 
   Widget _tile({String title = "", String subtitle = "", VoidCallback callback, Widget trailing}) {
@@ -111,33 +140,44 @@ class _SettingsPageState extends State<SettingsPage> {
           title: "Turn On/Off Location",
           subtitle: "Decide whether users see your location",
           trailing: Icon(
-            !user.hideLocation ? Icons.toggle_off : Icons.toggle_on,
+            !userData["hideLocation"] ? Icons.toggle_off : Icons.toggle_on,
             size: 30.0,
-            color: user.hideLocation ? AppColors.color1 : Colors.grey,
-          )
+            color: userData["hideLocation"] ? AppColors.color1 : Colors.grey,
+          ),
+          callback: () {
+            setState(() {
+              userData["hideLocation"] = !userData["hideLocation"];              
+            });
+          }
         ),
         SizedBox(height: 10.0),
         _tile(
           title: "Change Password",
           subtitle: "Update your WeMeet login password",
           callback: () => routeTo("/change-password"),
-          trailing: Icon(Ionicons.chevron_forward)
+          trailing: Icon(Ionicons.chevron_forward),
         ),
         SizedBox(height: 10.0),
         _tile(
           title: "Blocked Users",
           subtitle: "See all users that have been blocked",
-          trailing: Icon(Ionicons.chevron_forward)
+          trailing: Icon(Ionicons.chevron_forward),
+          callback: () => routeTo("/blocked-users")
         ),
         SizedBox(height: 2.0),
         _tile(
           title: "Hide My Profile",
           subtitle: "Lagos, Nigeria",
           trailing: Icon(
-            !user.hideProfile ? Icons.toggle_off : Icons.toggle_on,
+            !userData["hideProfile"] ? Icons.toggle_off : Icons.toggle_on,
             size: 30.0,
-            color: user.hideProfile ? AppColors.color1 : Colors.grey,
-          )
+            color: userData["hideProfile"] ? AppColors.color1 : Colors.grey,
+          ),
+          callback: () {
+            setState(() {
+              userData["hideProfile"] = !userData["hideProfile"];              
+            });
+          }
         ),
         SizedBox(height: 30.0),
         GestureDetector(
@@ -172,15 +212,23 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Future<bool> onWillPop() async {
+    updateProfile();
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
-      backgroundColor: Color(0xfff5f5f5),
-      appBar: AppBar(
-        title: Text("Settings"),
+    return WillPopScope(
+      onWillPop: onWillPop,
+      child: Scaffold(
+        backgroundColor: Color(0xfff5f5f5),
+        appBar: AppBar(
+          title: Text("Settings"),
+        ),
+        body: buildBody(),
       ),
-      body: buildBody(),
     ); 
   }
 }

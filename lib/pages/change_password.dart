@@ -56,6 +56,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
     try {
       await AuthService.postChangedPassword(data);
+      WeMeetToast.toast("Password changed successfully", true);
       formKey.currentState.reset();
     } catch (e) {
       WeMeetToast.toast(kTranslateError(e), true);

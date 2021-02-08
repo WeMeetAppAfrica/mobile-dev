@@ -89,6 +89,7 @@ mixin _UserData on _MainModel {
   void setUserModel(UserModel val){
     _user = val;
     _dataProvider.setUser(_user);
+    _dataProvider.setlocationFilter("${_user.hideLocation}");
     _localStorage["@user"] = jsonEncode(val.toMap());
     notifyListeners();
     _internalSaveData();
@@ -98,6 +99,7 @@ mixin _UserData on _MainModel {
   void setUserMap(Map val){
     _user = UserModel.fromMap(val);
     _dataProvider.setUser(_user);
+    _dataProvider.setlocationFilter("${_user.hideLocation}");
     _localStorage["@user"] = jsonEncode(val);
     notifyListeners();
     _internalSaveData();

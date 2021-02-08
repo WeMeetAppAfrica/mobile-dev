@@ -27,4 +27,6 @@ class WeMeetConfig {
     }
     return "pk_test_1ee70468f4f53355ca5b88f3f4d4ac0dd9504749";
   }
+
+  static String mapsKey = "AIzaSyDr-EyWx9exuZVkbYCv_50rzRJUoVlYRe4";
 }
