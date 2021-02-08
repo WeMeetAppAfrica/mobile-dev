@@ -28,6 +28,7 @@ class UserModel {
   List additionalImages;
   double longitude;
   double latitude;
+  int createdAt;
 
   Map data;
 
@@ -58,6 +59,7 @@ class UserModel {
     this.swipeRadius,
     this.latitude,
     this.longitude,
+    this.createdAt,
 
     this.data
   });
@@ -85,6 +87,7 @@ class UserModel {
       suspended: res["suspended"] ?? false,
       minAge: ensureInt(res["minAge"]),
       maxAge: ensureInt(res["maxAge"]),
+      createdAt: ensureInt(res["dateCreated"]),
       distanceInKm: ensureInt(res["distanceInKm"]) ?? 1,
       additionalImages: res["additionalImages"] ?? [],
       swipeRadius: ensureInt(res["swipeRadius"]),
@@ -101,6 +104,13 @@ class UserModel {
 
   String get dobF {
     return formatDate(DateTime.fromMillisecondsSinceEpoch(dob ?? 10000), [dd, " ", MM, ", ", yyyy]);
+  }
+
+  String get createdF {
+    if(createdAt == 0) {
+      return "-";
+    }
+    return formatDate(DateTime.fromMillisecondsSinceEpoch(createdAt), [dd, " ", MM, ", ", yyyy]);
   }
 
   Map toMap() {

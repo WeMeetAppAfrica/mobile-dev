@@ -105,6 +105,19 @@ mixin _UserData on _MainModel {
     _internalSaveData();
   }
 
+  // add map to user data
+  void addUserMap(Map val){
+    Map u = jsonDecode(_localStorage["@user"]);
+    val.forEach((k, v) {
+      u[k] = v;
+    });
+    _user = UserModel.fromMap(u);
+    _dataProvider.setUser(_user);
+    _localStorage["@user"] = jsonEncode(val);
+    notifyListeners();
+    _internalSaveData();
+  }
+
   // Set the user token
   void setToken(String data){
     print("### Setting user token: $data");

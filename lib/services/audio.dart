@@ -3,7 +3,7 @@ import 'package:just_audio/just_audio.dart';
 
 import 'package:wemeet/models/song.dart';
 
-class WeMeetAudioService {
+/*class WeMeetAudioService {
   
   WeMeetAudioService._internal() {}
 
@@ -68,9 +68,9 @@ class WeMeetAudioService {
   void skipToNext() async {}
 
   void skipToPrevious() async {}
-}
+}*/
 
-/* class WeMeetAudioService {
+class WeMeetAudioService {
 
   WeMeetAudioService._internal() {
     _init();
@@ -418,4 +418,4 @@ class WeMeetAudioService {
     }
   }
 
-} */
+}
