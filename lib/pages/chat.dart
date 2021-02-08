@@ -11,6 +11,7 @@ import 'package:wemeet/models/chat.dart';
 
 import 'package:wemeet/services/message.dart';
 import 'package:wemeet/services/socket_bg.dart';
+import 'package:wemeet/services/audio.dart';
 
 import 'package:wemeet/pages/songs.dart';
 
@@ -71,6 +72,7 @@ class _ChatPageState extends State<ChatPage> {
     chatsSub?.cancel();
     inputNode?.dispose();
     inputC?.dispose();
+    WeMeetAudioService().stop();
     super.dispose();
   }
 

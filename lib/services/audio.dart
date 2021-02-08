@@ -26,10 +26,6 @@ class WeMeetAudioService {
 
   AudioPlayer _player = AudioPlayer();
 
-  void dispose() {
-    _player?.dispose();
-  }
-
   List<String> _controls = [];
   String _playerMode = "none";
   String get playerMode => _playerMode;
@@ -163,6 +159,8 @@ class WeMeetAudioService {
 
   // play from url
   void playFromUrl(String val) async {
+
+    print("Playing from url: $val");
   
     if(_currentUrl == val && !_controls.contains("completed")) {
       print("Url: $val");
@@ -178,6 +176,8 @@ class WeMeetAudioService {
   }
 
   void play() {
+
+    print("Wants to play");
 
     if(_playerMode == "none") {
       return;
@@ -231,8 +231,15 @@ class WeMeetAudioService {
   // stop player
   void stop() async {
     _setMode("none");
+    _currentSong = null;
+    _currentUrl = null;
     _controlsController.add([]);
     await _player?.stop();
+  }
+
+  // dispose player
+  void dispose() {
+    _player?.dispose();
     _playerStateSubscription?.cancel();
     _eventSubscription?.cancel();
   }
@@ -331,6 +338,7 @@ class WeMeetAudioService {
   _handlePlaybackCompleted() {
     if(["single", "none"].contains(_playerMode)) {
       _setMode("none");
+      _currentUrl = null;
       return;
     }
 

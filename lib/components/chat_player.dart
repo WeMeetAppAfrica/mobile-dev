@@ -48,6 +48,12 @@ class _ChatPlayerState extends State<ChatPlayer> {
         callback = _audioService.pause;
         icon = Icons.pause;
       }
+
+      if(controls.contains("none")) {
+        callback = () => _audioService.playFromUrl(widget.url);
+        icon = Icons.play_arrow;
+      }
+
     } else {
 
       if(controls.contains("playing") || controls.contains("buffering")) {
