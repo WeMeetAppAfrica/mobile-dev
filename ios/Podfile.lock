@@ -81,7 +81,7 @@ PODS:
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
-  - "geolocator (6.0.0+4)":
+  - geocoder (0.0.1):
     - Flutter
   - google_maps_flutter (0.0.1):
     - Flutter
@@ -137,8 +137,6 @@ PODS:
   - nanopb/encode (1.30906.0)
   - path_provider (0.0.1):
     - Flutter
-  - "permission_handler (5.0.1+1)":
-    - Flutter
   - PromisesObjC (1.2.10)
   - Protobuf (3.13.0)
   - SDWebImage/Core (5.10.2)
@@ -170,14 +168,13 @@ DEPENDENCIES:
   - flutter_paystack (from `.symlinks/plugins/flutter_paystack/ios`)
   - flutter_socket_io (from `.symlinks/plugins/flutter_socket_io/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
-  - geolocator (from `.symlinks/plugins/geolocator/ios`)
+  - geocoder (from `.symlinks/plugins/geocoder/ios`)
   - google_maps_flutter (from `.symlinks/plugins/google_maps_flutter/ios`)
   - image_picker (from `.symlinks/plugins/image_picker/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/ios`)
   - location (from `.symlinks/plugins/location/ios`)
   - location_permissions (from `.symlinks/plugins/location_permissions/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
-  - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
@@ -235,8 +232,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_socket_io/ios"
   fluttertoast:
     :path: ".symlinks/plugins/fluttertoast/ios"
-  geolocator:
-    :path: ".symlinks/plugins/geolocator/ios"
+  geocoder:
+    :path: ".symlinks/plugins/geocoder/ios"
   google_maps_flutter:
     :path: ".symlinks/plugins/google_maps_flutter/ios"
   image_picker:
@@ -249,8 +246,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/location_permissions/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
-  permission_handler:
-    :path: ".symlinks/plugins/permission_handler/ios"
   shared_preferences:
     :path: ".symlinks/plugins/shared_preferences/ios"
   sqflite:
@@ -282,7 +277,7 @@ SPEC CHECKSUMS:
   flutter_socket_io: fce27977d95a82c181bd959180f33384f51a5973
   fluttertoast: 6122fa75143e992b1d3470f61000f591a798cc58
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
-  geolocator: 1ae40084cc6c1586ce5ad12cfc3fd38c64d05f2f
+  geocoder: 3cfab70531a0b367e917bafe82df4c30f6d4c45a
   google_maps_flutter: c7f9c73576de1fbe152a227bfd6e6c4ae8088619
   GoogleDataTransport: f56af7caa4ed338dc8e138a5d7c5973e66440833
   GoogleMaps: f79af95cb24d869457b1f961c93d3ce8b2f3b848
@@ -295,7 +290,6 @@ SPEC CHECKSUMS:
   Mantle: 4c0ed6ce47c96eccc4dc3bb071deb3def0e2c3be
   nanopb: 59317e09cf1f1a0af72f12af412d54edf52603fc
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
-  permission_handler: eac8e15b4a1a3fba55b761d19f3f4e6b005d15b6
   PromisesObjC: b14b1c6b68e306650688599de8a45e49fae81151
   Protobuf: 3dac39b34a08151c6d949560efe3f86134a3f748
   SDWebImage: b969dcfc02c40a5da71eac0b03b8f1a0c794a86f

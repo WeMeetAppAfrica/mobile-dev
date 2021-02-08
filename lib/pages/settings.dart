@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:location_permissions/location_permissions.dart';
 
 import 'package:wemeet/components/wide_button.dart';
 import 'package:wemeet/components/loader.dart';
@@ -47,6 +48,28 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void routeTo(String page) {
     Navigator.pushNamed(context, page);
+  }
+
+  void gotoSetLocation() async {
+    PermissionStatus ps = await LocationPermissions().requestPermissions();
+
+    if(ps != PermissionStatus.granted) {
+      bool val = await WeMeetLoader.showBottomModalSheet(
+        context,
+        "Location Permission Denied",
+        content: "You need to grant WeMeeet access to your location before you can proceed.",
+        cancelText: "No",
+        okText: "Okay, Open Settings",
+      ) ?? false;
+
+      if(val) {
+        await await LocationPermissions().openAppSettings();
+      }
+      return;
+    }
+
+    routeTo("/change-location");
+    return;
   }
 
   void updateProfile() {
@@ -132,8 +155,9 @@ class _SettingsPageState extends State<SettingsPage> {
       children: [
         _tile(
           title: "Change Location",
-          subtitle: "Lagos, Nigeria",
-          trailing: Icon(Ionicons.chevron_forward)
+          subtitle: "Set your default location",
+          trailing: Icon(Ionicons.chevron_forward),
+          callback: gotoSetLocation
         ),
         SizedBox(height: 2.0),
         _tile(

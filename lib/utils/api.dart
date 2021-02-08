@@ -4,12 +4,17 @@ import 'dart:io';
 import 'package:http_parser/src/media_type.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:geocoder/geocoder.dart' show Coordinates;
+
 import 'package:wemeet/config.dart';
 import 'package:wemeet/providers/data.dart';
+
+import 'package:wemeet/models/place.dart';
 
 class WeMeetAPI {
 
   String _baseUrl = WeMeetConfig.baseUrl;
+  String _mapsKey = WeMeetConfig.mapsKey;
   HttpClient _httpClient = new HttpClient();
   DataProvider _dP = DataProvider();
 
@@ -173,6 +178,40 @@ class WeMeetAPI {
       throw dataResponse;
     }
     return dataResponse;
+  }
+
+  // Get Autocomplete predictions
+  Future<List<PlacePrediction>> getPredictions(Coordinates location, String query) async{
+    String url ="https://maps.googleapis.com/maps/api/place/autocomplete/json?location=${location?.latitude},${location?.longitude}&radius=10000&input=$query&key=$_mapsKey";
+
+    var client = new http.Client();
+    var res = await client.get(url);
+    await client.close();
+
+    var resBody = await jsonDecode(res.body);
+
+    if(res.statusCode >= 300){
+      throw resBody;
+    }
+
+    List preds = resBody["predictions"];
+    return preds.map((x) => PlacePrediction.fromMap(x)).toList();
+  }
+
+  // Get placemark from predictions
+  Future<Placemark> getPlace(String placeId) async{
+    String url = "https://maps.googleapis.com/maps/api/place/details/json?&placeid=$placeId&key=$_mapsKey";
+    print(url);
+    var client = new http.Client();
+    var res = await client.get(url);
+    await client.close();
+
+    var resBody = await jsonDecode(res.body);
+
+    if(res.statusCode >= 300){
+      throw resBody;
+    }
+    return Placemark.fromMap(resBody);
   }
 
 } 

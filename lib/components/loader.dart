@@ -73,7 +73,7 @@ class WeMeetLoader{
               children: [
                 Expanded(
                   child: cancelText != null ? FlatButton(
-                    onPressed: () {Navigator.pop(context);},
+                    onPressed: () {Navigator.pop(context, false);},
                     child: Text(cancelText),
                     textColor: cancelColor,
                   ) : SizedBox(),

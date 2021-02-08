@@ -19,6 +19,7 @@ import 'pages/complete_profile.dart';
 import 'pages/matches.dart';
 import 'pages/change_password.dart';
 import 'pages/blocked_users.dart';
+import 'pages/change_location.dart';
 
 import 'package:wemeet/utils/colors.dart';
 
@@ -45,7 +46,8 @@ class WeMeetApp extends StatelessWidget {
       "/complete-profile": (context) => CompleteProfilePage(model: model),
       "/messages": (context) => MessagesPage(),
       "/matches": (context) => MatchesPage(model: model),
-      "/blocked-users": (context) => BlockedUsersPage(model: model)
+      "/blocked-users": (context) => BlockedUsersPage(model: model),
+      ("/change-location"): (context) => ChangeLocationPage(model: model)
     };
 
     return routes;

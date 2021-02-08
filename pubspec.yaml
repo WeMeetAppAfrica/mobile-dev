@@ -37,8 +37,6 @@ dependencies:
   tuple: ^1.0.3
   advance_pdf_viewer: ^1.2.0
   url_launcher: ^5.7.10
-  geolocator: ^6.1.1
-  google_maps_webservice: ^0.0.18
   flutter_local_notifications: ^3.0.0
   place_picker: ^0.9.17
   cached_network_image: ^2.3.2+1
@@ -48,7 +46,6 @@ dependencies:
   fluttertoast: ^7.1.1
   bubble: ^1.1.9+1
   device_info: ^0.4.2+7
-  permission_handler: ^5.0.1+1
   date_format: ^1.0.9
   scoped_model: ^1.1.0
   scroll_to_index: ^1.0.6
@@ -62,6 +59,7 @@ dependencies:
   pull_to_refresh: "1.6.2"
   flutter_xlider: ^3.4.0
   flutter_image_compress: ^0.7.0
+  geocoder: ^0.2.1
 
 
   flutter:

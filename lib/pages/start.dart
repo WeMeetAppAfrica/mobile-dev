@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:device_info/device_info.dart';
-import 'package:location_permissions/location_permissions.dart' as ph;
 import 'package:location/location.dart';
 import 'dart:io';
-
 
 import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/user.dart';
@@ -105,17 +103,6 @@ class _StartPageState extends State<StartPage> {
   void getLocation() async {
     // Check permission
     PermissionStatus ps = await location.requestPermission();
-
-    if(ps != PermissionStatus.granted) {
-      WeMeetToast.toast("Location persmission is required");
-      await Future.delayed(Duration(seconds: 1));
-      await ph.LocationPermissions().openAppSettings();
-
-      // Start the app again
-
-      return;
-    }
-
     setLocation(ps);
   }
 
