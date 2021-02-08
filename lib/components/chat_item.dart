@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:wemeet/models/chat.dart';
 
+import 'package:wemeet/components/chat_player.dart';
+
 class ChatItem extends StatelessWidget {
 
   final ChatModel chat;
@@ -44,8 +46,7 @@ class ChatItem extends StatelessWidget {
         b = buildText(me);
         break;
       case "MEDIA":
-        // b = ChatPlayerWidget(url: chat.content,);
-        b = Container(child: Text("Audio..."),);
+        b = ChatPlayer(url: chat.content,);
         break;
       default: b = Container();
     }

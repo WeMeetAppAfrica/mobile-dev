@@ -57,17 +57,15 @@ bool isMp3 (String val) {
   }
 
   List<bool> matches = [];
-  List<String> formats = ["mp3", "wav", "m3u"];
+  List<String> formats = ["mp3", "wav", "m3u", "music", "song"];
 
-  List<String> ss = val.split(".");
+  List<String> ss = val.split("/").map((e) => e.toLowerCase()).toList();
   if(ss.isEmpty) {
     return false;
   }
 
   formats.forEach((i){
-    if(i == ss.last.toLowerCase()) {
-      matches.add(true);
-    }
+    matches.add(ss.contains(i));
   });
 
   return matches.contains(true);

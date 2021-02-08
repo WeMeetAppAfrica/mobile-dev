@@ -79,6 +79,11 @@ class WeMeetAudioService {
     _controlsController.add(_controls);
   }
 
+  void _setMode(String val) {
+    _playerMode = val ?? "none";
+    _playerModeController.add(val);
+  }
+
   void _setCurrentSong(SongModel val) {
     _currentSong = val;
     _songController.add(val);
@@ -95,14 +100,14 @@ class WeMeetAudioService {
 
     _setControls(add: ["none"]);
     _currentUrl = null;
-    _playerModeController.add("playlist");
+    _setMode("playlist");
   }
 
   // clear Queue
   void clearQueue() {
     _songs.clear();
     _currentUrl = null;
-    _playerModeController.add("none");
+    _setMode("none");
     _setCurrentSong(null);
   }
 
@@ -158,11 +163,40 @@ class WeMeetAudioService {
 
   // play from url
   void playFromUrl(String val) async {
+  
+    if(_currentUrl == val && !_controls.contains("completed")) {
+      print("Url: $val");
+      _player.play();
+      return;
+    }
+
     _currentUrl = val;
+
     await _player?.setUrl(val);
     _player?.play();
-    _playerModeController.add("single");
-    _playerMode = "single";
+    _setMode("single");
+  }
+
+  void play() {
+
+    if(_playerMode == "none") {
+      return;
+    }
+
+    if(_playerMode == "single" && _currentUrl == null) {
+      return;
+    }
+
+    if(_playerMode == "playlist" && _currentSong == null) {
+      return;
+    }
+
+    if(_controls.contains("completed")) {
+      return;
+    }
+
+    _player.play();
+
   }
 
   // Play a song from model
@@ -186,18 +220,17 @@ class WeMeetAudioService {
 
     if(_hasNext()) _setControls(add: ["next"]);
     if(_hasPrevious()) _setControls(add: ["prev", "previous"]);
-    _playerModeController.add("playlist");
+    _setMode("playlist");
   }
 
   void pause() async {
     await _player?.pause();
-    _setControls(add: ["paused"], remove: ["playing", "play"]);
+    _setControls(remove: ["completed"]);
   }
 
   // stop player
   void stop() async {
-    _playerModeController.add("none");
-    _playerMode = "none";
+    _setMode("none");
     _controlsController.add([]);
     await _player?.stop();
     _playerStateSubscription?.cancel();
@@ -210,7 +243,7 @@ class WeMeetAudioService {
 
     if(queue != null) {
       _songs = [];
-      _playerModeController.add("playlist");
+      _setMode("playlist");
     }
 
     _playerStateSubscription = _player.playbackStateStream.listen((state) {
@@ -231,15 +264,15 @@ class WeMeetAudioService {
           break;
         default:
           if(_songs.isNotEmpty && _currentUrl == null) {
-            _playerModeController.add("playlist");
+            _setMode("playlist");
             return;
           } 
 
           if(_currentUrl != null) {
-            _playerModeController.add("single");
+            _setMode("single");
             return;
           } 
-          _playerModeController.add("none");
+          _setMode("none");
           
       }
     });
@@ -296,10 +329,16 @@ class WeMeetAudioService {
   }
 
   _handlePlaybackCompleted() {
+    if(["single", "none"].contains(_playerMode)) {
+      _setMode("none");
+      return;
+    }
+
+
     if (_hasNext()) {
       skipToNext();
     } else {
-      _playerModeController.add("none");
+      _setMode("none");
       //stop();
     }
   }
