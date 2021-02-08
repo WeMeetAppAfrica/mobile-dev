@@ -1,7 +1,6 @@
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
-import 'dart:async';
 
 import 'package:wemeet/components/error.dart';
 import 'package:wemeet/components/loader.dart';
@@ -20,12 +19,9 @@ class PlaylistPage extends StatefulWidget {
 
 class _PlaylistPageState extends State<PlaylistPage> {
 
-  List<SongModel> items = []; 
-
-  SongModel currentMedia;
   WeMeetAudioService _audioService = WeMeetAudioService();
 
-  StreamSubscription<SongModel> mediaStream;
+  List<SongModel> items = []; 
 
   bool isLoading = false;
   String errorText;
@@ -33,17 +29,9 @@ class _PlaylistPageState extends State<PlaylistPage> {
   @override
   void initState() { 
     super.initState();
-
-    mediaStream = _audioService.mediaStream.listen(onMedia);
     
     fetchData();
 
-  }
-
-  @override
-  void dispose() { 
-    mediaStream?.cancel();
-    super.dispose();
   }
 
   void fetchData() async {
@@ -70,16 +58,6 @@ class _PlaylistPageState extends State<PlaylistPage> {
         isLoading = false;        
       });
     }
-  }
-
-  void onMedia(SongModel s) {
-    if(!mounted) {
-      return;
-    }
-    
-    setState(() {
-      currentMedia = s;      
-    });
   }
 
   void _prepareQueue(List<SongModel> val) {
@@ -138,7 +116,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
           ),
           SizedBox(height: 20.0),
           ListView.separated(
-            itemBuilder: (context, index) => WPlaylisItem(song: items[index], isPlaying: items[index] == currentMedia,),
+            itemBuilder: (context, index) => WPlaylisItem(song: items[index]),
             separatorBuilder: (context, index) => Divider(
               indent: 60.0,
             ),

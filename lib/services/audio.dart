@@ -32,6 +32,7 @@ class WeMeetAudioService {
 
   List<String> _controls = [];
   String _playerMode = "none";
+  String get playerMode => _playerMode;
   List<SongModel> _songs = [];
   List<SongModel> get songs => _songs;
   SongModel _currentSong;
@@ -57,13 +58,19 @@ class WeMeetAudioService {
 
   // check if player is running
 
-  void _setControls({List<String> add, List<String> remove}) {
+  void _setControls({List<String> add, List<String> remove, bool force = false}) {
+
+    if(force) {
+      _controls = add;
+      _controlsController.add(_controls);
+      return;
+    }
 
     (add ?? []).forEach((e){
       _controls.add(e);
     });
 
-    _controls.toSet().toList();
+    _controls = _controls.toSet().toList();
 
     (remove ?? []).forEach((e){
       _controls.remove(e);
@@ -86,6 +93,7 @@ class WeMeetAudioService {
       }
     });
 
+    _setControls(add: ["none"]);
     _currentUrl = null;
     _playerModeController.add("playlist");
   }
@@ -96,6 +104,14 @@ class WeMeetAudioService {
     _currentUrl = null;
     _playerModeController.add("none");
     _setCurrentSong(null);
+  }
+
+  bool get canNext {
+    return _hasNext();
+  }
+
+  bool get canPrevious {
+    return _hasPrevious();
   }
 
   // if can play next song
@@ -113,7 +129,7 @@ class WeMeetAudioService {
       return false;
     }
     
-    if(_songs.length < (i + 1)) {
+    if(_songs.length <= (i + 1)) {
       return false;
     }
 
@@ -132,15 +148,12 @@ class WeMeetAudioService {
     }
 
     int i = _songs.indexWhere((j) => j.id == currentMedia.id);  
-    if(i < 0) {
-      return false;
-    }
     
-    if(i < 1) {
+    if(i >= 1) {
       return true;
     }
 
-    return true;
+    return false;
   }
 
   // play from url
@@ -200,24 +213,34 @@ class WeMeetAudioService {
       _playerModeController.add("playlist");
     }
 
-    print("Setting stream registeration");
-
     _playerStateSubscription = _player.playbackStateStream.listen((state) {
       switch (state) {
         case AudioPlaybackState.completed:
           print("completed");
+          _setControls(add: ["completed"], force: true);
           _handlePlaybackCompleted();
           break;
         case AudioPlaybackState.connecting:
-          _setControls(add: ["buffering"]);
+          _setControls(add: ["buffering"], remove: ["none", "completed"]);
           break;
         case AudioPlaybackState.paused:
-          _setControls(add: ["paused"], remove: ["playing"]);
+          _setControls(add: ["paused"], force: true);
           break;
         case AudioPlaybackState.playing:
-          _setControls(add: ["playing"], remove: ["paused"]);
+          _setControls(add: ["playing"], force: true);
           break;
         default:
+          if(_songs.isNotEmpty && _currentUrl == null) {
+            _playerModeController.add("playlist");
+            return;
+          } 
+
+          if(_currentUrl != null) {
+            _playerModeController.add("single");
+            return;
+          } 
+          _playerModeController.add("none");
+          
       }
     });
 
@@ -236,8 +259,6 @@ class WeMeetAudioService {
     if(!_hasNext()) {
       return;
     }
-
-    print("has Next");
 
     if(currentMedia == null) {
       await _player?.setUrl(_songs.first.url);
@@ -278,7 +299,8 @@ class WeMeetAudioService {
     if (_hasNext()) {
       skipToNext();
     } else {
-      stop();
+      _playerModeController.add("none");
+      //stop();
     }
   }
 
