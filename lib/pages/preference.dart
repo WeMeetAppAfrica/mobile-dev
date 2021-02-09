@@ -192,7 +192,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
                 title,
                 style: TextStyle(
                   fontSize: 14.0,
-                  color: Colors.grey
+                  color: Colors.black54
                 ),
               )
             ),
@@ -214,6 +214,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
+        height: 35.0,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20.0),
           border: Border.all(color: Colors.black45),
@@ -244,6 +245,8 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
                   child: AnimatedContainer(
                     duration: Duration(milliseconds: 100),
                     padding: EdgeInsets.symmetric(horizontal: 17.0, vertical: 7.0),
+                    height: 35.0,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: (active && !slide) ? AppColors.color1 : Colors.transparent,
                       borderRadius: BorderRadius.circular(active ? 20.0 : 0.0)

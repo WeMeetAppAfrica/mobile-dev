@@ -24,20 +24,16 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>Share music</string>
-	<key>NSCalendarsUsageDescription</key>
-	<string>Save date</string>
 	<key>NSCameraUsageDescription</key>
 	<string>WeMeet wants to access your photos so you can update your profile photo.</string>
 	<key>NSContactsUsageDescription</key>
-	<string>Invite friends</string>
+	<string>WeMeet would like to access your contacts so you can invite friends</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>WeMeet wants to access your location so we can find matches near you.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Find friends</string>
+	<string>WeMeet needs access to location so you can see users nearby</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app needs access to location when open.</string>
+	<string>WeMeet needs access to location so you can see users nearby.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>For photo upload</string>
 	<key>NSMotionUsageDescription</key>

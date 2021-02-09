@@ -432,7 +432,7 @@ class _MatchPageState extends State<MatchPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("WeeMeet"),
+        title: Text("WeMeet"),
         centerTitle: false,
         actions: [
           IconButton(
