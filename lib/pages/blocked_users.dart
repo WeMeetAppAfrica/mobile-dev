@@ -56,7 +56,6 @@ class _BlockedUsersPageState extends State<BlockedUsersPage> {
 
     try {
       var res = await UserService.getBlockedUsers({"pageNum": page, "pageSize": perPage});
-      print(res);
       List data = res["data"]["content"] as List;
 
       setState(() {

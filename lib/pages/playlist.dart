@@ -1,11 +1,12 @@
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:ionicons/ionicons.dart';
+// import 'package:ionicons/ionicons.dart';
 
 import 'package:wemeet/components/error.dart';
 import 'package:wemeet/components/loader.dart';
 import 'package:wemeet/components/playlist_item.dart';
 import 'package:wemeet/components/song_cover.dart';
+import 'package:wemeet/components/song_request.dart';
 
 import 'package:wemeet/models/song.dart';
 
@@ -63,6 +64,13 @@ class _PlaylistPageState extends State<PlaylistPage> {
   void _prepareQueue(List<SongModel> val) {
     _audioService?.start();
     _audioService.setQueue(val);
+  }
+
+  void requestSong() {
+    showDialog(
+      context: context,
+      builder: (context) => SongRequestDialog()
+    );
   }
 
   Widget buildRequest() {
@@ -168,11 +176,11 @@ class _PlaylistPageState extends State<PlaylistPage> {
       centerTitle: false,
       actions: [
         IconButton(
-          onPressed: (){},
+          onPressed: requestSong,
           icon: Icon(Icons.add),
         )
       ],
-      bottom: PreferredSize(
+      /*bottom: PreferredSize(
         preferredSize: Size.fromHeight(50.0),
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 13.0),
@@ -198,7 +206,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
             ],
           ),
         ),
-      ),
+      ),*/
     );
   }
 

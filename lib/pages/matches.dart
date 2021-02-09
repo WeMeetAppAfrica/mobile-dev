@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
-import 'package:ionicons/ionicons.dart';
 import 'dart:async';
 
 import 'package:wemeet/models/app.dart';
@@ -141,7 +140,7 @@ class _MatchesPageState extends State<MatchesPage> {
                 ));
               }
             ),
-            _iconBtn(FeatherIcons.trash, () => Navigator.pushNamed),
+            // _iconBtn(FeatherIcons.trash, () => Navigator.pushNamed),
           ],
         ),
       ),

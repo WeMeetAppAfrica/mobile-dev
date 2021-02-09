@@ -3,7 +3,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:wemeet/components/wide_button.dart';
 
 import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/user.dart';
@@ -125,7 +124,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             SizedBox(height: 10.0),
             Text(
-              "${user.fullName}, ${user.age}",
+              "${user.fullName}, ${user.ageF}",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.w700,

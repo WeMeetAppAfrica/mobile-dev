@@ -113,6 +113,16 @@ class UserModel {
     return formatDate(DateTime.fromMillisecondsSinceEpoch(createdAt), [dd, " ", MM, ", ", yyyy]);
   }
 
+  String get ageF {
+    if(dob < 10000) {
+      return "";
+    }
+
+    Duration dur = Duration(milliseconds: DateTime.now().millisecondsSinceEpoch - DateTime.fromMillisecondsSinceEpoch(dob).millisecondsSinceEpoch);
+
+    return "${(dur.inDays ~/ 360)}";
+  }
+
   Map toMap() {
     Map entry = {
       "id": id,

@@ -205,9 +205,11 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         SizedBox(height: 30.0),
         GestureDetector(
-          onTap: (){
-            Navigator.of(context).pushNamedAndRemoveUntil("/login", (route) => false);
-            model.logOut();
+          onTap: () {
+            Navigator.of(context).pushNamedAndRemoveUntil("/login", (route) => false).then((e) async {
+              await Future.delayed(Duration(milliseconds: 700));
+              model.logOut();
+            });
           },
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),

@@ -5,7 +5,6 @@ import 'package:wemeet/components/wide_button.dart';
 
 import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/user.dart';
-import 'package:wemeet/providers/data.dart';
 
 import 'package:wemeet/services/user.dart';
 
