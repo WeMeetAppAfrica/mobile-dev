@@ -11,7 +11,6 @@ import 'package:wemeet/models/chat.dart';
 import 'package:wemeet/services/message.dart';
 import 'package:wemeet/services/match.dart';
 import 'package:wemeet/services/socket_bg.dart';
-import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/utils/colors.dart';
 
 import 'package:wemeet/utils/errors.dart';
@@ -34,7 +33,6 @@ class _MessagesPageState extends State<MessagesPage> {
   String query = "";
 
   BackgroundSocketService socketService = BackgroundSocketService();
-  DataProvider _dataProvider = DataProvider();
 
   StreamSubscription<ChatModel> onChatMessage;
   StreamSubscription<String> onRoom;
@@ -46,6 +44,9 @@ class _MessagesPageState extends State<MessagesPage> {
   @override
   void initState() { 
     super.initState();
+
+    onChatMessage = socketService?.onChatReceived?.listen(onChatReceive);
+    onRoom = socketService?.onRoomChanged?.listen(onRoomChanged);
     
     fetchChats();
   }

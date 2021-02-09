@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:async';
 
 import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/user.dart';
+import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/message.dart';
 import 'package:wemeet/services/match.dart';
 import 'package:wemeet/services/socket_bg.dart';
 import 'package:wemeet/services/audio.dart';
 
 import 'package:wemeet/utils/svg_content.dart';
+import 'package:wemeet/config.dart';
 
 import 'package:wemeet/pages/match.dart';
 import 'package:wemeet/pages/profile.dart';
@@ -29,6 +32,10 @@ class _HomePageState extends State<HomePage> {
   int _currentPage = 0;
 
   WeMeetAudioService _audioService = WeMeetAudioService();
+  BackgroundSocketService _socketBgService = BackgroundSocketService();
+
+  DataProvider dp = DataProvider();
+  StreamSubscription<int> _navStream;
 
   ThemeData theme;
   MediaQueryData mQuery;
@@ -37,11 +44,15 @@ class _HomePageState extends State<HomePage> {
   void initState() { 
     super.initState();
 
+    _navStream = dp.onNavPageChanged.listen(_onNavChanged);
+
     // get message token
     getMessageToken();
 
     // update user matches
     updateMatches();
+
+    startSocketConn();
     
   }
 
@@ -49,7 +60,21 @@ class _HomePageState extends State<HomePage> {
   void dispose() { 
     _audioService?.stop();
     _audioService?.dispose();
+    _navStream?.cancel();
+    _socketBgService?.stop();
     super.dispose();
+  }
+
+  void startSocketConn() {
+    _socketBgService.start(WeMeetConfig.socketUrl);
+  }
+
+  void _onNavChanged(int val) {
+    if (mounted && val < 4) {
+      setState(() {
+        _currentPage = val;
+      });
+    }
   }
 
   void getMessageToken() {

@@ -26,7 +26,9 @@ import 'package:wemeet/utils/errors.dart';
 class ChatPage extends StatefulWidget {
 
   final String uid;
-  const ChatPage({Key key, this.uid}) : super(key: key);
+  final String avatar;
+  final String name;
+  const ChatPage({Key key, this.uid, this.avatar, this.name}) : super(key: key);
 
   @override
   _ChatPageState createState() => _ChatPageState();
@@ -92,7 +94,7 @@ class _ChatPageState extends State<ChatPage> {
     //   await Future.delayed(Duration(milliseconds: 200));
     // }
 
-    getUid(true); 
+    await getUid(true); 
 
     setState(() {
       isLoading = true;
@@ -100,7 +102,7 @@ class _ChatPageState extends State<ChatPage> {
     });
 
     try {
-      var res = await MessageService.getConversation(widget.uid);
+      var res = await MessageService.getConversation(uid);
       List data = res["data"]["messages"];
       setState(() {
         chats = data.reversed.map<ChatModel>((e) => ChatModel.fromMap(e)).toList();
@@ -126,8 +128,9 @@ class _ChatPageState extends State<ChatPage> {
       await Future.delayed(Duration(milliseconds: 100));
     }
     List uL = uid.split("_");
+    print("User Ids: $uL");
     setState(() {
-      uid = (uL.first == user.id) ? "uL.last" : uL.first;
+      uid = (uL.first == "${user.id}") ? uL.last : uL.first;
     });
   }
 
@@ -311,7 +314,10 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget buildAppBar() {
-    Map u = model.matchList["$uid"] ?? {};
+    Map u = model.matchList["$uid"] ?? {
+      "name": widget.name ?? "...",
+      "image": widget.avatar ?? "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
+    };
     return AppBar(
       centerTitle: false,
       elevation: 1.0,
@@ -320,11 +326,11 @@ class _ChatPageState extends State<ChatPage> {
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           CircleAvatar(
-            backgroundImage: CachedNetworkImageProvider(u["image"] ?? "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"),
+            backgroundImage: CachedNetworkImageProvider(u["image"]),
             radius: 17.0,
           ),
           Text(
-            u["name"] ?? "...",
+            u["name"],
             style: TextStyle(
               color: Colors.black87,
               fontWeight: FontWeight.w400,

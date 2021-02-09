@@ -297,11 +297,15 @@ class WeMeetAudioService {
 
   // stop player
   void stop() async {
-    _setMode("none");
     _currentSong = null;
     _currentUrl = null;
     _controlsController.add([]);
-    await _player?.stop();
+
+    if(_player?.playbackState != AudioPlaybackState.none) {
+      await _player?.stop();
+    }
+
+    _setMode("none");
   }
 
   // dispose player

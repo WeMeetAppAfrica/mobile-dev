@@ -1,8 +1,6 @@
 import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter/material.dart';
 
-import 'package:wemeet/components/loader.dart';
-
 import 'package:wemeet/services/music.dart';
 
 import 'package:wemeet/utils/colors.dart';

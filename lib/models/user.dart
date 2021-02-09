@@ -149,37 +149,3 @@ class UserModel {
     return entry;
   }
 }
-
-/*
-{
-  "id":22,
-  "firstName":"dwale",
-  "lastName":"super",
-  "bio":"bio",
-  "gender":"MALE",
-  "dateOfBirth":968362224000,
-  "workStatus":"WORKING",
-  "genderPreference":["FEMALE"],
-  "type":"PREMIUM",
-  "age":20,
-  "hideLocation":true,
-  "hideProfile":false,
-  "longitude":18.720183,
-  "latitude":-33.832253,
-  "distanceInKm":null,
-  "distanceInMiles":null,
-  "email":"superdwale@gmail.com",
-  "emailVerified":true,
-  "phone":"08169477676",
-  "phoneVerified":false,
-  "active":true,
-  "suspended":false,
-  "lastSeen":1606946512860,
-  "dateCreated":1600691901000,
-  "swipeRadius":0,
-  "minAge":18,
-  "maxAge":56,
-  "profileImage":
-  "https://wemeetstorage.s3.eu-west-1.amazonaws.com/images/PROFILE_IMAGE_22_1bfec296-b8d9-45b6-9dab-121695b28f0a","additionalImages":[]
-  }
-*/

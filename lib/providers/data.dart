@@ -86,4 +86,12 @@ class DataProvider {
   void reloadPage(String page) {
     _reloadPageController.add(page);
   }
+
+  StreamController<int> _navPageController =
+      StreamController<int>.broadcast();
+  Stream<int> get onNavPageChanged => _navPageController.stream;
+
+  void setNavPage(int val){
+    _navPageController.add(val);
+  }
 }
