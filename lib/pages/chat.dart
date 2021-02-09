@@ -12,10 +12,13 @@ import 'package:wemeet/models/chat.dart';
 import 'package:wemeet/services/message.dart';
 import 'package:wemeet/services/socket_bg.dart';
 import 'package:wemeet/services/audio.dart';
+import 'package:wemeet/services/user.dart';
 
 import 'package:wemeet/pages/songs.dart';
 
 import 'package:wemeet/components/chat_item.dart';
+import 'package:wemeet/components/flag_user.dart';
+import 'package:wemeet/components/report_user_dialog.dart';
 import 'package:wemeet/components/error.dart';
 import 'package:wemeet/components/loader.dart';
 import 'package:wemeet/utils/colors.dart';
@@ -178,7 +181,7 @@ class _ChatPageState extends State<ChatPage> {
       Map mssg = res["data"]["message"] as Map;
       onChatReceive(ChatModel.fromMap(mssg));
     } catch (e) {
-      print("Error re ooo: $e");
+      print("Error: $e");
       WeMeetToast.toast(kTranslateError(e), true);
     } finally {
       inputC.clear();
@@ -210,6 +213,65 @@ class _ChatPageState extends State<ChatPage> {
           preferPosition: AutoScrollPosition.end,
           duration: Duration(seconds: 1));
     }
+  }
+
+  void blockUser() async {
+    WeMeetLoader.showLoadingModal(context);
+
+    try {
+      var res = await UserService.postBlockUser(uid);
+      WeMeetToast.toast(res["message"] ?? "User blocked", true);
+      Navigator.of(context).popUntil(ModalRoute.withName("/home"));
+    } catch (e) {
+      WeMeetToast.toast(kTranslateError(e), true);
+    } finally {
+      if(Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+    }
+  }
+
+  void reportUser(String reason) async {
+    WeMeetLoader.showLoadingModal(context);
+
+    try {
+      var res = await UserService.postReportUser({"type": reason, "userId": uid});
+      WeMeetToast.toast(res["message"] ?? "User Reported", true);
+      Navigator.of(context).popUntil(ModalRoute.withName("/home"));
+    } catch (e) {
+      WeMeetToast.toast(kTranslateError(e), true);
+    } finally {
+      if(Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+    }
+  }
+
+  void _flagUser() async {
+    String val = await showDialog(
+      context: context,
+      builder: (context) => FlagUserModal()
+    );
+
+    if(val == null || val == "cancel") {
+      return;
+    }
+
+    if(val == "block") {
+      blockUser();
+      return;
+    }
+
+    val = await showDialog(
+      context: context,
+      builder: (context) => ReportUserDialog()
+    );
+    
+    if(val == null) {
+      return;
+    }
+
+    reportUser(val.toUpperCase().split(" ").join("_"));
   }
 
   Widget buildBody() {
@@ -359,9 +421,7 @@ class _ChatPageState extends State<ChatPage> {
         IconButton(
           icon: Icon(FeatherIcons.flag),
           color: AppColors.orangeColor,
-          onPressed: () {
-            // _showBottom(context);
-          },
+          onPressed: _flagUser,
         ),
       ],
     );
