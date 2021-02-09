@@ -134,6 +134,8 @@ class _MatchPageState extends State<MatchPage> {
       return;
     }
 
+    _dataProvider.setNavPage(0);
+
     await Future.delayed(Duration(seconds: 1));
 
     String id = "${match?.id}";
