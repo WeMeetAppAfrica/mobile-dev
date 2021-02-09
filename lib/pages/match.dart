@@ -172,6 +172,8 @@ class _MatchPageState extends State<MatchPage> {
   }
 
   void postSwipe(int id, String action) {
+
+    print("Posting Swipe");
     
     setState(() {
       left = left - 1;
@@ -188,7 +190,7 @@ class _MatchPageState extends State<MatchPage> {
       setState(() {
         swipesLeft = swipesLeft - 1;        
       });
-    });
+    }).catchError(print);
   }
 
   void _showUpgrade() async {
@@ -208,10 +210,11 @@ class _MatchPageState extends State<MatchPage> {
     
   }
 
-  void viewUser(UserModel u) {
+  void viewUser(UserModel u, int index) {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => UserDetailsPage(
         user: u,
+        tag: "$index#${u.id}",
         onSwipe: (val) {
           if(val == null) {
             return;
@@ -223,7 +226,8 @@ class _MatchPageState extends State<MatchPage> {
             controller.triggerLeft();
           }
         },
-      )
+      ),
+      fullscreenDialog: true
     ));
   }
 
@@ -278,6 +282,7 @@ class _MatchPageState extends State<MatchPage> {
               minWidth: mQuery.size.width * 0.80,
               minHeight: mQuery.size.width * 0.80,
               swipeCompleteCallback: (orientation, index){
+                print("#####Swiped: $orientation");
                 if (orientation == CardSwipeOrientation.LEFT) {
                   postSwipe(users[index].id, "UNLIKE");
                 }
@@ -293,7 +298,7 @@ class _MatchPageState extends State<MatchPage> {
                 UserModel item = users[index];
                 return GestureDetector(
                   onTap: () {
-                    viewUser(item);
+                    viewUser(item, index);
                   },
                   child: Card(
                     clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -303,22 +308,25 @@ class _MatchPageState extends State<MatchPage> {
                     child: Stack(
                       children: [
                         Positioned.fill(
-                          child: CachedNetworkImage(
-                            imageUrl: item.profileImage,
-                            placeholder: (context, _) => DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: Colors.black,
-                                gradient: LinearGradient(
-                                  begin: FractionalOffset.topCenter,
-                                  end: FractionalOffset.bottomCenter,
-                                  colors: [
-                                    Colors.black.withOpacity(0.2),
-                                    Colors.black.withOpacity(0.9),
-                                  ],
-                                )
+                          child: Hero(
+                            tag: "$index#${item.id}",
+                            child: CachedNetworkImage(
+                              imageUrl: item.profileImage,
+                              placeholder: (context, _) => DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  gradient: LinearGradient(
+                                    begin: FractionalOffset.topCenter,
+                                    end: FractionalOffset.bottomCenter,
+                                    colors: [
+                                      Colors.black.withOpacity(0.2),
+                                      Colors.black.withOpacity(0.9),
+                                    ],
+                                  )
+                                ),
                               ),
+                              fit: BoxFit.cover,
                             ),
-                            fit: BoxFit.cover,
                           ),
                         ),
                         Positioned.fill(
@@ -354,7 +362,7 @@ class _MatchPageState extends State<MatchPage> {
                                 ),
                                 SizedBox(height: 5.0,),
                                 Text(
-                                  "${item.distanceInKm ?? 1}Km Away",
+                                  "${item.distanceInKm ?? 1} Km Away",
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 12.0,
@@ -438,8 +446,4 @@ class _MatchPageState extends State<MatchPage> {
   }
 }
 
-/*
-{id: 140, firstName: Olalekan, lastName: Oladipupo, bio: Hello world, gender: MALE, dateOfBirth: 694224000000, workStatus: SELF_EMPLOYED, genderPreference: [FEMALE], type: FREE, age: 29, hideLocation: false, hideProfile: false, longitude: 18.891966, latitude: -33.747374, distanceInKm: 0, distanceInMiles: 0, email: lakesida10@gmail.com, emailVerified: true, phone: 2348051097031, phoneVerified: false, active: true, suspended: false, lastSeen: 1612774981000, dateCreated: 1609867520000, swipeRadius: 1, minAge: 18, maxAge: 30, profileImage: https://wemeetstorage.s3.eu-west-1.amazonaws.com/images/PROFILE_IMAGE_140_8d91235a-902e-4e93-9a59-bfd2adf1a03e, additionalImages: []
-*/
-
-List<UserModel> _users = List.generate(5, (i) => UserModel.fromMap({"id": 140, "firstName":" Olalekan", "lastName": "Oladipupo", "bio": "Hello world", "gender": "MALE", "dateOfBirth": 694224000000, "workStatus": "SELF_EMPLOYED", "genderPreference": ["FEMALE"], "type": "FREE", "age": 29, "hideLocation": false, "hideProfile": false, "longitude": 18.891966, "latitude": -33.747374, "distanceInKm": 0, "distanceInMiles": 0, "email": "lakesida10@gmail.com", "emailVerified": true, "phone": "2348051097031", "phoneVerified": false, "active": true, "suspended": false, "lastSeen": 1612774981000, "dateCreated": 1609867520000, "swipeRadius": 1, "minAge": 18, "maxAge": 30, "profileImage": "https://wemeetstorage.s3.eu-west-1.amazonaws.com/images/PROFILE_IMAGE_140_8d91235a-902e-4e93-9a59-bfd2adf1a03e", "additionalImages": []}));
+List<UserModel> _users = List.generate(2, (i) => UserModel.fromMap({"id": 140, "firstName":" Olalekan", "lastName": "Oladipupo", "bio": "Hello world", "gender": "MALE", "dateOfBirth": 694224000000, "workStatus": "SELF_EMPLOYED", "genderPreference": ["FEMALE"], "type": "FREE", "age": 29, "hideLocation": false, "hideProfile": false, "longitude": 18.891966, "latitude": -33.747374, "distanceInKm": 0, "distanceInMiles": 0, "email": "lakesida10@gmail.com", "emailVerified": true, "phone": "2348051097031", "phoneVerified": false, "active": true, "suspended": false, "lastSeen": 1612774981000, "dateCreated": 1609867520000, "swipeRadius": 1, "minAge": 18, "maxAge": 30, "profileImage": "https://wemeetstorage.s3.eu-west-1.amazonaws.com/images/PROFILE_IMAGE_140_8d91235a-902e-4e93-9a59-bfd2adf1a03e", "additionalImages": []}));
