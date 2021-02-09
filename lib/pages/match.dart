@@ -13,6 +13,8 @@ import 'package:wemeet/providers/data.dart';
 
 import 'package:wemeet/pages/match_found.dart';
 import 'package:wemeet/pages/chat.dart';
+import 'package:wemeet/pages/user_details.dart';
+
 import 'package:wemeet/components/media_player.dart';
 import 'package:wemeet/components/loader.dart';
 import 'package:wemeet/components/error.dart';
@@ -137,7 +139,7 @@ class _MatchPageState extends State<MatchPage> {
     String id = "${match?.id}";
 
     bool go = await Navigator.push(context, MaterialPageRoute(
-      builder: (context) => MatchFoundPage(match: match ?? _users.first,),
+      builder: (context) => MatchFoundPage(match: match),
       fullscreenDialog: true
     )) ?? false;
 
@@ -206,6 +208,25 @@ class _MatchPageState extends State<MatchPage> {
     
   }
 
+  void viewUser(UserModel u) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => UserDetailsPage(
+        user: u,
+        onSwipe: (val) {
+          if(val == null) {
+            return;
+          }
+
+          if(val) {
+            controller.triggerRight();
+          } else {
+            controller.triggerLeft();
+          }
+        },
+      )
+    ));
+  }
+
   Widget _swipeBtn(String icon, [bool left = false]) {
     return InkWell(
       onTap: () {
@@ -271,6 +292,9 @@ class _MatchPageState extends State<MatchPage> {
               cardBuilder: (context, index) {
                 UserModel item = users[index];
                 return GestureDetector(
+                  onTap: () {
+                    viewUser(item);
+                  },
                   child: Card(
                     clipBehavior: Clip.antiAliasWithSaveLayer,
                     shape: RoundedRectangleBorder(
@@ -390,7 +414,6 @@ class _MatchPageState extends State<MatchPage> {
       ],
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
