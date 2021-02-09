@@ -12,6 +12,7 @@ import 'package:wemeet/components/error.dart';
 
 import 'package:wemeet/utils/errors.dart';
 import 'package:wemeet/utils/colors.dart';
+import 'package:wemeet/utils/toast.dart';
 
 class BlockedUsersPage extends StatefulWidget {
 
@@ -75,8 +76,37 @@ class _BlockedUsersPageState extends State<BlockedUsersPage> {
     }
   }
 
-  void updateDatabase() {
-    
+  void unblockUser(int id) async {
+
+    bool val = await WeMeetLoader.showBottomModalSheet(
+      context,
+      "Unblock User?",
+      content: "Are you sure you want to unblock this user?",
+      okText: "Yes, Unblock",
+      cancelText: "Cancel"
+    );
+
+    if(!val) {
+      return;
+    }
+
+    WeMeetLoader.showLoadingModal(context);
+
+    try {
+      await UserService.postUnblockUser("$id");
+      setState(() {
+        users.removeWhere((e) => e.id == id);        
+      });
+      WeMeetToast.toast("User unblocked successfully");
+    } catch (e) {
+      WeMeetToast.toast(kTranslateError(e), true);
+    } finally {
+      if(Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+    }
+
+
   }
 
   Widget buildItem(UserModel item) {
@@ -89,6 +119,7 @@ class _BlockedUsersPageState extends State<BlockedUsersPage> {
       //   "Joined ${item.createdF ?? ""}"
       // ),
       trailing: GestureDetector(
+        onTap: () => unblockUser(item.id),
         child: Container(
           height: 30.0,
           width: 80.0,
