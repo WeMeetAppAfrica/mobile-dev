@@ -110,6 +110,8 @@ class _SettingsPageState extends State<SettingsPage> {
     try {
       await AuthService.postSelfDelete();
       WeMeetToast.toast("Account deleted successfully", true);
+      await Navigator.pushNamedAndRemoveUntil(context, "/register", (route) => false);
+      model.logOut();
     } catch (e) {
       WeMeetToast.toast(kTranslateError(e), true);
     } finally {
