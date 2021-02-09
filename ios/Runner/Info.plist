@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>$(FLUTTER_BUILD_NAME)</string>
+	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
@@ -28,6 +28,8 @@
 	<string>Share music</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Save date</string>
+	<key>NSCameraUsageDescription</key>
+	<string>WeMeet wants to access your photos so you can update your profile photo.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>Invite friends</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
@@ -40,8 +42,6 @@
 	<string>For photo upload</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Important</string>
-	<key>NSCameraUsageDescription</key>
-	<string>WeMeet wants to access your photos so you can update your profile photo.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>WeMeet wants to access your photos so you can update your profile pictures.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

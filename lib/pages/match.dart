@@ -447,5 +447,3 @@ class _MatchPageState extends State<MatchPage> {
     );
   }
 }
-
-List<UserModel> _users = List.generate(2, (i) => UserModel.fromMap({"id": 140, "firstName":" Olalekan", "lastName": "Oladipupo", "bio": "Hello world", "gender": "MALE", "dateOfBirth": 694224000000, "workStatus": "SELF_EMPLOYED", "genderPreference": ["FEMALE"], "type": "FREE", "age": 29, "hideLocation": false, "hideProfile": false, "longitude": 18.891966, "latitude": -33.747374, "distanceInKm": 0, "distanceInMiles": 0, "email": "lakesida10@gmail.com", "emailVerified": true, "phone": "2348051097031", "phoneVerified": false, "active": true, "suspended": false, "lastSeen": 1612774981000, "dateCreated": 1609867520000, "swipeRadius": 1, "minAge": 18, "maxAge": 30, "profileImage": "https://wemeetstorage.s3.eu-west-1.amazonaws.com/images/PROFILE_IMAGE_140_8d91235a-902e-4e93-9a59-bfd2adf1a03e", "additionalImages": []}));
