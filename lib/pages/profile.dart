@@ -172,7 +172,7 @@ class _ProfilePageState extends State<ProfilePage> {
             _tile(
               "You're a",
               Text(
-                "${genders[user.gender]}"
+                "${genders[user.gender] ?? "Not set"}"
               )
             ),
             SizedBox(height: 30.0),
@@ -200,7 +200,7 @@ class _ProfilePageState extends State<ProfilePage> {
             _tile(
               "You are currently",
               Text(
-                "${eStatuses[user.workStatus] ?? ""}"
+                "${eStatuses[user.workStatus] ?? "Not set"}"
               )
             ),
             SizedBox(height: 30.0),

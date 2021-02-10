@@ -79,8 +79,6 @@ class _LoginPageState extends State<LoginPage> {
       
       Map resData = res["data"] as Map;
 
-      print(resData);
-
       // set user 
       model.setUserMap(resData["user"]);
       // set user token
@@ -89,7 +87,6 @@ class _LoginPageState extends State<LoginPage> {
       // check verification
       verifyUser();
     } catch (e) {
-      print(e);
       WeMeetToast.toast(kTranslateError(e));
     } finally {
       if(Navigator.canPop(context)) {

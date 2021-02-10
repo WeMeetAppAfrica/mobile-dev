@@ -4,6 +4,7 @@ import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
+import 'dart:math' as math;
 
 import 'package:wemeet/components/dismissable_keyboard.dart';
 import 'package:wemeet/components/text_field.dart';
@@ -330,7 +331,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
     return _tile(
       "Age range",
       FlutterSlider(
-        values: [(user.minAge ?? 18).toDouble(), (user.maxAge ?? 30).toDouble()],
+        values: [(math.max(18, user.minAge)).toDouble(), (math.max(19, user.maxAge)).toDouble()],
         min: 18,
         max: 60.0,
         rangeSlider: true,

@@ -123,8 +123,8 @@ class _ChangeLocationPageState extends State<ChangeLocationPage> {
               "latitude": place.location.latitude,
               "longitude": place.location.longitude,
               "address": place.address,
-              "state": place.state,
-              "country": place.countryName
+              "state": "",
+              "country": ""
             };         
           });
           
@@ -184,7 +184,7 @@ class _ChangeLocationPageState extends State<ChangeLocationPage> {
           ),
         ),
         SizedBox(height: 10.0),
-        _tile("Address", location["address"] ?? "-"),
+        _tile("Place", location["address"] ?? "-"),
         _tile("State", location["state"] ?? "-"),
         _tile("Country", location["country"] ?? "-"),
         SizedBox(height: 40.0),

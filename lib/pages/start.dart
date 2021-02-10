@@ -75,7 +75,7 @@ class _StartPageState extends State<StartPage> {
       routeTo("/login");
       return;
     }
-
+    //  routeTo("/login");
     fetchProfile();
     return;
 
@@ -147,6 +147,7 @@ class _StartPageState extends State<StartPage> {
       return;
 
     }).catchError((e){
+      print(e);
       String err = kTranslateError(e);
       WeMeetToast.toast(err, true);
       if(err.contains("session has expired")) {

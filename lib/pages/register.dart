@@ -75,7 +75,7 @@ class _RegisterPageState extends State<RegisterPage> {
       WeMeetToast.toast(res["message"] ?? "Account registered successfully");
       formKey.currentState.reset();
       await Future.delayed(Duration(milliseconds: 500));
-      Navigator.of(context).pushReplacementNamed("/login");
+      Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
     } catch (e) {
       print(e);
       WeMeetToast.toast(kTranslateError(e), true);
@@ -84,7 +84,6 @@ class _RegisterPageState extends State<RegisterPage> {
         Navigator.pop(context);
       }
     }
-
   }
 
   void submit() {

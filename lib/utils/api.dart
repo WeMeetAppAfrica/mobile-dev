@@ -88,6 +88,8 @@ class WeMeetAPI {
     var responseBody = await response.transform(utf8.decoder).join();
     var dataResponse = await jsonDecode(responseBody);
 
+    print(responseBody.runtimeType);
+
     if(response.statusCode >= 300){
       throw dataResponse;
     }

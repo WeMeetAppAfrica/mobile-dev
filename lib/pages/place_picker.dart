@@ -100,7 +100,6 @@ class _LocationPickerModalPageState extends State<LocationPickerModalPage> {
 
     try {
       List<PlacePrediction> res = await api.getPredictions(place?.location, val);
-      print(res);
       setState(() {
         places = res;
       });
