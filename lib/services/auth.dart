@@ -4,7 +4,7 @@ class AuthService {
 
   static Future postLogin(dynamic body) => api.post("backend-service/v1/auth/login", data: body);
 
-  static Future postRegister(dynamic body) => api.post("backend-service/v1/auth/register", data: body);
+  static Future postRegister(dynamic body) => api.post("backend-service/v1/auth/signup", data: body);
 
   static Future getForgotPassword(String email) => api.get("backend-service/v1/auth/accounts/forgot-password?email=$email");
 

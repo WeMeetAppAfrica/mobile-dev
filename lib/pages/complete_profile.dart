@@ -57,10 +57,9 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
     try {
 
-      var res = await UserService.postUpdateProfile(data);
-
-      Map userMap = res["data"];
-      model.setUserMap(userMap);
+      var res = await UserService.postUpdateProfileImages(data);
+      print(res);
+      model.addUserMap(data);
 
       WeMeetToast.toast(res["message"] ?? "Successfully saved user profile", true);
 
@@ -71,6 +70,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
       }
       
     } catch (e) {
+      print(e);
       WeMeetToast.toast(kTranslateError(e), true);
     } finally {
       if(Navigator.canPop(context)) {
