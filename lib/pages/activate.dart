@@ -4,6 +4,7 @@ import 'package:ionicons/ionicons.dart';
 import 'package:wemeet/components/dismissable_keyboard.dart';
 
 import 'package:wemeet/models/app.dart';
+import 'package:wemeet/models/user.dart';
 
 import 'package:wemeet/components/text_field.dart';
 import 'package:wemeet/components/loader.dart';
@@ -98,7 +99,9 @@ class _ActivatePageState extends State<ActivatePage> {
       Map data = res["data"] as Map;
       model.setUserMap(data);
 
-      if(ensureInt(data["dateOfBirth"]) < 10000000000) {
+      UserModel user = UserModel.fromMap(data);
+
+      if(user.dob < 1000000000 || user.minAge == 0 || user.workStatus == null || user.workStatus.isEmpty) {
         Navigator.of(context).pushNamedAndRemoveUntil("/preference", (route) => false);
         return;
       }

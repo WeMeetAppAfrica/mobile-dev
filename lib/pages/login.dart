@@ -111,6 +111,11 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    if(model.user.minAge == 0 || model.user.workStatus == null || model.user.workStatus.isEmpty) {
+      Navigator.pushNamedAndRemoveUntil(context, "/preference", (route) => false);
+      return;
+    }
+
     if(model.user.profileImage == null) {
       Navigator.pushNamedAndRemoveUntil(context, "/complete-profile", (route) => false);
       return;

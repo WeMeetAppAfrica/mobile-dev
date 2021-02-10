@@ -132,8 +132,14 @@ class _StartPageState extends State<StartPage> {
       }
 
       // if user has set date of birth
-      if (user.dob < 1000000000) {
+      if (user.dob < 1000000000 || user.minAge == 0 || user.workStatus == null || user.workStatus.isEmpty) {
         routeTo("/preference");
+        return;
+      }
+
+      // if user has not completed profile
+      if (user.profileImage == null) {
+        routeTo("/complete-profile");
         return;
       }
 
