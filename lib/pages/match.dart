@@ -57,6 +57,20 @@ class _MatchPageState extends State<MatchPage> {
   }
 
   void fetchData() async {
+
+    setState(() {
+      users = List.generate(5, (i) => UserModel(
+        id: i,
+        firstName: "John $i",
+        lastName: "Doe",
+        profileImage: "https://uifaces.co/our-content/donated/gPZwCbdS.jpg",
+        dob: 968093489867,
+        distanceInKm: 20,
+      )); 
+    });
+
+    return;
+
     setState(() {
       isLoading = true;
     });
@@ -267,8 +281,9 @@ class _MatchPageState extends State<MatchPage> {
           SizedBox(height: 30.0),
           Container(
             constraints: BoxConstraints(
-              maxWidth: 400.0,
-              maxHeight: mQuery.size.width * 0.95
+              maxWidth: 500.0,
+              // maxHeight: mQuery.size.width * 0.95
+              maxHeight: 500.0
             ),
             child: TinderSwapCard(
               cardController: controller,
@@ -280,7 +295,8 @@ class _MatchPageState extends State<MatchPage> {
               swipeEdge: 10.0,
               allowVerticalMovement: false,
               maxWidth: mQuery.size.width * 0.95,
-              maxHeight: mQuery.size.width * 0.95,
+              // maxHeight: mQuery.size.width * 0.95,
+              maxHeight: 700,
               minWidth: mQuery.size.width * 0.80,
               minHeight: mQuery.size.width * 0.80,
               swipeCompleteCallback: (orientation, index){
@@ -382,7 +398,7 @@ class _MatchPageState extends State<MatchPage> {
               },
             ),
           ),
-          SizedBox(height: 13.0),
+          SizedBox(height: 15.0),
           Wrap(
             spacing: 20.0,
             alignment: WrapAlignment.center,
@@ -390,7 +406,8 @@ class _MatchPageState extends State<MatchPage> {
               _swipeBtn(WemeetSvgContent.cancel, true),
               _swipeBtn(WemeetSvgContent.heartY, false)
             ],
-          )
+          ),
+          Spacer()
         ],
       ),
     );
@@ -419,8 +436,10 @@ class _MatchPageState extends State<MatchPage> {
 
     return Column(
       children: [
-        Expanded(child: buildBody(),),
-        WMEdiaPlayer()
+        Expanded(
+          child: buildBody(),
+        ),
+        WMEdiaPlayer(occupy: true,)
       ],
     );
   }

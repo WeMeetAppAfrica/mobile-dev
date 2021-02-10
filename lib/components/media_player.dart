@@ -10,8 +10,9 @@ class WMEdiaPlayer extends StatefulWidget {
   final double left;
   final double top;
   final double bottom;
+  final bool occupy;
 
-  const WMEdiaPlayer({Key key, this.right = 20.0, this.left = 20.0, this.top = 20.0, this.bottom = 20.0}) : super(key: key);
+  const WMEdiaPlayer({Key key, this.right = 20.0, this.left = 20.0, this.top = 20.0, this.bottom = 20.0, this.occupy = false}) : super(key: key);
 
   @override
   _WMEdiaPlayerState createState() => _WMEdiaPlayerState();
@@ -40,7 +41,7 @@ class _WMEdiaPlayerState extends State<WMEdiaPlayer> {
   Widget _buildPlayer(List<String> val, SongModel song) {
 
     if(val.isEmpty || (val.length == 1 && val.contains("none")) || song == null) {
-      return SizedBox();
+      return SizedBox(height: widget.occupy ? 100 : 0.0,);
     }
 
     return Container(
@@ -112,11 +113,11 @@ class _WMEdiaPlayerState extends State<WMEdiaPlayer> {
         builder: (context, snapshot) {
 
           if(!snapshot.hasData) {
-            return SizedBox();
+            return SizedBox(height: widget.occupy ? 100 : 0.0,);
           }
 
           if(snapshot.data != "playlist") {
-            return SizedBox();
+            return SizedBox(height: widget.occupy ? 100 : 0.0,);
           }
 
           return StreamBuilder<List<String>>(
