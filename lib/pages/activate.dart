@@ -11,7 +11,6 @@ import 'package:wemeet/components/loader.dart';
 import 'package:wemeet/components/wide_button.dart';
 import 'package:wemeet/services/auth.dart';
 import 'package:wemeet/services/user.dart';
-import 'package:wemeet/utils/converters.dart';
 import 'package:wemeet/utils/errors.dart';
 
 import 'package:wemeet/utils/colors.dart';
