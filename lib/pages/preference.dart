@@ -84,7 +84,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
 
     Map data = {
       "bio": bioC.text,
-      "dateOfBirth": user.dob,
+      "dateOfBirth": DateTime.fromMillisecondsSinceEpoch(user.dob).toIso8601String(),
       "gender": user.gender,
       "genderPreference": user.genderPreference,
       "maxAge": user.maxAge,
@@ -100,6 +100,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
       print(data);
 
       Map userMap = res["data"];
+      print(userMap);
       model.setUserMap(userMap);
 
       WeMeetToast.toast(res["message"] ?? "Successfully saved user profile", true);

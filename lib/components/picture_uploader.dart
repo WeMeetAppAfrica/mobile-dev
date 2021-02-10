@@ -8,6 +8,8 @@ import 'package:path_provider/path_provider.dart' as path;
 import 'dart:math';
 import 'dart:io';
 
+import 'package:wemeet/components/loader.dart';
+
 import 'package:wemeet/utils/colors.dart';
 
 import 'package:wemeet/services/user.dart';
@@ -98,6 +100,28 @@ class _PictureUploaderState extends State<PictureUploader> {
     );
     
     return result;
+  }
+
+  void _longPress() async {
+    FocusScope.of(context).requestFocus(FocusNode());
+
+    if(isEmpty || isLoading) return;
+
+    var del = await WeMeetLoader.showBottomModalSheet(
+      context,
+      "Delete Photo",
+      content: "Are you sure you want to delete this photo?",
+      okText: "Yes, delete",
+      cancelText: "Cancel"
+    ) ?? false;
+
+    if(del) {
+      setState(() {
+        _localUrl = _remoteUrl = null;        
+      });
+      widget.onDone(null);
+    }
+    
   }
 
   void _tap() async {
@@ -210,6 +234,7 @@ class _PictureUploaderState extends State<PictureUploader> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: _tap,
+      onLongPress: _longPress,
       child: Container(
         clipBehavior: Clip.antiAliasWithSaveLayer,
         width: widget.radius * 2,
