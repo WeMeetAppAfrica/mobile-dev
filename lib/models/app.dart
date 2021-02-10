@@ -97,22 +97,24 @@ mixin _UserData on _MainModel {
 
   // Set the user from map
   void setUserMap(Map val){
-    _user = UserModel.fromMap(val);
-    _dataProvider.setUser(_user);
-    _dataProvider.setlocationFilter("${_user.hideLocation}");
-    _localStorage["@user"] = jsonEncode(val);
+    addUserMap(val);
+    // _user = UserModel.fromMap(val);
+    // _dataProvider.setUser(_user);
+    // _dataProvider.setlocationFilter("${_user.hideLocation}");
+    // _localStorage["@user"] = jsonEncode(val);
     notifyListeners();
     _internalSaveData();
   }
 
   // add map to user data
   void addUserMap(Map val){
-    Map u = jsonDecode(_localStorage["@user"]);
+    Map u = jsonDecode(_localStorage["@user"] ?? "{}");
     val.forEach((k, v) {
       u[k] = v;
     });
     _user = UserModel.fromMap(u);
     _dataProvider.setUser(_user);
+    _dataProvider.setlocationFilter("${_user.hideLocation}");
     _localStorage["@user"] = jsonEncode(val);
     notifyListeners();
     _internalSaveData();
