@@ -97,6 +97,8 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
 
       var res = await UserService.postUpdateProfile(data);
 
+      print(data);
+
       Map userMap = res["data"];
       model.setUserMap(userMap);
 
@@ -113,6 +115,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
       }
       
     } catch (e) {
+      print(e);
       WeMeetToast.toast(kTranslateError(e), true);
     } finally {
       if(Navigator.canPop(context)) {
@@ -138,6 +141,26 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
     // set dob
     if(user.dob < 10000000000) {
       user.dob = DateTime.now().subtract(Duration(days: 365 * 18)).millisecondsSinceEpoch;
+    }
+
+    // if gender is not set
+    if(user.gender.isEmpty) {
+      user.gender = "MALE";
+    }
+
+    // if workstatus is not set
+    if(user.workStatus.isEmpty) {
+      user.workStatus = "UNEMPLOYED";
+    }
+
+    // if min age is not set
+    if(user.minAge < 1) {
+      user.minAge = 18;
+    }
+
+    // if max age is not set
+    if(user.maxAge < 1 || user.maxAge < user.minAge) {
+      user.maxAge = user.minAge + 1;
     }
 
     dobC = TextEditingController(text: formatDate(DateTime.fromMillisecondsSinceEpoch(user.dob), [dd, ' ', M, ', ', yyyy]));
@@ -216,6 +239,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
       alignment: Alignment.centerLeft,
       child: Container(
         height: 35.0,
+        clipBehavior: Clip.antiAliasWithSaveLayer,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20.0),
           border: Border.all(color: Colors.black45),
@@ -433,9 +457,10 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
     return _tile(
       "You're currently",
       Container(
+        margin: EdgeInsets.only(top: 10),
         child: Wrap(
           alignment: WrapAlignment.center,
-          spacing: 20.0,
+          spacing: 15.0,
           runSpacing: 15.0,
           children: eStatuses.values.map((e) {
             bool active = eStatuses[user.workStatus] == e;
@@ -455,7 +480,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
               },
               child: AnimatedContainer(
                 duration: Duration(milliseconds: 200),
-                width: 150.0,
+                width: 135.0,
                 height: 35.0,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(

@@ -8,6 +8,7 @@ import 'package:wemeet/components/wide_button.dart';
 import 'package:wemeet/models/app.dart';
 
 import 'package:wemeet/components/text_field.dart';
+import 'package:wemeet/models/user.dart';
 import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/auth.dart';
 
@@ -78,6 +79,8 @@ class _LoginPageState extends State<LoginPage> {
       var res = await AuthService.postLogin(data);
       
       Map resData = res["data"] as Map;
+      print(resData);
+      UserModel user = UserModel.fromMap(resData["user"]);
 
       // set user 
       model.setUserMap(resData["user"]);
@@ -85,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
       model.setToken(resData["tokenInfo"]["accessToken"]);
 
       // check verification
-      verifyUser();
+      verifyUser(user);
     } catch (e) {
       WeMeetToast.toast(kTranslateError(e));
     } finally {
@@ -104,19 +107,19 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void verifyUser() {
+  void verifyUser(UserModel user) {
 
-    if(!model.user.active) {
+    if(!user.active) {
       Navigator.pushNamedAndRemoveUntil(context, "/activate", (route) => false);
       return;
     }
 
-    if(model.user.minAge == 0 || model.user.workStatus == null || model.user.workStatus.isEmpty) {
+    if(user.gender == null || user.gender.isEmpty) {
       Navigator.pushNamedAndRemoveUntil(context, "/preference", (route) => false);
       return;
     }
 
-    if(model.user.profileImage == null) {
+    if(user.profileImage == null) {
       Navigator.pushNamedAndRemoveUntil(context, "/complete-profile", (route) => false);
       return;
     }

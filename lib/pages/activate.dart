@@ -61,7 +61,7 @@ class _ActivatePageState extends State<ActivatePage> {
     try {
       await AuthService.postVerifyEmail(codeC.text);
       WeMeetToast.toast("Account activated successfully");
-      fetchUser();
+      await fetchUser();
     } catch (e) {
       WeMeetToast.toast(kTranslateError(e), true);
     } finally {
@@ -101,7 +101,7 @@ class _ActivatePageState extends State<ActivatePage> {
 
       UserModel user = UserModel.fromMap(data);
 
-      if(user.dob < 1000000000 || user.minAge == 0 || user.workStatus == null || user.workStatus.isEmpty) {
+      if(user.gender == null || user.gender.isEmpty) {
         Navigator.of(context).pushNamedAndRemoveUntil("/preference", (route) => false);
         return;
       }
