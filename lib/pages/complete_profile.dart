@@ -68,6 +68,8 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
         Navigator.of(context).pushNamedAndRemoveUntil("/home", (route) => false);
         return;
       }
+
+      Navigator.of(context).pushNamedAndRemoveUntil("/home", (route) => false);
       
     } catch (e) {
       print(e);

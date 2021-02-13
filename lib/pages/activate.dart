@@ -141,7 +141,7 @@ class _ActivatePageState extends State<ActivatePage> {
           Align(
             alignment: Alignment.centerRight,
             child: FlatButton(
-              onPressed: (){},
+              onPressed: resendCode,
               child: Text("Resend Activation Code"),
               textColor: AppColors.orangeColor,
             ),

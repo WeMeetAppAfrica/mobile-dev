@@ -5,7 +5,7 @@ class PhoneValidator{
   static String validate(String value) {
 
     // RegExp _phone = new RegExp(r"^+?[0-9]{11,14}$");
-    RegExp _phone = new RegExp(r"^[+#*\(\)\[\]]*([0-9][ ext+-pw#*\(\)\[\]]*){6,45}$");
+    RegExp _phone = new RegExp(r"^[+#*\(\)\[\]]*([0-9][ ext+-pw#*\(\)\[\]]*){11,45}$");
 
     if(value.isEmpty) {
       return  "Enter phone number" ;
@@ -49,7 +49,7 @@ class PasswordValidator {
       return  'Password  can not be empty' ;
     }
     if(value.length < 8) {
-      return  'Password should be at least 8 characters' ;
+      return  'Password should be at least 6 characters' ;
     }
     return null;
   }
@@ -131,54 +131,4 @@ class DateValidator{
     return null;
   }
     
-}
-
-class CardNumberValidator {
-  static String validate(String value) {
-    if(value.isEmpty) {
-      return  'Please enter your card number';
-    }
-
-    int num = value.replaceAll(" ", "").length;
-    if(num < 16){
-      return 'You have not entered all the digits of your card';
-    }
-    
-    return null;
-  }
-}
-
-class CardCvcValidator {
-  static String validate(String value) {
-    var cname = value.replaceAll(' ', '').length;
-    if(cname < 3){
-      return 'Enter 3 digit CVC number';
-    }  
-    return null;
-  }
-}
-
-class CardExpiryValidator {
-  static String validate(String value) {
- 
-    var cname = value.replaceAll('/', '').length;
-    if(cname < 4){
-      return 'Enter a valid expiry date';
-    }  
-    return null;
-  }
-}
-
-class CardNameValidator {
-  static String validate(String value) {
-
-    if(value.isEmpty){
-      return 'Please enter the name on your card';
-    }
-
-    if(value.split(" ").length < 2){
-      return "Please enter the full name on your card";
-    } 
-    return null;
-  }
 }

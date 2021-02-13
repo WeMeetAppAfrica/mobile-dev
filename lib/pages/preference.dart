@@ -97,10 +97,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
 
       var res = await UserService.postUpdateProfile(data);
 
-      print(data);
-
       Map userMap = res["data"];
-      print(userMap);
       model.setUserMap(userMap);
 
       WeMeetToast.toast(res["message"] ?? "Successfully saved user profile", true);
@@ -113,8 +110,10 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
           Navigator.of(context).pushNamedAndRemoveUntil("/start", (route) => false);
         }
         return;
-      }
-      
+      } 
+
+      Navigator.of(context).pushNamedAndRemoveUntil("/home", (route) => false);
+
     } catch (e) {
       print(e);
       WeMeetToast.toast(kTranslateError(e), true);
