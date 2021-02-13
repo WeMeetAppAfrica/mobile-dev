@@ -1,3 +1,5 @@
+import 'package:date_format/date_format.dart';
+
 double ensureDouble(dynamic val){
   if(val is double){
     return val;
@@ -69,4 +71,8 @@ bool isMp3 (String val) {
   });
 
   return matches.contains(true);
+}
+
+String toYMD(DateTime date) {
+  return formatDate(date, [yyyy, "-", mm, "-", dd]);
 }

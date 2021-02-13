@@ -543,7 +543,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
             controller: dobC,
             prefixIcon: Icon(FeatherIcons.calendar, color: Colors.grey,),
             enabled: false,
-            onFieldTapped: pickDob,
+            onFieldTapped: null,//pickDob,
             validator: (val) => NotEmptyValidator.validateWithMessage(val, "Please select your date of birth"),
           ),
           SizedBox(height: 30.0),

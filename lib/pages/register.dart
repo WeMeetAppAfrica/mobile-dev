@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:feather_icons_flutter/feather_icons_flutter.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
 
 import 'package:wemeet/components/checkbox_field.dart';
 import 'package:wemeet/components/loader.dart';
@@ -10,6 +12,7 @@ import 'package:wemeet/providers/data.dart';
 import 'package:wemeet/services/auth.dart';
 
 import 'package:wemeet/utils/colors.dart';
+import 'package:wemeet/utils/converters.dart';
 import 'package:wemeet/utils/svg_content.dart';
 import 'package:wemeet/utils/url.dart';
 import 'package:wemeet/utils/toast.dart';
@@ -31,6 +34,7 @@ class _RegisterPageState extends State<RegisterPage> {
   TextEditingController _phoneC = TextEditingController();
   TextEditingController _emailC = TextEditingController();
   TextEditingController _passwordC = TextEditingController();
+  TextEditingController dobC = TextEditingController();
   
   FocusNode _phoneNode = FocusNode();
   FocusNode _emailNode = FocusNode();
@@ -45,6 +49,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _phoneC.dispose();
     _emailC.dispose();
     _passwordC.dispose();
+    dobC.dispose();
     _phoneNode.dispose();
     _emailNode.dispose();
     _passwordNode.dispose();
@@ -58,7 +63,7 @@ class _RegisterPageState extends State<RegisterPage> {
     List<String> name = _fullNameC.text.split(" ");
 
     Map data = {
-      "dateOfBirth": DateTime.now().subtract(Duration(days: 365 * 19)).toIso8601String(),
+      "dateOfBirth": DateTime.parse(dobC.text).toIso8601String(),
       "deviceId": _dataProvider.deviceId,
       "email": _emailC.text,
       "firstName": name.first,
@@ -97,6 +102,43 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void openPage(String url) {
     openURL(url);
+  }
+
+  void pickDob() {
+    FocusScope.of(context).requestFocus(FocusNode());
+
+    DateTime current = DateTime.tryParse(dobC.text) ?? DateTime.now().subtract(Duration(days: 365 * 18));
+
+    int maxYear = DateTime.now().year - 18;
+    DatePicker.showDatePicker(
+      context,
+      minDateTime: DateTime(1920),
+      maxDateTime: DateTime(maxYear),
+      initialDateTime: current,
+      dateFormat: "dd-MMMM-yyyy",
+      locale: DateTimePickerLocale.en_us,
+      pickerTheme: DateTimePickerTheme(
+        itemHeight: 40.0,
+        confirm: Text(
+          "Save",
+          style: TextStyle(
+            color: AppColors.color1
+          ),
+        ),
+        cancel: Text(
+          "Cancel",
+          style: TextStyle(
+            color: Colors.red
+          ),
+        )
+      ),
+      pickerMode: DateTimePickerMode.date, // show TimePicker
+      onConfirm: (date, l) {
+        setState(() {
+          dobC.text = toYMD(date);        
+        });
+      },
+    );
   }
 
   Widget buildForm() {
@@ -149,6 +191,15 @@ class _RegisterPageState extends State<RegisterPage> {
             onFieldSubmitted: (val) {
               FocusScope.of(context).requestFocus(_passwordNode);
             },
+          ),
+          SizedBox(height: 20.0),
+          WeMeetTextField(
+            helperColor: Colors.grey,
+            hintText: "Date of Birth",
+            controller: dobC,
+            enabled: false,
+            onFieldTapped: pickDob,
+            validator: (val) => NotEmptyValidator.validateWithMessage(val, "Please select your date of birth"),
           ),
           SizedBox(height: 20.0),
           WeMeetTextField(

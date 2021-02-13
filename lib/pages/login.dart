@@ -171,7 +171,7 @@ class _LoginPageState extends State<LoginPage> {
             hintText: "Password",
             isPassword: true,
             showPasswordToggle: true,
-            validator: PasswordValidator.validate,
+            validator: (val) => NotEmptyValidator.validateWithMessage(val, "Please enter you password"),
             borderColor: AppColors.color3,
             hintColor: Colors.white,
             textColor: Colors.white,

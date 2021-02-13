@@ -209,11 +209,13 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         SizedBox(height: 30.0),
         GestureDetector(
-          onTap: () {
+          onTap: () async {
             Navigator.of(context).pushNamedAndRemoveUntil("/login", (route) => false).then((e) async {
-              await Future.delayed(Duration(milliseconds: 700));
-              model.logOut();
+              
             });
+            await Future.delayed(Duration(milliseconds: 700));
+            model.logOut();
+            print("******Logged out******");
           },
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
