@@ -5,10 +5,12 @@ import 'dart:async';
 import 'package:wemeet/models/app.dart';
 import 'package:wemeet/models/user.dart';
 import 'package:wemeet/providers/data.dart';
+
 import 'package:wemeet/services/message.dart';
 import 'package:wemeet/services/match.dart';
 import 'package:wemeet/services/socket_bg.dart';
 import 'package:wemeet/services/audio.dart';
+import 'package:wemeet/services/user.dart';
 
 import 'package:wemeet/utils/svg_content.dart';
 import 'package:wemeet/config.dart';
@@ -53,6 +55,9 @@ class _HomePageState extends State<HomePage> {
     updateMatches();
 
     startSocketConn();
+
+    // update profile
+    updateProfile();
     
   }
 
@@ -99,6 +104,13 @@ class _HomePageState extends State<HomePage> {
       });
 
       widget.model.setMatchList(mtL);
+    });
+  }
+
+  void updateProfile() {
+    UserService.getProfile().then((res){
+      Map data = res["data"] as Map;
+      widget.model.setUserMap(data);
     });
   }
 
