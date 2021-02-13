@@ -112,7 +112,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
         return;
       } 
 
-      Navigator.of(context).pushNamedAndRemoveUntil("/home", (route) => false);
+      Navigator.pop(context);
 
     } catch (e) {
       print(e);
@@ -144,7 +144,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
     }
 
     // if gender is not set
-    if(user.gender.isEmpty) {
+    if(user.gender == null || user.gender.isEmpty) {
       user.gender = "MALE";
     }
 
