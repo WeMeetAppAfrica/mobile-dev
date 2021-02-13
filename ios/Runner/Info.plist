@@ -28,8 +28,6 @@
 	<string>WeMeet wants to access your photos so you can update your profile photo.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>WeMeet would like to access your contacts so you can invite friends</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>WeMeet wants to access your location so we can find matches near you.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>WeMeet needs access to location so you can see users nearby</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
