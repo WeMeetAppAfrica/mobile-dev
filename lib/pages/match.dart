@@ -47,7 +47,7 @@ class _MatchPageState extends State<MatchPage> {
     
     reloadStream = _dataProvider.onReloadPage.listen(onReload);
 
-    fetchData();
+    fetchData(false);
   }
 
   @override
@@ -56,20 +56,22 @@ class _MatchPageState extends State<MatchPage> {
     super.dispose();
   }
 
-  void fetchData() async {
+  void fetchData([bool test = false]) async {
 
-    setState(() {
-      users = List.generate(5, (i) => UserModel(
-        id: i,
-        firstName: "John $i",
-        lastName: "Doe",
-        profileImage: "https://uifaces.co/our-content/donated/gPZwCbdS.jpg",
-        dob: 968093489867,
-        distanceInKm: 20,
-      )); 
-    });
+    if(test) {
+      setState(() {
+        users = List.generate(5, (i) => UserModel(
+          id: i,
+          firstName: "John $i",
+          lastName: "Doe",
+          profileImage: "https://uifaces.co/our-content/donated/gPZwCbdS.jpg",
+          dob: 968093489867,
+          distanceInKm: 20,
+        )); 
+      });
 
-    return;
+      return;
+    }
 
     setState(() {
       isLoading = true;

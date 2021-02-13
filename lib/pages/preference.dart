@@ -41,13 +41,13 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
 
   Map<String, String> genders = {
     "MALE": "Guy",
-    "FEMALE": "Girl"
+    "FEMALE": "Girl",
+    "None": "I'd rather not say"
   }; 
 
   Map<String, String> prefs = {
     "MALE": "Guys",
     "FEMALE": "Girls",
-    "None": "I'd rather not say"
   };
 
   Map<String, String> eStatuses = {
@@ -297,10 +297,18 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
       "Hey! You're a",
       _toggleGroup(
         items: genders.values.toList(),
-        values: [genders[user.gender]],
-        slide: true,
-        left: user.gender == "MALE",
+        // values: [genders[user.gender]],
+        values: (user.gender == null) ? [genders["None"]] : [genders[user.gender]],
+        slide: false,
+        // left: user.gender == "MALE",
         onSelect: (val){
+          if(val == "I'd rather not say") {
+            setState(() {
+              user.gender = null;                    
+            });
+            return;
+          }
+
           genders.forEach((k, v){
             if(v == val) {
               val = k;

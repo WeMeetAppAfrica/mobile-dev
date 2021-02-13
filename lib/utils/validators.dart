@@ -11,8 +11,8 @@ class PhoneValidator{
       return  "Enter phone number" ;
     }
 
-    if(value.length < 10) {
-      return  'Phone number should be at least 10 digits' ;
+    if(value.length < 11) {
+      return  'Phone number should be at least 11 digits' ;
     }
 
     if(!_phone.hasMatch(value)){
