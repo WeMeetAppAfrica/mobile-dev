@@ -137,7 +137,7 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  void waitJoinRoom() {
+  void waitJoinRoom() async {
     Timer(Duration(seconds: 2), () {
       socketService.join(chatId);
       socketService.setRoom(chatId);
@@ -172,7 +172,7 @@ class _ChatPageState extends State<ChatPage> {
     
     Map data = {
       "content": content.trim(),
-      "receiverId": chatId,
+      "receiverId": uid,
       "type": type
     };
 

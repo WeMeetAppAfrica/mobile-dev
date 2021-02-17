@@ -147,7 +147,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
       cL[e.chatId] = {
         "message": (e.type == "TEXT") ? e.content : "audio...",
-        "timestamp": (!cL.containsKey(e.chatId)) ? 0 : e.timestamp
+        "timestamp": (!cL.containsKey(e.chatId)) ? e.timestamp : (cL[e.chatId]["timestamp"] ?? 0)
       };
     });
 
@@ -221,7 +221,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
     if (index >= 0) {
       Map cL = model.chatList;
-      cL[roomId]["timestamp"] = items[index].timestamp;
+      cL[roomId]["timestamp"] = DateTime.now().millisecondsSinceEpoch; //items[index].timestamp;
       setState(() {
         items[index].withBubble = false;
       });
@@ -272,7 +272,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
       // check if key is present
       if(mcL.containsKey(el.chatId)){
-        el.withBubble = el.timestamp > mcL[el.chatId]["timestamp"];
+        el.withBubble = (el.timestamp > mcL[el.chatId]["timestamp"] && el.senderId != user.id);
       }
 
     });

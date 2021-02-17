@@ -105,7 +105,7 @@ class _MatchPageState extends State<MatchPage> {
 
   void showMatch(UserModel match, bool show) async {
 
-    if(!show) {
+    if(!show || match == null) {
       return;
     }
 
