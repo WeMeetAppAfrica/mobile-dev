@@ -20,7 +20,7 @@ class MatchFoundPage extends StatelessWidget {
 
   void addMatch(AppModel model) {
     Map mL = model.matchList ?? {};
-    mL["${match.id}"] = {"name": match.fullName, "image": match.profileImage};
+    mL["${match.id}"] = {"name": match.fullName, "image": match.profileImage ?? "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"};
     model.setMatchList(mL);
   }
 
@@ -73,8 +73,9 @@ class MatchFoundPage extends StatelessWidget {
                             top: btnWidth / 2
                           ),
                           child: buildUserPic(
-                            model.user.profileImage,
+                            model.user?.profileImage,
                           ),
+                          // child: Text("${model.user?.profileImage}"),
                         ),
                       ),
                       Align(
@@ -85,7 +86,7 @@ class MatchFoundPage extends StatelessWidget {
                             bottom: btnWidth / 2
                           ),
                           child: buildUserPic(
-                            match.profileImage,
+                            match.profileImage ?? "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
                           ),
                         ),
                       ),

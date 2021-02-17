@@ -6,16 +6,20 @@ import 'package:wemeet/pages/chat.dart';
 
 class MessageItem extends StatelessWidget {
 
+  final int uid;
   final ChatModel message;
-  const MessageItem({Key key, this.message}) : super(key: key);
+  const MessageItem({Key key, this.message, this.uid}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+
+    final String id = message.senderId == uid ? "${message.receiverId}" : "${message.senderId}";
+
     return Container(
       child: ListTile(
         onTap: () {
           Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => ChatPage(uid: message.chatId)
+            builder: (context) => ChatPage(uid: id ?? message.chatId)
           ));
         },
         leading: Container(

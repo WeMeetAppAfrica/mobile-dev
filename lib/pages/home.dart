@@ -125,7 +125,7 @@ class _HomePageState extends State<HomePage> {
           ignoring: _currentPage != 0,
           child: Opacity(
             opacity: opacity(0),
-            child: MatchPage(),
+            child: MatchPage(model: widget.model),
           ),
         ),
         IgnorePointer(

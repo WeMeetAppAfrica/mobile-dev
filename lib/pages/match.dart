@@ -7,6 +7,7 @@ import 'package:ionicons/ionicons.dart';
 import 'dart:async';
 
 import 'package:wemeet/models/user.dart';
+import 'package:wemeet/models/app.dart';
 
 import 'package:wemeet/services/match.dart';
 import 'package:wemeet/providers/data.dart';
@@ -22,6 +23,10 @@ import 'package:wemeet/utils/colors.dart';
 import 'package:wemeet/utils/svg_content.dart';
 
 class MatchPage extends StatefulWidget {
+
+  final AppModel model;
+  const MatchPage({Key key, this.model}) : super(key: key);
+
   @override
   _MatchPageState createState() => _MatchPageState();
 }
@@ -32,7 +37,6 @@ class _MatchPageState extends State<MatchPage> {
   bool isLoading = false;
   int left = 0;
   List<UserModel> users = [];
-  UserModel match;
 
   DataProvider _dataProvider = DataProvider();
   StreamSubscription<String> reloadStream;
@@ -48,6 +52,7 @@ class _MatchPageState extends State<MatchPage> {
     reloadStream = _dataProvider.onReloadPage.listen(onReload);
 
     fetchData(false);
+    // getSuggestion();
   }
 
   @override
@@ -78,20 +83,16 @@ class _MatchPageState extends State<MatchPage> {
     });
 
     try {
-      var res = await MatchService.getSwipes();
+      var res = await MatchService.getSuggestion();
       Map data = res["data"];
       List u = data["profiles"] as List; 
 
-      print(data.keys);
-
       setState(() {
         users = u.map((e) => UserModel.fromMap(e)).toList();
-        users.removeWhere((e) => e.profileImage == null);
+        // users.removeWhere((e) => e.profileImage == null);
         swipesLeft = data["swipesLeft"];   
         left = users.length;     
       });
-
-      getMatch(data);
 
     } catch (e) {
 
@@ -102,55 +103,14 @@ class _MatchPageState extends State<MatchPage> {
     }
   }
 
-  void getMatch(Map data) {
-    // make sure match and swipe is present
-    if(!data.containsKey("swipe") && !data.containsKey("match")) {
-      setState(() {
-        match = null;        
-      });
-      showMatch(false);
+  void showMatch(UserModel match, bool show) async {
+
+    if(!show) {
       return;
     }
 
-    // make sure match is boolean and true
-    if(data["match"] is bool && data["match"] == true) {
-      // if swipe is empty return
-      if(data["swipe"] is Map && data["swipe"].isEmpty) {
-        setState(() {
-          match = null;        
-        });
-        showMatch(false);
-        return;
-      }
-
-      // Make sure swipee is Map
-      if(!data["swipe"]["swipee"] is Map) {
-        setState(() {
-          match = null;        
-        });
-        showMatch(false);
-        return;
-      }
-
-      Map swipee = data["swipe"]["swipee"];
-      // make sure swipee is not null either
-      if(swipee.isNotEmpty) {
-        setState(() {
-          match = UserModel.fromMap(swipee);          
-        });
-        print("Found a match");
-        showMatch(true);
-        return;
-      }
-    }
-
-  }
-
-  void showMatch(bool val) async {
-
-    if(!val) {
-      return;
-    }
+    // add the match to the local database
+    addMatch(match);
 
     _dataProvider.setNavPage(0);
 
@@ -163,13 +123,6 @@ class _MatchPageState extends State<MatchPage> {
       fullscreenDialog: true
     )) ?? false;
 
-    // remove the match component anyways
-    setState(() {
-      if(val){
-        match = null; 
-      }            
-    });
-
     if(!go) {
       return;
     }
@@ -178,6 +131,12 @@ class _MatchPageState extends State<MatchPage> {
       builder: (context) => ChatPage(uid: id)
     ));
     
+  }
+
+  void addMatch(UserModel match) {
+    Map mL = widget.model.matchList ?? {};
+    mL["${match.id}"] = {"name": match.fullName, "image": match.profileImage ?? "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"};
+    widget.model.setMatchList(mL);
   }
 
   void onReload(String val) {
@@ -191,9 +150,11 @@ class _MatchPageState extends State<MatchPage> {
 
   }
 
-  void postSwipe(int id, String action) {
+  void postSwipe(int id, String action, [bool ]) {
 
     print("Posting Swipe");
+
+    UserModel uMatch = users.firstWhere((e) => e.id == id, orElse: () => null);
     
     setState(() {
       left = left - 1;
@@ -205,11 +166,13 @@ class _MatchPageState extends State<MatchPage> {
       return;
     }
 
-    MatchService.postSwipe({"swipeeId": id, "type": action}).then((val){
-      print(val);
+    MatchService.postSwipe({"swipeeId": id, "type": action}).then((res){
       setState(() {
         swipesLeft = swipesLeft - 1;        
       });
+
+      Map data = res["data"];
+      showMatch(uMatch, data["match"] ?? false);
     }).catchError(print);
   }
 
@@ -333,7 +296,7 @@ class _MatchPageState extends State<MatchPage> {
                           child: Hero(
                             tag: "$index#${item.id}",
                             child: CachedNetworkImage(
-                              imageUrl: item.profileImage,
+                              imageUrl: item.profileImage ?? "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
                               placeholder: (context, _) => DecoratedBox(
                                 decoration: BoxDecoration(
                                   color: Colors.black,

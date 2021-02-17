@@ -292,7 +292,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
   Widget buildList() {
     return ListView.separated(
-      itemBuilder: (context, index) => MessageItem(message: chats[index]),
+      itemBuilder: (context, index) => MessageItem(message: chats[index], uid: user.id,),
       separatorBuilder: (context, index) => Divider(indent: 80.0,),
       itemCount: chats.length,
       padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
