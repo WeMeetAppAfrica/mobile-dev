@@ -99,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void submit() {
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
     final form = formKey.currentState;
     if(form.validate()) {
       form.save();
@@ -224,7 +224,7 @@ class _LoginPageState extends State<LoginPage> {
           SizedBox(height: 30.0),
           Text.rich(
             TextSpan(
-              text: "By Using the WeMeet pltform, you agree to our",
+              text: "By Using the WeMeet platform, you agree to our ",
               children: [
                 TextSpan(
                   text: "Terms of Use",

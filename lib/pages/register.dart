@@ -91,7 +91,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void submit() {
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
     final form = formKey.currentState;
     if(form.validate()) {
       form.save();
@@ -281,6 +281,7 @@ class _RegisterPageState extends State<RegisterPage> {
               fontSize: 13.0
             ),
           ),
+          SizedBox(height: 15.0),
         ],
         padding: EdgeInsets.symmetric(horizontal: 30.0),
         physics: ClampingScrollPhysics(),
