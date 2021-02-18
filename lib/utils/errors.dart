@@ -11,6 +11,10 @@ String kTranslateError(dynamic e){
         return 'Unknown error occured.';
     }
   } 
+
+  if(e is FormatException) {
+    return "Invalid response format";
+  }
   
   if(e is SocketException){
     String mssg = e.toString();

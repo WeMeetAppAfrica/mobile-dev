@@ -153,6 +153,7 @@ class _MatchesPageState extends State<MatchesPage> {
       separatorBuilder: (context, index) => Divider(indent: 80.0,),
       itemCount: matches.length,
       padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
     );
   }
 
@@ -189,7 +190,6 @@ class _MatchesPageState extends State<MatchesPage> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {

@@ -158,6 +158,12 @@ class _StartPageState extends State<StartPage> {
       print(e);
       String err = kTranslateError(e);
       WeMeetToast.toast(err, true);
+
+      if(err.contains("response format")) {
+        routeTo("/login");
+        return;
+      }
+
       if(err.contains("session has expired")) {
         routeTo("/login");
         return;

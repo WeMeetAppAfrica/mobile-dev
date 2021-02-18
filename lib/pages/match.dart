@@ -241,142 +241,133 @@ class _MatchPageState extends State<MatchPage> {
 
   Widget buildSwipes() {
     return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(height: 30.0),
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: 500.0,
-              // maxHeight: mQuery.size.width * 0.95
-              maxHeight: 500.0
-            ),
-            child: TinderSwapCard(
-              cardController: controller,
-              swipeUp: false,
-              swipeDown: false,
-              orientation: AmassOrientation.TOP,
-              totalNum: users.length,
-              stackNum: 2,
-              swipeEdge: 10.0,
-              allowVerticalMovement: false,
-              maxWidth: mQuery.size.width * 0.95,
-              // maxHeight: mQuery.size.width * 0.95,
-              maxHeight: 700,
-              minWidth: mQuery.size.width * 0.80,
-              minHeight: mQuery.size.width * 0.80,
-              swipeCompleteCallback: (orientation, index){
-                print("#####Swiped: $orientation");
-                if (orientation == CardSwipeOrientation.LEFT) {
-                  postSwipe(users[index].id, "UNLIKE");
-                }
+      height: mQuery.size.height * 0.50,
+      constraints: BoxConstraints(
+        maxHeight: 500.0
+      ),
+      child: TinderSwapCard(
+        cardController: controller,
+        swipeUp: false,
+        swipeDown: false,
+        orientation: AmassOrientation.TOP,
+        totalNum: users.length,
+        stackNum: 2,
+        swipeEdge: 10.0,
+        allowVerticalMovement: false,
+        maxWidth: mQuery.size.width * 0.95,
+        // maxHeight: mQuery.size.width * 0.95,
+        maxHeight: 500,
+        minWidth: mQuery.size.width * 0.80,
+        minHeight: mQuery.size.width * 0.70,
+        swipeCompleteCallback: (orientation, index){
+          print("#####Swiped: $orientation");
+          if (orientation == CardSwipeOrientation.LEFT) {
+            postSwipe(users[index].id, "UNLIKE");
+          }
 
-                if (orientation == CardSwipeOrientation.RIGHT) {
-                  postSwipe(users[index].id, "LIKE");
-                }
-              },
-              swipeUpdateCallback: (details, align) {
+          if (orientation == CardSwipeOrientation.RIGHT) {
+            postSwipe(users[index].id, "LIKE");
+          }
+        },
+        swipeUpdateCallback: (details, align) {
 
-              },
-              cardBuilder: (context, index) {
-                UserModel item = users[index];
-                return GestureDetector(
-                  onTap: () {
-                    viewUser(item, index);
-                  },
-                  child: Card(
-                    clipBehavior: Clip.antiAliasWithSaveLayer,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0)
-                    ),
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: Hero(
-                            tag: "$index#${item.id}",
-                            child: CachedNetworkImage(
-                              imageUrl: item.profileImage ?? "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
-                              placeholder: (context, _) => DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  gradient: LinearGradient(
-                                    begin: FractionalOffset.topCenter,
-                                    end: FractionalOffset.bottomCenter,
-                                    colors: [
-                                      Colors.black.withOpacity(0.2),
-                                      Colors.black.withOpacity(0.9),
-                                    ],
-                                  )
-                                ),
-                              ),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        Positioned.fill(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              gradient: LinearGradient(
-                                begin: FractionalOffset.topCenter,
-                                end: FractionalOffset.bottomCenter,
-                                colors: [
-                                  Colors.black.withOpacity(0.01),
-                                  Colors.black.withOpacity(0.7),
-                                ],
-                                stops: [0.6, 1.0]
-                              )
-                            ),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Container(
-                            margin: EdgeInsets.only(bottom: 20.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(
-                                  "${item.firstName}, ${item.age}",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15.0
-                                  ),
-                                ),
-                                SizedBox(height: 5.0,),
-                                Text(
-                                  "${item.distanceInKm ?? 1} Km Away",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12.0,
-                                    fontWeight: FontWeight.w700
-                                  ),
-                                ),
+        },
+        cardBuilder: (context, index) {
+          UserModel item = users[index];
+          return GestureDetector(
+            onTap: () {
+              viewUser(item, index);
+            },
+            child: Card(
+              clipBehavior: Clip.antiAliasWithSaveLayer,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0)
+              ),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Hero(
+                      tag: "$index#${item.id}",
+                      child: CachedNetworkImage(
+                        imageUrl: item.profileImage ?? "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
+                        placeholder: (context, _) => DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            gradient: LinearGradient(
+                              begin: FractionalOffset.topCenter,
+                              end: FractionalOffset.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.2),
+                                Colors.black.withOpacity(0.9),
                               ],
                             )
                           ),
-                        )
-                      ],
+                        ),
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),    
-                );
-              },
-            ),
-          ),
-          SizedBox(height: 15.0),
-          Wrap(
-            spacing: 20.0,
-            alignment: WrapAlignment.center,
-            children: [
-              _swipeBtn(WemeetSvgContent.cancel, true),
-              _swipeBtn(WemeetSvgContent.heartY, false)
-            ],
-          ),
-          Spacer()
-        ],
+                  ),
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        gradient: LinearGradient(
+                          begin: FractionalOffset.topCenter,
+                          end: FractionalOffset.bottomCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.01),
+                            Colors.black.withOpacity(0.7),
+                          ],
+                          stops: [0.6, 1.0]
+                        )
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: 20.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            "${item.firstName}, ${item.age}",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15.0
+                            ),
+                          ),
+                          SizedBox(height: 5.0,),
+                          Text(
+                            "${item.distanceInKm ?? 1} Km Away",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.w700
+                            ),
+                          ),
+                        ],
+                      )
+                    ),
+                  )
+                ],
+              ),
+            ),    
+          );
+        },
       ),
+    );
+  }
+
+  Widget buildSwipeBtns() {
+    return Wrap(
+      spacing: 20.0,
+      alignment: WrapAlignment.center,
+      children: [
+        _swipeBtn(WemeetSvgContent.cancel, true),
+        _swipeBtn(WemeetSvgContent.heartY, false)
+      ],
     );
   }
 
@@ -391,11 +382,23 @@ class _MatchPageState extends State<MatchPage> {
         text: "No Match Found",
         icon: Ionicons.heart_circle_outline,
         buttonText: "Retry",
-        callback: fetchData,
+        callback: () => fetchData(false),
       );
     }
 
-    return buildSwipes();
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(height: 30.0),
+          buildSwipes(),
+          SizedBox(height: 15.0),
+          buildSwipeBtns(),
+          Spacer(),
+          WMEdiaPlayer(occupy: true,)
+        ],
+      ),
+    );
 
   }
 
@@ -403,9 +406,13 @@ class _MatchPageState extends State<MatchPage> {
 
     return Column(
       children: [
-        Expanded(
-          child: buildBody(),
-        ),
+        // Expanded(
+        //   child: buildBody(),
+        // ),
+        SizedBox(height: 15.0),
+        buildSwipeBtns(),
+        buildBody(),
+        Spacer(),
         WMEdiaPlayer(occupy: true,)
       ],
     );
@@ -429,7 +436,7 @@ class _MatchPageState extends State<MatchPage> {
           )
         ],
       ),
-      body: buildMain(),
+      body: buildBody(),
     );
   }
 }

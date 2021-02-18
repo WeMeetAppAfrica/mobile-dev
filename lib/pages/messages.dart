@@ -210,6 +210,8 @@ class _MessagesPageState extends State<MessagesPage> {
       return;
     }
 
+    print("Room changed");
+
     int index = items.indexWhere((el) {
       // if chatId matches
       if (roomId == el.chatId) {
@@ -221,7 +223,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
     if (index >= 0) {
       Map cL = model.chatList;
-      cL[roomId]["timestamp"] = DateTime.now().millisecondsSinceEpoch; //items[index].timestamp;
+      cL[roomId]["timestamp"] = DateTime.now().toLocal().millisecondsSinceEpoch; //items[index].timestamp;
       setState(() {
         items[index].withBubble = false;
       });
@@ -296,6 +298,7 @@ class _MessagesPageState extends State<MessagesPage> {
       separatorBuilder: (context, index) => Divider(indent: 80.0,),
       itemCount: chats.length,
       padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
     );
   }
 

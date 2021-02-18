@@ -78,7 +78,7 @@ class ChatModel {
   }
 
   int get timestamp {
-    return sentAt.microsecondsSinceEpoch;
+    return sentAt.millisecondsSinceEpoch;
   }
 
   String get tag {

@@ -306,6 +306,7 @@ class _ChatPageState extends State<ChatPage> {
       itemCount: chats.length,
       reverse: true,
       padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
     );
   }
 
