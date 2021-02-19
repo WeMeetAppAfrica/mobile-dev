@@ -38,11 +38,17 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
 
   TextEditingController bioC = TextEditingController();
   TextEditingController dobC = TextEditingController();
+  
+  String _gender;
+  List _genderPreference;
+  int _maxAge;
+  int _minAge;
+  int _swipeRadius;
+  String _workStatus;
 
   Map<String, String> genders = {
     "MALE": "Guy",
-    "FEMALE": "Girl",
-    "None": "I'd rather not say"
+    "FEMALE": "Girl"
   }; 
 
   Map<String, String> prefs = {
@@ -84,13 +90,13 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
 
     Map data = {
       "bio": bioC.text,
-      "dateOfBirth": DateTime.fromMillisecondsSinceEpoch(user.dob).toIso8601String(),
-      "gender": user.gender,
-      "genderPreference": user.genderPreference,
-      "maxAge": user.maxAge,
-      "minAge": user.minAge,
-      "swipeRadius": user.swipeRadius,
-      "workStatus": user.workStatus
+      // "dateOfBirth": DateTime.fromMillisecondsSinceEpoch(user.dob).toIso8601String(),
+      "gender": _gender,
+      "genderPreference": _genderPreference,
+      "maxAge": _maxAge,
+      "minAge": _minAge,
+      "swipeRadius": _swipeRadius,
+      "workStatus": _workStatus
     };
 
     try {
@@ -138,29 +144,31 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
     // set bio
     bioC = TextEditingController(text: user.bio ?? "");
 
-    // set dob
-    if(user.dob < 10000000000) {
-      user.dob = DateTime.now().subtract(Duration(days: 365 * 18)).millisecondsSinceEpoch;
-    }
+    _gender = user.gender;
+    _genderPreference = user.genderPreference;
+    _maxAge = user.maxAge;
+    _minAge = user.minAge;
+    _swipeRadius =  user.swipeRadius;
+    _workStatus =  user.workStatus;
 
     // if gender is not set
     if(user.gender == null || user.gender.isEmpty) {
-      user.gender = "MALE";
+      _gender = "MALE";
     }
 
     // if workstatus is not set
     if(user.workStatus.isEmpty) {
-      user.workStatus = "UNEMPLOYED";
+      _workStatus = "UNEMPLOYED";
     }
 
     // if min age is not set
     if(user.minAge < 1) {
-      user.minAge = 18;
+      _minAge = 18;
     }
 
     // if max age is not set
     if(user.maxAge < 1 || user.maxAge < user.minAge) {
-      user.maxAge = user.minAge + 1;
+      _maxAge = user.minAge + 1;
     }
 
     dobC = TextEditingController(text: formatDate(DateTime.fromMillisecondsSinceEpoch(user.dob), [dd, ' ', M, ', ', yyyy]));
@@ -297,25 +305,18 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
       "Hey! You're a",
       _toggleGroup(
         items: genders.values.toList(),
-        // values: [genders[user.gender]],
-        values: (user.gender == null) ? [genders["None"]] : [genders[user.gender]],
-        slide: false,
-        // left: user.gender == "MALE",
+        values: [genders[_gender]],
+        // values: (user.gender == null) ? [genders["None"]] : [genders[user.gender]],
+        slide: true,
+        left: _gender == "MALE",
         onSelect: (val){
-          if(val == "I'd rather not say") {
-            setState(() {
-              user.gender = null;                    
-            });
-            return;
-          }
-
           genders.forEach((k, v){
             if(v == val) {
               val = k;
             }
           });
           setState(() {
-            user.gender = val;                  
+            _gender = val;                  
           });
         }
       )
@@ -327,17 +328,17 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
       "You're interested in",
       _toggleGroup(
         items: prefs.values.toList(),
-        values: (user.genderPreference.isEmpty) ? [prefs["None"]] : user.genderPreference.map((e) => prefs[e]).toList(),
+        values: (_genderPreference.isEmpty) ? [prefs["None"]] : _genderPreference.map((e) => prefs[e]).toList(),
         multiple: true,
         onSelect: (val){
           if(val == "I'd rather not say") {
             setState(() {
-              user.genderPreference = [];                    
+              _genderPreference = [];                    
             });
             return;
           }
 
-          List g = user.genderPreference;
+          List g = _genderPreference;
           prefs.forEach((k, v){
             if(v == val) {
               if(g.contains(k)) {
@@ -351,19 +352,20 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
           });
           
           setState(() {
-            user.genderPreference = g;                  
+            _genderPreference = g;                  
           });
-          print("User prefs: ${user.genderPreference}");
+          print("User prefs: ${_genderPreference}");
         }
       )
     );
   }
 
   Widget buildAgeRange() {
+
     return _tile(
       "Age range",
       FlutterSlider(
-        values: [(math.max(18, user.minAge)).toDouble(), (math.max(19, user.maxAge)).toDouble()],
+        values: [(math.max(18, _minAge)).toDouble(), (math.max(19, _maxAge)).toDouble()],
         min: 18,
         max: 60.0,
         rangeSlider: true,
@@ -373,8 +375,8 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
         ),
         onDragging: (i, l, u) {
           setState(() {
-            user.minAge = ensureInt(l);    
-            user.maxAge = ensureInt(u);                
+            _minAge = ensureInt(l);    
+            _maxAge = ensureInt(u);                
           });
         },
         handler: FlutterSliderHandler(
@@ -414,7 +416,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
           ),
         ),
       ),
-      subtitle: "${user.minAge} - ${user.maxAge}"
+      subtitle: "${_minAge} - ${_maxAge}"
     );
   }
 
@@ -422,7 +424,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
     return _tile(
       "Distance (km)",
       FlutterSlider(
-        values: [(user.swipeRadius ?? 0).toDouble()],
+        values: [(_swipeRadius ?? 0).toDouble()],
         min: 0,
         max: 200.0,
         rangeSlider: false,
@@ -432,7 +434,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
         ),
         onDragging: (i, l, u) {
           setState(() {
-            user.swipeRadius = ensureInt(l);                
+            _swipeRadius = ensureInt(l);                
           });
         },
         handler: FlutterSliderHandler(
@@ -457,7 +459,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
         handlerHeight: 50.0,
         handlerWidth: 20.0,
       ),
-      subtitle: "${user.swipeRadius ?? 0} km"
+      subtitle: "${_swipeRadius ?? 0} km"
     );
   }
 
@@ -471,7 +473,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
           spacing: 15.0,
           runSpacing: 15.0,
           children: eStatuses.values.map((e) {
-            bool active = eStatuses[user.workStatus] == e;
+            bool active = eStatuses[_workStatus] == e;
             return InkWell(
               onTap: () {
                 var t;
@@ -483,7 +485,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
 
                 if(t == null) return;
                 setState(() {
-                  user.workStatus = t;
+                  _workStatus = t;
                 });
               },
               child: AnimatedContainer(

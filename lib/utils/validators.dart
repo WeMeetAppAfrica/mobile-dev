@@ -48,7 +48,7 @@ class PasswordValidator {
     if(value.isEmpty) {
       return  'Password  can not be empty' ;
     }
-    if(value.length < 8) {
+    if(value.length < 6) {
       return  'Password should be at least 6 characters' ;
     }
     return null;

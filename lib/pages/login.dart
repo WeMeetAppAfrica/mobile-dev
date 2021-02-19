@@ -232,7 +232,7 @@ class _LoginPageState extends State<LoginPage> {
                     decoration: TextDecoration.underline
                   ),
                   recognizer: TapGestureRecognizer()..onTap = (){
-                    openURL("https://wemeet.africa/termsandconditions.pdf");
+                    openURL("https://wemeet.africa/terms-of-use.html");
                   }
                 ),
                 TextSpan(
@@ -244,7 +244,7 @@ class _LoginPageState extends State<LoginPage> {
                     decoration: TextDecoration.underline
                   ),
                   recognizer: TapGestureRecognizer()..onTap = (){
-                    openURL("https://wemeet.africa/privacypolicy.pdf");
+                    openURL("https://wemeet.africa/privacy-policy.html");
                   }
                 )
               ]
