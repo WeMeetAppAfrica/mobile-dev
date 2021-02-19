@@ -37,7 +37,7 @@ class WeMeetApp extends StatelessWidget {
       "/on-boarding": (context) => OnBoardingPage(),
       "/home": (context) => HomePage(model: model,),
       "/login": (context) => LoginPage(model: model,),
-      "/register": (context) => RegisterPage(),
+      "/register": (context) => RegisterPage(model: model,),
       "/forgot-password": (context) => ForgotPasswordPage(),
       "/change-password": (context) => ChangePasswordPage(),
       "/settings": (context) => SettingsPage(model: model),

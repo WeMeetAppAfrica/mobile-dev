@@ -168,7 +168,7 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
 
     // if max age is not set
     if(user.maxAge < 1 || user.maxAge < user.minAge) {
-      _maxAge = user.minAge + 1;
+      _maxAge = _minAge + 1;
     }
 
     dobC = TextEditingController(text: formatDate(DateTime.fromMillisecondsSinceEpoch(user.dob), [dd, ' ', M, ', ', yyyy]));

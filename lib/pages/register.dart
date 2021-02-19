@@ -3,6 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
 
+import 'package:wemeet/models/app.dart';
+
 import 'package:wemeet/components/checkbox_field.dart';
 import 'package:wemeet/components/loader.dart';
 import 'package:wemeet/components/text_field.dart';
@@ -19,6 +21,10 @@ import 'package:wemeet/utils/validators.dart';
 import 'package:wemeet/utils/errors.dart';
 
 class RegisterPage extends StatefulWidget {
+
+  final AppModel model;
+
+  const RegisterPage({Key key, this.model}) : super(key: key); 
   @override
   _RegisterPageState createState() => _RegisterPageState();
 }
@@ -76,10 +82,18 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       var res = await AuthService.postRegister(data);
+
+      Map resData = res["data"] as Map;
+
+      // set user 
+      widget.model.setUserMap(resData["user"]);
+      // set user token
+      widget.model.setToken(resData["tokenInfo"]["accessToken"]);
+
       WeMeetToast.toast(res["message"] ?? "Account registered successfully");
       formKey.currentState.reset();
       await Future.delayed(Duration(milliseconds: 500));
-      Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
+      Navigator.pushNamedAndRemoveUntil(context, "/activate", (route) => false);
     } catch (e) {
       print(e);
       WeMeetToast.toast(kTranslateError(e), true);
