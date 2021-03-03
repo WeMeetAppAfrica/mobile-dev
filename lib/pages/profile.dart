@@ -137,26 +137,34 @@ class _ProfilePageState extends State<ProfilePage> {
             Row(
               children: [
                 Expanded(
-                  child: RaisedButton(
+                  child: ElevatedButton(
                     onPressed: () => routeTo("/complete-profile"),
-                    child: Text("Edit Photos"),
-                    textColor: AppColors.color1,
-                    color: AppColors.color1.withOpacity(0.2),
-                    highlightColor: Colors.transparent,
-                    highlightElevation: 0.0,
-                    elevation: 0.0,
+                    child: Text(
+                      "Edit Photos",
+                      style: TextStyle(
+                        color: AppColors.color1,
+                      ),
+                    ),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(AppColors.color1.withOpacity(0.2)),
+                      elevation: MaterialStateProperty.all(0.0)
+                    ),
                   ),
                 ),
                 SizedBox(width: 15.0),
                 Expanded(
-                  child: RaisedButton(
+                  child: ElevatedButton(
                     onPressed: () => routeTo("/preference"),
-                    child: Text("Edit Preference"),
-                    textColor: AppColors.color1,
-                    color: AppColors.orangeColor.withOpacity(0.2),
-                    highlightColor: Colors.transparent,
-                    highlightElevation: 0.0,
-                    elevation: 0.0,
+                    child: Text(
+                      "Edit Preference",
+                      style: TextStyle(
+                        color: AppColors.color1,
+                      ),
+                    ),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(AppColors.orangeColor.withOpacity(0.2)),
+                      elevation: MaterialStateProperty.all(0.0)
+                    ),
                   ),
                 )
               ],

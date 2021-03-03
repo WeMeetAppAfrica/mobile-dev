@@ -230,7 +230,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                   SizedBox(height: 50.0),
                   if(!["FREE", user.type].contains(plan.name)) Container(
                     margin: EdgeInsets.symmetric(horizontal: 20.0),
-                    child: RaisedButton(
+                    child: ElevatedButton(
                       onPressed: (){
                         upgradePlan(plan);
                       },

@@ -186,7 +186,6 @@ class _StartPageState extends State<StartPage> {
       return WeMeetLoader.showBusyLoader();
     }
 
-    // TODO Handle error
     if(errorText != null) {
       return Center(
         child: Column(
