@@ -1,7 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:wemeet/models/app.dart';
 
@@ -18,14 +17,34 @@ class PushService {
     return _pushService;
   }
 
-  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   void configure(AppModel model) async {
 
-    await firebaseMessaging.requestNotificationPermissions();
+    await firebaseMessaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
 
-    firebaseMessaging.configure(
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Got a message whilst in the foreground!');
+      print('Message data: ${message.data}');
+
+      if (message.notification != null) {
+        print('Message also contained a notification: ${message.notification}');
+        showNotification(message.notification);
+      }
+    });
+
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    /*firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) {
         print('onMessage: $message');
         Platform.isAndroid
@@ -43,6 +62,7 @@ class PushService {
         print('onLaunch: $message');
         return;
       });
+    */
 
     firebaseMessaging.getToken().then((token) {
       print("Push Token: $token");
@@ -98,6 +118,10 @@ class PushService {
   }
 
 
+}
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling a background message: ${message.messageId}");
 }
 
 Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {

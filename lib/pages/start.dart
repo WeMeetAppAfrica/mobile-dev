@@ -204,10 +204,14 @@ class _StartPageState extends State<StartPage> {
                 ),
               ),
             ),
-            FlatButton(
+            TextButton(
               onPressed: fetchProfile,
-              child: Text("Try again"),
-              textColor: Colors.yellowAccent,
+              child: Text(
+                "Try again",
+                style: TextStyle(
+                  color: Colors.yellowAccent,
+                ),
+              ),
             )
           ],
         ),

@@ -90,7 +90,7 @@ class _WMEdiaPlayerState extends State<WMEdiaPlayer> {
               _iconBtn(
                 val.contains("paused") ? Icons.play_arrow : Icons.pause,
                 (val.contains("paused") || val.contains("playing")),
-                val.contains("playing") ? _audioService.pause : () => _audioService.playSong(song) 
+                (val.contains("playing") && !val.contains("paused")) ? _audioService.pause : () => _audioService.playSong(song) 
               ),
               _iconBtn(
                 Icons.fast_forward,
@@ -124,6 +124,7 @@ class _WMEdiaPlayerState extends State<WMEdiaPlayer> {
             stream: _audioService.controlsStream,
             initialData: ["none"],
             builder: (context, snapshot) {
+              print(snapshot.data);
               if(!snapshot.hasData) {
                 return SizedBox();
               }

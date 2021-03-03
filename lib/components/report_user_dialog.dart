@@ -59,19 +59,27 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                FlatButton(
+                TextButton(
                   onPressed: (){
                     Navigator.pop(context);
                   },
-                  child: Text("Cancel"),
-                  textColor: Colors.black45,
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                      color: Colors.black45,
+                    ),
+                  ),
                 ),
-                FlatButton(
+                TextButton(
                   onPressed: (){
                     Navigator.pop(context, reason);
                   },
-                  child: Text("Submit Report"),
-                  textColor: Colors.redAccent,
+                  child: Text(
+                    "Submit Report",
+                    style: TextStyle(
+                      color: Colors.redAccent,
+                    ),
+                  ),
                 )
               ],
             )

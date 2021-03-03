@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:bot_toast/bot_toast.dart';
+import 'dart:math' as math;
 
 import 'package:wemeet/models/app.dart';
 
@@ -57,11 +58,24 @@ class WeMeetApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+    // BotToast builder
+    final botToastBuilder = BotToastInit();
+
     return ScopedModel<AppModel>(
       model: model,
       child: MaterialApp(
         title: "WeMeet",
-        builder: BotToastInit(),
+        // builder: BotToastInit(),
+        builder: (BuildContext context, Widget child) {
+          final MediaQueryData data = MediaQuery.of(context);
+          return MediaQuery(
+            data: data.copyWith(
+              textScaleFactor: math.min(data.textScaleFactor, 1.0),
+              // platformBrightness: data.platformBrightness
+            ),
+            child: botToastBuilder(context, child),
+          );
+        },
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primaryColor: Colors.white,
@@ -73,6 +87,7 @@ class WeMeetApp extends StatelessWidget {
           buttonTheme: ButtonThemeData(
             buttonColor: AppColors.color1,
             textTheme: ButtonTextTheme.primary,
+            highlightColor: Colors.transparent
           ),
           appBarTheme: AppBarTheme(
             color: Colors.white,

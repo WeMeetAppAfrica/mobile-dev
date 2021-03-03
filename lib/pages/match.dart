@@ -395,7 +395,7 @@ class _MatchPageState extends State<MatchPage> {
           SizedBox(height: 15.0),
           buildSwipeBtns(),
           Spacer(),
-          WMEdiaPlayer(occupy: true,)
+          // WMEdiaPlayer(occupy: false,)
         ],
       ),
     );
@@ -406,13 +406,13 @@ class _MatchPageState extends State<MatchPage> {
 
     return Column(
       children: [
-        // Expanded(
-        //   child: buildBody(),
-        // ),
-        SizedBox(height: 15.0),
-        buildSwipeBtns(),
-        buildBody(),
-        Spacer(),
+        Expanded(
+          child: buildBody(),
+        ),
+        // SizedBox(height: 15.0),
+        // buildSwipeBtns(),
+        // buildBody(),
+        // Spacer(),
         WMEdiaPlayer(occupy: true,)
       ],
     );
@@ -436,7 +436,7 @@ class _MatchPageState extends State<MatchPage> {
           )
         ],
       ),
-      body: buildBody(),
+      body: buildMain(),
     );
   }
 }

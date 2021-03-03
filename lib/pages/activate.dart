@@ -140,10 +140,14 @@ class _ActivatePageState extends State<ActivatePage> {
           SizedBox(height: 10.0,),
           Align(
             alignment: Alignment.centerRight,
-            child: FlatButton(
+            child: TextButton(
               onPressed: resendCode,
-              child: Text("Resend Activation Code"),
-              textColor: AppColors.orangeColor,
+              child: Text(
+                "Resend Activation Code",
+                style: TextStyle(
+                  color: AppColors.orangeColor
+                ),
+              ),
             ),
           ),
           SizedBox(height: 40.0),

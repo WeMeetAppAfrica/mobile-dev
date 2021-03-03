@@ -110,20 +110,24 @@ class _SongRequestDialogState extends State<SongRequestDialog> {
             Wrap(
               alignment: WrapAlignment.end,
               children: [
-                FlatButton(
+                TextButton(
                   onPressed: (){ Navigator.pop(context);},
-                  child: Text("Cancel"),
-                  textColor: Colors.black87,
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                      color: Colors.black87,
+                    ),
+                  ),
                 ),
-                FlatButton(
+                TextButton(
                   onPressed: sendRequest,
                   child: Text(
                     "Send Song Request", 
                     style: TextStyle(
-                      fontWeight: FontWeight.w700
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.color1
                     ),
                   ),
-                  textColor: AppColors.color1,
                 )
               ],
             )

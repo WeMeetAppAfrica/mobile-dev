@@ -185,40 +185,56 @@ class _PictureUploaderState extends State<PictureUploader> {
                     fontWeight: FontWeight.w700
                   ),
                 ),
-                FlatButton(
+                TextButton(
                   onPressed: (){Navigator.pop(context);},
-                  child: Text("Close"),
-                  textColor: Colors.red,
+                  child: Text(
+                    "Close",
+                    style: TextStyle(
+                      color: Colors.red
+                    ),
+                  ),
                 )
               ],
             ),
             SizedBox(height: 10.0),
             Container(
               height: 45.0,
-              child: RaisedButton.icon(
+              child: ElevatedButton.icon(
                 onPressed: () {
                   Navigator.pop(context, ImageSource.gallery);
                 },
                 icon: Icon(FeatherIcons.image),
-                label: Text("Gallery"),
-                textColor: AppColors.color1,
-                elevation: 0.0,
-                color: Color(0xfff2f2f2),
+                label: Text(
+                  "Gallery",
+                  style: TextStyle(
+                    color: AppColors.color1
+                  ),
+                ),
+                style: ButtonStyle(
+                  elevation: MaterialStateProperty.all(0.0),
+                  backgroundColor: MaterialStateProperty.all(Color(0xfff2f2f2))
+                ),
                 // textColor: ,
               ),
             ),
             SizedBox(height: 10.0),
             Container(
               height: 45.0,
-              child: RaisedButton.icon(
+              child: ElevatedButton.icon(
                 onPressed: () {
                   Navigator.pop(context, ImageSource.camera);
                 },
                 icon: Icon(FeatherIcons.camera),
-                label: Text("Camera"),
-                textColor: AppColors.color1,
-                elevation: 0.0,
-                color: Color(0xfff2f2f2),
+                label: Text(
+                  "Camera",
+                  style: TextStyle(
+                    color: AppColors.color1
+                  ),
+                ),
+                style: ButtonStyle(
+                  elevation: MaterialStateProperty.all(0.0),
+                  backgroundColor: MaterialStateProperty.all(Color(0xfff2f2f2))
+                ),
               ),
             ),
             SizedBox(height: MediaQuery.of(context).padding.bottom + 20.0)

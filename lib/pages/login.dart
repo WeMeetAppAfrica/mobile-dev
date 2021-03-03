@@ -39,6 +39,8 @@ class _LoginPageState extends State<LoginPage> {
   FocusNode _emailNode = FocusNode();
   FocusNode _passwordNode = FocusNode();
 
+  DataProvider _dp = DataProvider();
+
   AppModel model;
 
   @override
@@ -63,8 +65,6 @@ class _LoginPageState extends State<LoginPage> {
 
     WeMeetLoader.showLoadingModal(context);
 
-    DataProvider _dp = DataProvider();
-
     Map data = {
       "deviceId": _dp.pushToken,
       "latitude": _dp.location.latitude,
@@ -73,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
       "password": _passwordC.text
     };
 
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(Duration(seconds: 1));
 
     try {
       var res = await AuthService.postLogin(data);
@@ -90,6 +90,7 @@ class _LoginPageState extends State<LoginPage> {
       // check verification
       verifyUser(user);
     } catch (e) {
+      print(e);
       WeMeetToast.toast(kTranslateError(e));
     } finally {
       if(Navigator.canPop(context)) {
@@ -183,12 +184,16 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Align(
             alignment: Alignment.centerRight,
-            child: FlatButton(
+            child: TextButton(
               onPressed: (){
                 Navigator.of(context).pushNamed("/forgot-password");
               },
-              child: Text("Forgot Password?"),
-              textColor: AppColors.orangeColor,
+              child: Text(
+                "Forgot Password?",
+                style: TextStyle(
+                  color: AppColors.orangeColor
+                ),
+              ),
             ),
           ),
           SizedBox(height: 40.0),

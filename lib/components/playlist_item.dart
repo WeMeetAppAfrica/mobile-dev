@@ -20,7 +20,7 @@ class WPlaylisItem extends StatelessWidget {
     VoidCallback callback = () => _audio.playSong(song);
 
     if(cItem == song) {
-      if(controls.contains("playing")) {
+      if(controls.contains("playing") && !controls.contains("paused")) {
         icon = Icons.pause;
         color = AppColors.deepPurpleColor.withOpacity(0.3);
         callback = _audio.pause;

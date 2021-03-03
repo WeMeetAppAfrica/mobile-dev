@@ -21,17 +21,23 @@ class WWideButton extends StatelessWidget {
         constraints: BoxConstraints(
           maxWidth: 400.0
         ),
-        child: RaisedButton(
+        child: ElevatedButton(
           onPressed: onTap,
-          child: Text(title),
-          color: color,
-          textColor: textColor ?? AppColors.color3,
-          elevation: 0.0,
-          highlightColor: Colors.transparent,
-          highlightElevation: 0.0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0)
+          child: Text(
+            title,
+            style: TextStyle(
+              color: textColor ?? AppColors.color3
+            ),
           ),
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(color ?? AppColors.color1),
+            elevation: MaterialStateProperty.all(0.0),
+            shape: MaterialStateProperty.all(RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0)
+            ))
+          ),
+          // highlightColor: Colors.transparent,
+          // highlightElevation: 0.0,
         ),
       )
     );

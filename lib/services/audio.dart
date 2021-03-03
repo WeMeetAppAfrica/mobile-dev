@@ -35,8 +35,8 @@ class WeMeetAudioService {
   String _currentUrl;
   String get currentUrl => _currentUrl;
   SongModel get currentMedia => _currentSong;
-  StreamSubscription<AudioPlaybackState> _playerStateSubscription;
-  StreamSubscription<AudioPlaybackEvent> _eventSubscription;
+  StreamSubscription<PlayerState> _playerStateSubscription;
+  StreamSubscription<PlaybackEvent> _eventSubscription;
   StreamController<List<String>> _controlsController =
       StreamController<List<String>>.broadcast();
   Stream<List<String>> get controlsStream =>
@@ -177,8 +177,6 @@ class WeMeetAudioService {
 
   void play() {
 
-    print("Wants to play");
-
     if(_playerMode == "none") {
       return;
     }
@@ -217,7 +215,6 @@ class WeMeetAudioService {
      _setCurrentSong(val);
     _player.play();
     
-
     if(_hasNext()) _setControls(add: ["next"]);
     if(_hasPrevious()) _setControls(add: ["prev", "previous"]);
     _setMode("playlist");
@@ -225,6 +222,7 @@ class WeMeetAudioService {
 
   void pause() async {
     await _player?.pause();
+    _setControls(add: ["paused"]);
     _setControls(remove: ["completed"]);
   }
 
@@ -234,7 +232,9 @@ class WeMeetAudioService {
     _currentUrl = null;
     _controlsController.add([]);
 
-    if(_player?.playbackState != AudioPlaybackState.none) {
+    if(_player?.processingState != ProcessingState.idle) {
+      // await _player.pause(); 
+      // await _player.seek(Duration.zero);
       await _player?.stop();
     }
 
@@ -257,21 +257,23 @@ class WeMeetAudioService {
       _setMode("playlist");
     }
 
-    _playerStateSubscription = _player.playbackStateStream.listen((state) {
-      switch (state) {
-        case AudioPlaybackState.completed:
-          print("completed");
+    _playerStateSubscription = _player.playerStateStream.listen((state) {
+
+      if(state.playing) {
+        _setControls(add: ["playing"], force: true);
+      } 
+      // else {
+      //   print("paused");
+      //   _setControls(add: ["paused"], /*force: true*/);
+      // }
+
+      switch (state.processingState) {
+        case ProcessingState.completed:
           _setControls(add: ["completed"], force: true);
           _handlePlaybackCompleted();
           break;
-        case AudioPlaybackState.connecting:
+        case ProcessingState.buffering:
           _setControls(add: ["buffering"], remove: ["none", "completed"]);
-          break;
-        case AudioPlaybackState.paused:
-          _setControls(add: ["paused"], force: true);
-          break;
-        case AudioPlaybackState.playing:
-          _setControls(add: ["playing"], force: true);
           break;
         default:
           if(_songs.isNotEmpty && _currentUrl == null) {
@@ -319,8 +321,6 @@ class WeMeetAudioService {
     await _player?.setUrl(_songs[i + 1].url);
     _setCurrentSong(_songs[i + 1]);
     _player.play();
-    
-
   }
 
   void skipToPrevious() async {

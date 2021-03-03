@@ -72,19 +72,29 @@ class WeMeetLoader{
             Row(
               children: [
                 Expanded(
-                  child: cancelText != null ? FlatButton(
+                  child: cancelText != null ? TextButton(
                     onPressed: () {Navigator.pop(context, false);},
-                    child: Text(cancelText),
-                    textColor: cancelColor,
+                    child: Text(
+                      cancelText,
+                      style: TextStyle(
+                        color: cancelColor
+                      ),
+                    ),
                   ) : SizedBox(),
                 ),
                 SizedBox(width: 10.0),
                 Expanded(
-                  child: okText != null ? RaisedButton(
+                  child: okText != null ? ElevatedButton(
                     onPressed: (){Navigator.pop(context, true);},
-                    child: Text(okText),
-                    color: okColor,
-                    elevation: 0.0,
+                    child: Text(
+                      okText,
+                      style: TextStyle(
+                        color: okColor
+                      ),
+                    ),
+                    style: ButtonStyle(
+                      elevation: MaterialStateProperty.all(0.0)
+                    ),
                   ) : SizedBox(),
                 )
               ],

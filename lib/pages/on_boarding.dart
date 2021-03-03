@@ -99,7 +99,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
           constraints: BoxConstraints(
             maxWidth: 500.0
           ),
-          child: RaisedButton(
+          child: ElevatedButton(
             onPressed: (){
               Navigator.pushReplacementNamed(context, "/register");
             },
@@ -109,10 +109,12 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                 color: AppColors.color3
               ),
             ),
-            color: AppColors.color1,
-            elevation: 0.0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0)
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(AppColors.color1),
+              elevation: MaterialStateProperty.all(0.0),
+              shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0)
+              ))
             ),
           ),
         ) : InkWell(

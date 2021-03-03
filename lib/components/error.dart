@@ -27,7 +27,7 @@ class WErrorComponent extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: Text(text),
           ),
-          callback != null ? FlatButton(
+          callback != null ? TextButton(
             onPressed: callback, 
             child: Text(buttonText ?? "Retry")
           ) : null
