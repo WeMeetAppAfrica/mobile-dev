@@ -75,7 +75,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onNavChanged(int val) {
-    if (mounted && val < 4) {
+    if (mounted && val < 3) {
       setState(() {
         _currentPage = val;
       });
@@ -132,23 +132,23 @@ class _HomePageState extends State<HomePage> {
           ignoring: _currentPage != 1,
           child: Opacity(
             opacity: opacity(1),
-            child: ProfilePage(),
+            child: PlaylistPage(),
           ),
         ),
         IgnorePointer(
           ignoring: _currentPage != 2,
           child: Opacity(
             opacity: opacity(2),
-            child: PlaylistPage(),
+            child: ProfilePage(),
           ),
         ),
-        IgnorePointer(
-          ignoring: _currentPage != 3,
-          child: Opacity(
-            opacity: opacity(3),
-            child: SubscriptionPage(),
-          ),
-        )
+        // IgnorePointer(
+        //   ignoring: _currentPage != 3,
+        //   child: Opacity(
+        //     opacity: opacity(3),
+        //     child: SubscriptionPage(),
+        //   ),
+        // )
       ],
     );
   }
@@ -162,20 +162,20 @@ class _HomePageState extends State<HomePage> {
           activeIcon: SvgPicture.string(WemeetSvgContent.home, height: 23.0,),
         ),
         BottomNavigationBarItem(
-          icon: SvgPicture.string(WemeetSvgContent.userOutline, height: 23.0,),
-          label: "Profile",
-          activeIcon: SvgPicture.string(WemeetSvgContent.user, height: 23.0,),
-        ),
-        BottomNavigationBarItem(
           icon: SvgPicture.string(WemeetSvgContent.playlistOutline, height: 23.0,),
           label: "Playlist",
           activeIcon: SvgPicture.string(WemeetSvgContent.playlist, height: 23.0,),
         ),
         BottomNavigationBarItem(
-          icon: SvgPicture.string(WemeetSvgContent.cardOutline, height: 20.0,),
-          label: "Subscription",
-          activeIcon: SvgPicture.string(WemeetSvgContent.card, height: 20.0,),
+          icon: SvgPicture.string(WemeetSvgContent.userOutline, height: 23.0,),
+          label: "Profile",
+          activeIcon: SvgPicture.string(WemeetSvgContent.user, height: 23.0,),
         ),
+        // BottomNavigationBarItem(
+        //   icon: SvgPicture.string(WemeetSvgContent.cardOutline, height: 20.0,),
+        //   label: "Subscription",
+        //   activeIcon: SvgPicture.string(WemeetSvgContent.card, height: 20.0,),
+        // ),
     ];
 
     return BottomNavigationBar(

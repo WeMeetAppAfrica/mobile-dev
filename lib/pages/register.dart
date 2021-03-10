@@ -51,11 +51,11 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void dispose() { 
     _fullNameC.dispose();
-    _phoneC.dispose();
+    _phoneC?.dispose();
     _emailC.dispose();
     _passwordC.dispose();
     dobC.dispose();
-    _phoneNode.dispose();
+    _phoneNode?.dispose();
     _emailNode.dispose();
     _passwordNode.dispose();
     super.dispose();
@@ -76,7 +76,7 @@ class _RegisterPageState extends State<RegisterPage> {
       "latitude": _dataProvider.location?.latitude ?? 0,
       "longitude": _dataProvider.location?.longitude ?? 0,
       "password": _passwordC.text,
-      "phone": _phoneC.text,
+      // "phone": _phoneC.text,
       "userName": _emailC.text
     };
 
@@ -177,22 +177,23 @@ class _RegisterPageState extends State<RegisterPage> {
             controller: _fullNameC,
             hintText: "First & Last Names",
             validator: NameValidator.validate,
-            onFieldSubmitted: (val) {
-              FocusScope.of(context).requestFocus(_phoneNode);
-            },
-          ),
-          SizedBox(height: 20.0),
-          WeMeetTextField(
-            // helperText: "Phone Number",
-            controller: _phoneC,
-            focusNode: _phoneNode,
-            hintText: "Phone Number",
-            keyboardType: TextInputType.phone,
-            validator: PhoneValidator.validate,
+            inputAction: TextInputAction.next,
             onFieldSubmitted: (val) {
               FocusScope.of(context).requestFocus(_emailNode);
             },
           ),
+          // SizedBox(height: 20.0),
+          // WeMeetTextField(
+          //   // helperText: "Phone Number",
+          //   controller: _phoneC,
+          //   focusNode: _phoneNode,
+          //   hintText: "Phone Number",
+          //   keyboardType: TextInputType.phone,
+          //   validator: PhoneValidator.validate,
+          //   onFieldSubmitted: (val) {
+          //     FocusScope.of(context).requestFocus(_emailNode);
+          //   },
+          // ),
           SizedBox(height: 20.0),
           WeMeetTextField(
             // helperText: "Email Address",
@@ -201,6 +202,7 @@ class _RegisterPageState extends State<RegisterPage> {
             hintText: "Email Address",
             keyboardType: TextInputType.emailAddress,
             validator: EmailValidator.validate,
+            inputAction: TextInputAction.next,
             onFieldSubmitted: (val) {
               FocusScope.of(context).requestFocus(_passwordNode);
             },
