@@ -18,7 +18,7 @@ import 'package:wemeet/config.dart';
 import 'package:wemeet/pages/match.dart';
 import 'package:wemeet/pages/profile.dart';
 import 'package:wemeet/pages/playlist.dart';
-import 'package:wemeet/pages/subscription.dart';
+// import 'package:wemeet/pages/subscription.dart';
 
 class HomePage extends StatefulWidget {
 
